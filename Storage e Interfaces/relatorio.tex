@@ -76,7 +76,7 @@
 {\color{linha}\rule{\textwidth}{1.2pt}}\\[0.7cm]
 {\LARGE\bfseries Dispositivos de Armazenamento Físico\\[6pt] para Sistemas de Banco de Dados}\\[0.5cm]
 {\large Interfaces de Conexão e Parâmetros para o\\ Gerente de Armazenamento do SBD}\\[0.5cm]
-{\normalsize\itshape Atualização da Tabela 16.1 (Elmasri \& Navathe, 7\textsuperscript{a} ed.)\\ para o mercado de setembro de 2026}\\[0.6cm]
+{\normalsize\itshape Atualização da Tabela 16.1 (Elmasri \& Navathe, 7\textsuperscript{a} ed.)\\ dados consultados em 05 de setembro de 2026}\\[0.6cm]
 {\color{linha}\rule{\textwidth}{1.2pt}}\\[1.4cm]
 
 {\large\bfseries Integrantes do Grupo}\\[0.5cm]
@@ -127,7 +127,7 @@ Intel Optane foi descontinuado e o vazio de três ordens de grandeza entre DRAM
 módulos CXL, que medem 214--271\,ns --- duas a duas vezes e meia a latência da DRAM local, e
 ainda a três ordens de grandeza do NVMe. Segundo, SSD e HDD \textbf{divergiram em vez de convergir} em custo por
 terabyte, com razão de 16$\times$ no 2\textsuperscript{o} trimestre de 2026 e
-18,6$\times$ no 3\textsuperscript{o}. Terceiro, o desempenho de um
+18,6$\times$ na observação parcial de 05/09/2026. Terceiro, o desempenho de um
 SBD moderno é governado por \textbf{latência e profundidade de fila}, não por largura de
 banda --- o que explica por que o SATA morreu tecnicamente em 6\,Gb/s sem que ninguém se
 importasse, e por que o NVMe venceu.
@@ -205,8 +205,8 @@ custo do otimizador --- e que a Seção~5.5 usa para mostrar por que esse modelo
 pelos organismos que definem cada interface --- USB-IF, SATA-IO, INCITS/T10 (SCSI e SAS),
 INCITS/T11 (Fibre Channel), NVM Express Inc., PCI-SIG, IEEE, IETF (RFC 7143), IBTA
 (InfiniBand), CXL Consortium, SNIA e o LTO Program. \textbf{(c)~Documentação de
-fabricante:} \emph{datasheets} e manuais de produto, complementados por preços de varejo
-observados em setembro de 2026.
+fabricante:} \emph{datasheets} e manuais de produto, complementados por preços de referência
+consultados em 05 de setembro de 2026.
 
 Para a escolha dos dispositivos da Tabela~16.1 atualizada, o grupo adotou três critérios,
 nesta ordem de precedência:
@@ -536,7 +536,7 @@ de \textbf{preço por kilobyte}. Adicionamos, por iniciativa do grupo, uma colun
 \emph{exemplo comercial} explícito e três linhas novas (memória CXL, SSD NVMe de datacenter
 e LTO-10), justificadas na Seção~3.3.
 
-\subsection{Tabela 16.1 atualizada --- setembro de 2026}
+\subsection{Tabela 16.1 atualizada --- consulta em 05/09/2026}
 
 A Tabela~\ref{tab:161} ocupa as duas páginas seguintes, em orientação paisagem. Ela deve ser
 lida junto com as notas N1 a N11 que a seguem, nas quais está registrada a origem de cada
@@ -564,7 +564,7 @@ $87{,}99 \div 1{,}8\times10^{10}$).
 \begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{3.4cm}>{\RaggedRight\arraybackslash}p{4.3cm}>{\RaggedRight\arraybackslash}p{2.4cm}>{\RaggedRight\arraybackslash}p{2.3cm}>{\RaggedRight\arraybackslash}p{2.2cm}>{\RaggedRight\arraybackslash}p{2.2cm}>{\RaggedRight\arraybackslash}p{3.1cm}>{\RaggedRight\arraybackslash}p{1.9cm}@{}}
 \caption{\textbf{Tabela 16.1 atualizada.} Tipos de armazenamento com capacidade, tempo de
 acesso, largura de banda segregada em leitura e escrita, preço de mercado e preço por
-kilobyte. Preços de varejo observados em setembro de 2026, durante a escassez de memória e
+kilobyte. Preços de referência consultados em 05/09/2026, durante a escassez de memória e
 NAND induzida pela demanda de IA (ver Seção~3.4). Fontes por linha nas notas que seguem a
 tabela.}\label{tab:161}\\
 \toprule
@@ -585,7 +585,7 @@ tabela.}\label{tab:161}\\
 \textbf{Cache SRAM (L3)} &
 AMD Ryzen 9 9950X3D2 (3D V-Cache) / EPYC 9755 &
 96\,MB--512\,MB &
-$\approx$8,9\,ns$^{\ddagger}$ \newline (L1 0,70; L2 2,46) &
+$\approx$9,0\,ns$^{\ddagger}$ \newline (L1 0,71; L2 2,50) &
 $\approx$1,4\,TB/s por CCD &
 $\approx$1,4\,TB/s &
 700--14.800 \newline (preço da CPU) &
@@ -624,8 +624,8 @@ Samsung 9100 PRO 1\,TB (M.2 2280) &
 $\approx$50\,\textmu s (4\,K, QD1) &
 14,7\,GB/s \newline (1,85\,M IOPS) &
 13,3\,GB/s \newline (2,60\,M IOPS) &
-249 (1\,TB) --- 1.099 (4\,TB) &
-$2{,}0\times10^{-7}$ \\
+219,99 (1\,TB, MSRP) &
+$2{,}20\times10^{-7}$ \\
 
 \textbf{SSD NVMe \emph{datacenter} QLC} \emph{[linha nova]} &
 Solidigm D5-P5336 (U.2 / E3.S / E1.L) &
@@ -647,7 +647,7 @@ $1{,}1\times10^{-6}$ \\
 
 \textbf{SSD SATA} &
 Samsung 870 EVO (2,5 polegadas) &
-250\,GB--8\,TB &
+250\,GB--4\,TB &
 77\,\textmu s leitura \newline 28\,\textmu s escrita &
 560\,MB/s &
 530\,MB/s &
@@ -701,7 +701,7 @@ $9{,}3\times10^{-9}$ \\
 
 \textbf{\emph{Tape library}} &
 IBM TS4500 (23.170 cartuchos) / Quantum Scalar i6000 &
-até 927\,PB nativo \newline (1,41\,EB comp.) &
+até 926,8\,PB nativo \newline (2,317\,EB a 2,5:1) &
 25--121\,s &
 $\approx$51,2\,GB/s agregado (128 \emph{drives}) &
 $\approx$51,2\,GB/s &
@@ -735,10 +735,10 @@ n/d \\
       50 ciclos --- donde os $\approx$46{,}5 ciclos que usamos. O L2 de 14 ciclos é número
       do \textbf{Zen~4}: a AMD não republicou o valor para o Zen~5.
       A conversão para nanossegundos exige declarar o \emph{clock}, o que raramente se faz.
-      Adotamos o \emph{boost} de 5,7\,GHz do 9950X3D2:
-      $4/5{,}7 = 0{,}70$\,ns (L1), $14/5{,}7 = 2{,}46$\,ns (L2) e
-      $46{,}5/5{,}7 = 8{,}16$\,ns (L3), com $+$4 ciclos ($+0{,}70$\,ns) para o V-Cache
-      empilhado, totalizando $\approx$8{,}9\,ns. \textbf{Nenhum desses valores é
+      Adotamos o \emph{boost} oficial de até 5,6\,GHz do 9950X3D2:
+      $4/5{,}6 = 0{,}71$\,ns (L1), $14/5{,}6 = 2{,}50$\,ns (L2) e
+      $46{,}5/5{,}6 = 8{,}30$\,ns (L3), com $+$4 ciclos ($+0{,}71$\,ns) para o V-Cache
+      empilhado, totalizando $\approx 9{,}02$\,ns. \textbf{Nenhum desses valores é
       especificação}; todos são derivações declaradas.
 \item \textbf{Tempo de acesso do SSD --- e uma distinção que se confunde com frequência.}
       Nenhum fabricante de SSD de \emph{consumo} publica latência em \emph{datasheet}; o
@@ -776,14 +776,16 @@ n/d \\
 \item \textbf{\emph{Tape jukebox}.} Nem a IBM nem a Quantum publicam \emph{throughput}
       agregado. O valor apresentado é derivação nossa: 128 \emph{drives} $\times$ 400\,MB/s
       nativos $=$ 51,2\,GB/s, e representa um teto teórico. Do mesmo modo, a capacidade de
-      927\,PB é derivada de 23.170 cartuchos $\times$ 40\,TB. Preços de bibliotecas de fita
+      926,8\,PB é derivada de 23.170 cartuchos $\times$ 40\,TB; a capacidade de
+      2,317\,EB é um cenário a 2,5:1, não uma garantia para dados comprimidos/cifrados. Preços de bibliotecas de fita
       são exclusivamente sob cotação.
 \item \textbf{Divergência entre rastreadores de preço.} Rastreadores automatizados de preço
       divergem entre si por fatores de até 8$\times$ para DRAM de servidor, conforme puxem
       de \emph{marketplace} ou de distribuidor. Onde havia divergência, adotamos a faixa e
       não um ponto.
-\item \textbf{Os números do 9100 PRO são do modelo de 1\,TB}, que é o precificado na
-      coluna de preço --- e não os de topo da família. O \emph{datasheet} Rev.~1.0 mostra
+\item \textbf{Os números do 9100 PRO são do modelo de 1\,TB}, cuja capacidade e MSRP oficial
+      de lançamento (US\$\,219,99) formam a base de cálculo da coluna de preço/KB. O
+      \emph{datasheet} Rev.~1.0 mostra
       que a família não é homogênea: o modelo de 4\,TB atinge \textbf{14.800\,MB/s} de
       leitura e \textbf{2.200\,KIOPS} aleatórios de leitura, contra 14.700\,MB/s e
       1.850\,KIOPS do 1\,TB (a escrita é igual em ambos: 13.300--13.400\,MB/s e
@@ -912,7 +914,7 @@ HDD \emph{nearline}:
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-\textbf{Trimestre} & \textbf{3T25} & \textbf{1T26} & \textbf{2T26} & \textbf{3T26} \\
+\textbf{Período} & \textbf{3T25} & \textbf{1T26} & \textbf{2T26} & \textbf{3T26 parcial (05/09)} \\
 \midrule
 Razão SSD/HDD por TB & 7,0$\times$ & 23,2$\times$ (pico) & 16,3$\times$ & \textbf{18,6$\times$} \\
 \bottomrule
@@ -921,8 +923,9 @@ Razão SSD/HDD por TB & 7,0$\times$ & 23,2$\times$ (pico) & 16,3$\times$ & \text
 
 Em agosto de 2026, um SSD TLC corporativo de 30\,TB custava $\approx$US\$\,22.600
 ($\approx$US\$\,753/TB) contra $\approx$US\$\,1.216 de um HDD de 30\,TB
-($\approx$US\$\,41/TB). \textbf{O valor corrente, no 3\textsuperscript{o} trimestre de 2026,
-é 18,6$\times$}; os 16,3$\times$ referem-se ao trimestre anterior. Uma versão anterior deste
+($\approx$US\$\,41/TB). \textbf{A observação parcial consultada em 05/09/2026 é
+18,6$\times$}; ela não deve ser apresentada como fechamento do 3\textsuperscript{o} trimestre.
+Os 16,3$\times$ referem-se ao trimestre anterior. Uma versão anterior deste
 trabalho citava ``aproximadamente 16$\times$'' sem carimbo de trimestre --- erro registrado
 como E15 na Seção~9.4. A lição vale além deste número: em um mercado que oscilou de
 7$\times$ a 23$\times$ em quatro trimestres, \textbf{razão sem data não é dado}.
@@ -939,7 +942,7 @@ DRAM de PC (cerca de $+$90\% para DRAM de servidor no mesmo trimestre); o NAND \
 subiu cerca de \textbf{5$\times$ entre outubro de 2025 e fevereiro de 2026}, chegando a
 8,5$\times$ em março; e o HDD subiu \textbf{46\% em quatro meses}, entre 15 de setembro de
 2025 e 14 de janeiro de 2026, em levantamento com doze modelos. Um mesmo kit DDR5-6000 de 32\,GB passou de $\approx$US\$\,80 em meados de 2025
-para US\$\,540 em setembro de 2026 --- alta de $\approx$575\%.\\[4pt]
+para US\$\,540 na consulta de 05/09/2026 --- alta de $\approx$575\%.\\[4pt]
 \textbf{Implicação para a leitura desta tabela:} as \emph{razões} entre tecnologias
 (quantas ordens de grandeza separam DRAM de fita) são estruturais e estáveis; os
 \emph{valores absolutos} são de um pico anômalo e não devem ser lidos como tendência.
@@ -960,7 +963,7 @@ SSD SATA tornou-se legado & Interface satura em 550\,MB/s; mantido só por retro
 PCIe 5.0 é padrão de consumo; PCIe 6.0 chegou ao datacenter & 14,8\,GB/s (consumo) e 28\,GB/s (Micron 9650: anunciado em jul./2025, em produção em massa desde fev./2026) \\
 HAMR entrou em produção & HDD saltou de 24\,TB para 32--36\,TB \\
 LTO-10 lançado (30\,$\rightarrow$\,40\,TB nativos) & Arquivamento a US\$\,5--10/TB; \emph{roadmap} revisado (nov./2025) até 365\,TB nativos no LTO-14 \\
-SSD e HDD divergiram em custo & Razão de 18,6$\times$ por TB no 3T26 (era 7$\times$ no 3T25); invalida a premissa de convergência \\
+SSD e HDD divergiram em custo & Razão observada de 18,6$\times$ por TB em 05/09/2026 (3T26 ainda em curso; era 7$\times$ no 3T25) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1045,7 +1048,7 @@ USB 3.0 (3.2 Gen1) & 2008 & Serial & 5\,Gb/s (8b/10b) & 500\,MB/s; $\approx$360 
 USB 3.1 Gen2 (3.2 Gen2) & 2013 & Serial & 10\,Gb/s (128b/132b) & 1.212\,MB/s & $\approx$100\,\textmu s$^\ast$ & 1\,m passivo & Sim & Estrela hierárq., 127 & \emph{Backup} externo \\
 USB 3.2 Gen 2$\times$2 & 2017 & Serial 2 \emph{lanes} & 20\,Gb/s & 2.424\,MB/s & $\approx$100\,\textmu s$^\ast$ & 1\,m & Sim & Só USB-C & \emph{Backup} externo \\
 USB4 (Gen3$\times$2) & 2019 & Serial 2 \emph{lanes} & 20 / 40\,Gb/s & 2,4 / 4,85\,GB/s & 50--100\,\textmu s$^\ast$ & 0,8\,m passivo & Sim & Roteado (\emph{tunneling}) & SSD externo NVMe \\
-USB4 v2.0 & 2022 & Serial PAM3 & 80 (120 assim.)\,Gb/s & $\approx$9,6\,GB/s & $\approx$50\,\textmu s$^\ast$ & 1\,m ativo & Sim & Roteado & SSD externo NVMe \\
+USB4 v2.0 & 2022 & Serial PAM3 & 80 (120 opcional/assim.)\,Gb/s & $\approx$9,6\,GB/s nominal & $\approx$50\,\textmu s$^\ast$ & conforme cabo certificado & Sim & Roteado & SSD externo NVMe compatível \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}SCSI paralelo (histórico)}}\\
 SCSI-1 & 1986 & \textbf{Paralela} 8\,bit & 5\,MB/s & 5\,MB/s & ms$^\ast$ & 6\,m SE / 25\,m HVD & Não & Barramento, 8 IDs & Obsoleto \\
@@ -1078,7 +1081,7 @@ NVMe (local) & 2011--2026 & Protocolo s/ PCIe & --- & $=$ PCIe & \textbf{20--70\
 \multicolumn{10}{@{}l}{\textbf{\color{azul}\emph{Fabrics} de rede}}\\
 NVMe/RoCE v2 & 2016 & \emph{Fabric} Ethernet & 25--400\,GbE & $\approx$ Ethernet & \textbf{41--163\,\textmu s} (P99,99) & $\le$ km & Sim & \emph{Fabric} Ethernet \emph{lossless} & SAN de baixa latência \\
 FC-NVMe & 2017 & \emph{Fabric} FC & 32 / 64\,GFC & 3,2 / 6,4\,GB/s & 50--100\,\textmu s$^\ast$ & 10\,km SMF & Sim & \emph{Fabric} FC & SAN corporativa \\
-NVMe/TCP & 2018 & \emph{Fabric} IP & 10--400\,GbE & $\approx$ Ethernet & \textbf{122--177\,\textmu s} (P99,99) & ilimitada (IP) & Sim & Rede IP roteável & Sucessor do iSCSI \\
+NVMe/TCP & 2018 & \emph{Fabric} IP & 10--400\,GbE & $\approx$ Ethernet & \textbf{122--177\,\textmu s} (P99,99) & roteável; limitada por projeto/SLA & Sim & Rede IP roteável & Alternativa moderna ao iSCSI \\
 iSCSI & 2004 (RFC 3720) & Protocolo s/ IP & 1--100\,GbE & 110\,MB/s--11\,GB/s & \textbf{500--800\,\textmu s} & ilimitada (IP) & Sim & Rede IP & PME, virtualização \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}FireWire (obsoleto)}}\\
@@ -1092,7 +1095,7 @@ IEEE 1394b (S800) & 2002 & Serial (8b/10b) & 800\,Mb/s & $\approx$100\,MB/s & id
 64GFC (Gen 7) & 2020 & Serial PAM4 & 28,9\,GBd $\times$2 & \textbf{6.400\,MB/s} & 460\,ns/\emph{switch} & 100\,m OM4 / 10\,km & Sim & idem & SAN de alto desempenho \\
 128GFC (Gen 8) & 2023 & Serial PAM4 & 56,1\,GBd $\times$2 & \textbf{12.425\,MB/s} & idem & 100\,m OM4/OM5 / 10\,km & Sim & idem & Núcleo de SAN \\
 FCIP (RFC 3821) & 2004 & Túnel FC s/ TCP/IP & $=$ WAN & $=$ WAN & ms (WAN) & inter-sítios & --- & Túnel sobre IP & Replicação entre \emph{datacenters} \\
-FCoE (FC-BB-5) & 2009 & FC s/ Ethernet DCB & 10--40\,GbE & $\approx$ Ethernet & $\approx$ FC $+$ DCB & L2, não roteável & Sim & Ethernet convergente & \textbf{Obsoleto} \\
+FCoE (FC-BB-5) & 2009 & FC s/ Ethernet DCB & 10--40\,GbE & $\approx$ Ethernet & $\approx$ FC $+$ DCB & L2, não roteável & Sim & Ethernet convergente & Nicho/legado em 2026 \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}InfiniBand}}\\
 IB EDR 4$\times$ & 2014 & Serial 64b/66b & 25,78\,Gb/s por \emph{lane} & 100\,Gb/s & 0,5--1,5\,\textmu s & 100\,m AOC / 10\,km & Sim & \emph{Fabric} comutado & HPC legado \\
@@ -1112,12 +1115,33 @@ HBA Fibre Channel & --- & Placa PCIe & $=$ PCIe 4.0 $\times$8 & 64GFC por porta 
 CNA / HBA iSCSI & --- & Placa PCIe & $=$ Ethernet & $=$ Ethernet & $=$ do \emph{fabric} & \emph{host} & Sim & NIC $+$ \emph{offload} numa porta & \emph{Offload} de iSCSI e NVMe-oF \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}Complementares}}\\
-Thunderbolt 5 & 2023 & Serial (USB4 v2) & 80 (120 \emph{boost})\,Gb/s & 64\,Gb/s de PCIe & $\approx$50\,\textmu s$^\ast$ & 1\,m passivo & Sim & \emph{Daisy-chain}, 6 & SSD externo profissional \\
+Thunderbolt 5 & 2023 & Serial (USB4 v2) & 80 (120 opcional/assim.)\,Gb/s & 64\,Gb/s de PCIe & $\approx$50\,\textmu s$^\ast$ & conforme cabo & Sim & \emph{Daisy-chain}, 6 & SSD externo profissional \\
 CXL 3.1 / 3.2 & 2023/24 & Serial (PCIe 6.0) & 64\,GT/s & $\approx$ PCIe 6.0 & 100--250\,ns$^\ast$ & intra-rack & Sim & \emph{Fabric} / \emph{switch} & Expansão de \emph{buffer pool} \\
 \end{longtable}
 }
 \end{landscape}
 \restoregeometry
+
+\subsubsection*{Critérios transversais que não cabem em uma taxa de enlace}
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}p{2.7cm}p{2.3cm}p{3.0cm}p{3.0cm}p{4.0cm}@{}}
+\toprule
+\textbf{Classe} & \textbf{Duplex} & \textbf{Portabilidade} & \textbf{Escalabilidade} & \textbf{Confiabilidade/condição} \\
+\midrule
+USB/Thunderbolt & Bidirecional; banda agregada pode ser assimétrica & Alta, se host, cabo e dispositivo negociam o mesmo modo & Árvore/\emph{daisy-chain}; não é \emph{fabric} de produção & Vazão efetiva e flush/FUA dependem da ponte e do driver \\
+SATA/eSATA & Full-duplex lógico & Interno/curta distância & Ponto a ponto; multiplicadores têm limites & Hot-plug depende de AHCI, backplane, firmware e sistema operacional \\
+SAS & Full-duplex & Datacenter & \emph{Expanders}, dual-port e muitos dispositivos & Caminhos redundantes e erro fim a fim dependem da implantação \\
+PCIe/NVMe local & Full-duplex por \emph{lane} & Interno; formato dependente & Árvore PCIe, filas massivamente paralelas & Hot-plug \textbf{não é universal}: requer suporte de plataforma, firmware, slot/backplane e formato \\
+FC/NVMe-oF/iSCSI & Full-duplex & Datacenter/WAN conforme transporte & \emph{Fabric} com múltiplos caminhos & Alta disponibilidade exige duas \emph{fabrics}/redes, MPIO e alvos redundantes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Classificação.} USB, SATA, SAS, PCIe, FC, Ethernet e InfiniBand definem
+camadas de interconexão; NVMe, iSCSI, FCP, FCIP e FCoE são protocolos/mapeamentos; M.2, U.2,
+U.3 e EDSFF são fatores de forma; HBA/CNA são adaptadores. Taxas nominais não devem ser
+interpretadas como vazão de aplicação.
 
 \subsubsection*{Como ler as três últimas famílias da Tabela~\ref{tab:if}}
 
@@ -1310,9 +1334,10 @@ iSCSI        & \multicolumn{2}{c}{500--800\,\textmu s (típica)} & Qualquer rede
 
 O \emph{trade-off} é nítido. O RoCE exige rede sem perdas; se o PFC for mal configurado,
 produz \emph{congestion spreading} e \emph{head-of-line blocking} --- o pesadelo operacional
-clássico de SAN Ethernet. O NVMe/TCP roda em qualquer rede IP e é operacionalmente trivial,
-ao preço de 80--150\,\textmu s adicionais e maior consumo de CPU. \textbf{Para a maioria dos
-SBDs, NVMe/TCP é a escolha certa}; RoCE justifica-se apenas quando P99 abaixo de
+clássico de SAN Ethernet. O NVMe/TCP roda em redes IP convencionais e reduz requisitos
+operacionais, ao preço de 80--150\,\textmu s adicionais neste ensaio e maior consumo de CPU.
+\textbf{Para muitos SBDs que priorizam simplicidade operacional, NVMe/TCP é uma escolha
+plausível}; RoCE justifica-se quando P99 abaixo de
 150\,\textmu s for requisito duro.
 
 \correcao{Por que insistimos no rótulo ``P99,99''}{%
@@ -1323,8 +1348,9 @@ tipicamente 2 a 5 vezes maiores que a mediana; comparar um P99,99 de rede com um
 típica de dispositivo mistura grandezas e infla artificialmente o custo do \emph{fabric}.
 \textbf{Segundo} --- e esta é a razão pela qual mantivemos os números mesmo assim ---
 \textbf{para um SBD a cauda é o que importa}: é o P99,9 que quebra um SLA, não o P50. Ou
-seja, o número está certo e é o mais relevante; o que faltava era dizer que número ele é.} O iSCSI, por sua vez, foi tornado obsoleto pelo
-NVMe/TCP: mesma facilidade, latência 2 a 4 vezes menor.
+seja, o número está certo e é o mais relevante; o que faltava era dizer que número ele é.}
+O iSCSI permanece consolidado em bases instaladas e ambientes menores; o NVMe/TCP é uma
+alternativa mais nova e, no ensaio citado, apresentou menor latência sobre a mesma mídia.
 
 \subsubsection{SAS --- imortal, mas fora da corrida do SSD}
 
@@ -1342,8 +1368,9 @@ documento de projeto \textbf{não publica taxa de enlace}: os 45\,Gb/s que circu
 e roteiros de marketing não têm respaldo normativo, e este trabalho não os adota. O que de
 fato avança em produto é o 24G$+$ (SAS-4.1), que --- nas palavras do presidente da STA ---
 ``terá a mesma velocidade física de interface do 24G'', ou seja, \textbf{não há aumento de
-velocidade previsto}. O SAS permanece a interface majoritária de
-\textbf{HDD} de capacidade e de \emph{backplanes} tri-modo, e apenas isso.
+velocidade previsto}. O SAS permanece relevante em \textbf{HDDs} corporativos e
+\emph{backplanes} tri-modo; sem uma série de mercado datada, não se afirma participação
+majoritária.
 
 Registre-se também uma imprecisão de marca: \textbf{``24G SAS'' opera a 22,5\,Gb/s}, não a
 24; o número 24 é arredondamento comercial.
@@ -1410,11 +1437,12 @@ que é a comparável com as demais interfaces.}
 \textbf{FCIP} (RFC 3821) tuneliza FC sobre TCP/IP para estender SANs entre \emph{datacenters}
 --- é a forma padrão de fazer replicação de \emph{storage} entre sítios, e continua viva.
 
-\textbf{FCoE} está morto na prática. A promessa era convergência (um cabo só), mas exigia
+\textbf{FCoE} ocupa um nicho legado nas novas implantações. A promessa era convergência (um cabo só), mas exigia
 DCB fim a fim (PFC, ETS, DCBX), configuração frágil e cara, e não era roteável em L3. Ficou
 espremido: quem precisava de determinismo continuou no FC nativo; quem queria simplicidade
 foi para iSCSI e depois NVMe/TCP. Diagnósticos de obituário circulam desde 2015.
-\textbf{Atenção à distinção}: FCoE morreu; \textbf{Fibre Channel nativo não} --- a
+\textbf{Atenção à distinção}: a adoção nova de FCoE é limitada;
+\textbf{Fibre Channel nativo permanece ativo} --- a
 especificação FC-PI-8 (128GFC) foi concluída em 2023 e publicada como INCITS~560-2023, e o
 \textbf{256GFC está em desenvolvimento no T11} (FC-PI-9) --- em desenvolvimento, note-se,
 não publicado.
@@ -1554,8 +1582,9 @@ suporta.}
 \subsection{Latência de \emph{commit}: o parâmetro mais importante de todos}
 
 Um \texttt{COMMIT} exige um \texttt{fsync} do registro de \emph{log}. Trata-se de um I/O
-\textbf{síncrono, pequeno (8--16\,KB) e serializado}: o \emph{throughput} de transações por
-\emph{thread} de \emph{log} é limitado, em primeira ordem, por $1/\text{latência do fsync}$.
+\textbf{síncrono e pequeno (8--16\,KB)}. Isolando apenas uma escrita e sem \emph{group
+commit}, \emph{cache} protegido, paralelismo, FUA ou tempo de CPU, obtém-se o limite
+ilustrativo $1/\text{latência do fsync}$; ele \textbf{não} é o throughput previsto do banco.
 
 \begin{center}\small
 \begin{tabular}{@{}lp{3.6cm}p{4.4cm}@{}}
@@ -1705,13 +1734,13 @@ segundo por \emph{thread} de \emph{log} continua sendo determinado pela latênci
 
 \textbf{Segundo}, SSD e HDD \textbf{divergiram em custo por terabyte} em vez de convergir:
 a razão saiu de 7$\times$ no 3\textsuperscript{o} trimestre de 2025 para 23$\times$ no
-1\textsuperscript{o} de 2026 e está em \textbf{18,6$\times$} no 3\textsuperscript{o}
-trimestre de 2026. A premissa de que o SSD tornaria o
+1\textsuperscript{o} de 2026; a observação em 05/09/2026 era \textbf{18,6$\times$}, ainda
+sem representar o fechamento do 3\textsuperscript{o} trimestre. A premissa de que o SSD tornaria o
 \emph{tiering} desnecessário não se realizou; ao contrário, o \emph{tiering} ficou mais
 importante.
 
-\textbf{Terceiro}, e mais relevante para a disciplina, \textbf{largura de banda deixou de
-ser o parâmetro que importa}. O orçamento de latência da Seção~4.4 mostra que, em NVMe
+\textbf{Terceiro}, e mais relevante para a disciplina, \textbf{latência, vazão e
+profundidade de fila precisam ser analisadas em conjunto}. O orçamento de latência da Seção~4.4 mostra que, em NVMe
 local, cerca de 90\% do tempo de uma leitura aleatória é mídia e apenas menos de
 1\,\textmu s é barramento. Isso explica de uma só vez três fatos aparentemente
 independentes: por que o SATA parou em 6\,Gb/s sem consequências, por que o NVMe venceu
@@ -1797,7 +1826,8 @@ sala:
       \url{https://infinibandta.org}
 \item IETF. \emph{RFC 7143 --- Internet Small Computer System Interface (iSCSI) Protocol
       (Consolidated)}, abr./2014. \url{https://www.rfc-editor.org/rfc/rfc7143.html}
-\item USB-IF. \emph{USB4 Version 2.0 Specification} (80\,Gb/s), out./2022.
+\item USB-IF. \emph{USB4 Version 2.0 Specification} (80\,Gb/s; modo assimétrico opcional).
+      \url{https://www.usb.org/usb4}. Consulta: 05/09/2026.
 \item CXL CONSORTIUM. \emph{Compute Express Link 3.1} (nov./2023) e \emph{3.2} (dez./2024).
 \item SNIA. \emph{EDSFF Form Factors} (SFF-TA-1006/1007/1008); \emph{What is NVMe-oF}.
       \url{https://www.snia.org}
@@ -1808,12 +1838,20 @@ sala:
 
 \subsection*{Documentação de fabricante}
 \begin{enumerate}[label={[\arabic*]},leftmargin=*,start=17]
+\item AMD. \emph{Ryzen 9 9950X3D2 Dual Edition --- Specifications}.
+      \url{https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9950x3d2-dual-edition.html}.
+      Consulta: 05/09/2026.
 \item SEAGATE. \emph{Exos M SATA Product Manual, 32/30/28/24\,TB}, Rev.~D, ago./2025.
 \item SOLIDIGM. \emph{D5-P5336 Product Specification} (até 122,88\,TB).
 \item MICRON. \emph{9550 PRO NVMe SSD}; \emph{9650 Series} (primeiro SSD PCIe~6.0 em
       produção, fev./2026).
-\item SAMSUNG. \emph{SSD 870 EVO Data Sheet}, Rev.~1.1; \emph{9100 PRO}; \emph{CMM-D MD220}
-      (módulo de memória CXL).
+\item SAMSUNG. \emph{SSD 870 EVO Data Sheet}, Rev.~1.1
+      (\url{https://download.semiconductor.samsung.com/resources/data-sheet/Samsung_SSD_870_EVO_Data_Sheet_Rev1.1_230509_10129500053000.pdf});
+      \emph{9100 PRO}, ficha Rev.~1.0
+      (\url{https://download.semiconductor.samsung.com/resources/data-sheet/Samsung_NVMe_SSD_9100_PRO_Datasheet_Rev.1.0_10149294091048.pdf})
+      e anúncio de MSRP
+      (\url{https://news.samsung.com/us/samsung-announces-9100-pro-series-ssds-with-breakthrough-pcie-5-0-performance/});
+      \emph{CMM-D MD220}. Consulta: 05/09/2026.
 \item KIOXIA. \emph{CM9-R Product Brief} (PCIe 5.0, NVMe 2.0).
 \item WESTERN DIGITAL. \emph{OpenFlex Data24: NVMe/TCP vs.\ RoCEv2 White Paper} (latências
       medidas de 4\,K a QD1).
@@ -1822,7 +1860,9 @@ sala:
 \item MARVELL. \emph{QLogic 2870 Series 64GFC Fibre Channel HBA}.
 \item NVIDIA. \emph{Magnum IO GPUDirect Storage}; \emph{Quantum InfiniBand Switches};
       \emph{DGX SuperPOD InfiniBand Overview}.
-\item IBM. \emph{TS4500 Tape Library}. QUANTUM. \emph{Scalar i6000}.
+\item IBM. \emph{TS4500 Tape Library}.
+      \url{https://www.ibm.com/docs/en/ts4500-tape-library/1.12.2?topic=overview-introduction-ts4500-tape-library}.
+      QUANTUM. \emph{Scalar i6000}.
       SPECTRA LOGIC. \emph{TFinity ExaScale}.
 \item VERBATIM. \emph{M-DISC BDXL 100\,GB}. PIONEER. \emph{BDR-X13U-S}.
 \end{enumerate}
@@ -2093,7 +2133,7 @@ Nota~N11. & Verificação adversarial (Seção~9.5). \\
 E15 & Apresentou a razão de preço SSD/HDD como ``$\approx$16$\times$ em 2026'', sem
 trimestre. &
 A razão é volátil: 7,0$\times$ no 3T25, 23,2$\times$ no 1T26, 16,3$\times$ no 2T26 e
-\textbf{18,6$\times$ no 3T26} --- o trimestre corrente. Acrescentada a tabela trimestral e o
+\textbf{18,6$\times$ na consulta de 05/09/2026} --- dentro do trimestre ainda corrente. Acrescentada a tabela por período e o
 carimbo de data em todas as ocorrências. & Verificação adversarial (Seção~9.5). \\
 
 E16 & Datou a alta do HDD como ``46--50\% em seis meses'' e a do NAND como ``5$\times$ entre

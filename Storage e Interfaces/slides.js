@@ -114,7 +114,7 @@ const P = () => ++pg;
     x: M, y: 1.35, w: 7.5, h: 1.9, isTextBox: true, margin: 0,
     fontFace: FH, fontSize: 42, bold: true, color: LIGHT, lineSpacing: 46,
   });
-  s.addText("Interfaces de conexão e parâmetros para o Gerente de Armazenamento.\nAtualização da Tabela 16.1 de Elmasri & Navathe para o mercado de setembro de 2026.", {
+  s.addText("Interfaces de conexão e parâmetros para o Gerente de Armazenamento.\nAtualização da Tabela 16.1 de Elmasri & Navathe — dados consultados em 05/09/2026.", {
     x: M, y: 3.4, w: 7.5, h: 0.95, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 15, color: "C3CAD4", lineSpacing: 22,
   });
@@ -139,7 +139,7 @@ const P = () => ++pg;
   // painel lateral com os três achados
   card(s, 8.55, 1.35, 4.06, 5.37, DARK2);
   const achados = [
-    ["18,6×", "é o quanto o SSD corporativo custa a mais por TB que o HDD nearline no 3T26 — divergiram, não convergiram"],
+    ["18,6×", "razão observada em 05/09/2026; o 3T26 ainda estava em curso"],
     ["0", "memórias persistentes byte-endereçáveis em produção: o Optane morreu"],
     ["<1 µs", "é o custo do barramento PCIe num I/O de 20–70 µs — latência é mídia"],
   ];
@@ -388,14 +388,14 @@ const P = () => ++pg;
   head(s, "Tabela 16.1 atualizada — primário e secundário", "2. Tabela 16.1 · setembro de 2026");
   const rows = [
     [hdr("Tipo"), hdr("Exemplo comercial"), hdr("Capacidade"), hdr("Acesso"), hdr("Leitura"), hdr("Escrita"), hdr("Preço US$"), hdr("US$/KB")],
-    ["Cache SRAM L3", "Ryzen 9 9950X3D2 / EPYC 9755", "96–512 MB", "≈8,9 ns ‡", "≈1,4 TB/s", "≈1,4 TB/s", "700–14.800", "3,0×10⁻³"],
+    ["Cache SRAM L3", "Ryzen 9 9950X3D2 / EPYC 9755", "96–512 MB", "≈9,0 ns ‡", "≈1,4 TB/s", "≈1,4 TB/s", "700–14.800", "3,0×10⁻³"],
     ["DRAM desktop", "Corsair DDR5-6000 CL30", "16–96 GB", "70 ns", "96 GB/s", "96 GB/s", "270–1.100", "1,6×10⁻⁵"],
     ["DRAM servidor", "RDIMM DDR5-6400 64 GB", "32–256 GB", "≈75 ns", "51,2 GB/s", "51,2 GB/s", "1.000–4.000", "4,2×10⁻⁵"],
     [{ text: "Memória CXL 2.0", options: { bold: true, color: BLUE } }, "Samsung CMM-D MD220 (E3.S)", "128–256 GB", "214–271 ns †", "≈36 GB/s †", "≈36 GB/s †", "não público", "n/d"],
-    ["SSD NVMe PCIe 5.0", "Samsung 9100 PRO (1 TB)", "1–8 TB", "≈50 µs *", "14,7 GB/s", "13,3 GB/s", "249–1.099", "2,0×10⁻⁷"],
+    ["SSD NVMe PCIe 5.0", "Samsung 9100 PRO (1 TB)", "1 TB (base)", "≈50 µs *", "14,7 GB/s", "13,3 GB/s", "219,99 MSRP", "2,20×10⁻⁷"],
     [{ text: "SSD NVMe QLC (DC)", options: { bold: true, color: BLUE } }, "Solidigm D5-P5336", "7,68–122,88 TB", "8–10 µs †", "7,0 GB/s", "3,0 GB/s", "16.246–33.249", "2,6×10⁻⁷"],
     [{ text: "SSD NVMe TLC (DC)", options: { bold: true, color: BLUE } }, "Micron 9550 PRO", "7,68–30,72 TB", "≈80 µs *", "14,0 GB/s", "10,0 GB/s", "33.217", "1,1×10⁻⁶"],
-    ["SSD SATA", "Samsung 870 EVO", "250 GB–8 TB", "77 µs", "560 MB/s", "530 MB/s", "345 (1 TB)", "3,4×10⁻⁷"],
+    ["SSD SATA", "Samsung 870 EVO", "250 GB–4 TB", "77 µs", "560 MB/s", "530 MB/s", "345 (1 TB)", "3,4×10⁻⁷"],
     ["Pen drive USB", "Kingston DataTraveler Max", "256 GB–1 TB", "≈0,1–0,5 ms", "1.000 MB/s", "900 MB/s", "130 (1 TB)", "1,3×10⁻⁷"],
     ["Disco HAMR", "Seagate Exos M 30 TB", "24–36 TB", "≈12,7 ms *", "275 MB/s", "275 MB/s", "800–1.280", "2,7×10⁻⁸"],
   ];
@@ -408,7 +408,7 @@ const P = () => ++pg;
     { text: "† ", options: { bold: true } },
     { text: "latência típica de datasheet — o QoS de percentil do mesmo produto é 110 µs (leitura) e 40 µs (escrita); a Samsung não publica nada do CMM-D, cuja faixa vem de medições revisadas por pares.   ", options: {} },
     { text: "‡ ", options: { bold: true } },
-    { text: "derivado de 46,5 ciclos a 5,7 GHz — a AMD publica só o delta sobre o Zen 4.   Em azul: as três linhas novas do grupo.", options: {} },
+    { text: "derivado de 46,5 ciclos + 4 do V-Cache a 5,6 GHz — boost oficial do 9950X3D2; não é especificação de latência.   Em azul: as três linhas novas do grupo.", options: {} },
   ], {
     x: M, y: 5.54, w: W - 2 * M, h: 0.95, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 9.5, color: INK2, lineSpacing: 13,
@@ -428,7 +428,7 @@ const P = () => ++pg;
     ["Óptico WORM", "Verbatim M-DISC BD-XL 100 GB", "100 GB/disco", "≈150–250 ms *", "não publicada", "≈18 MB/s (4×)", "12,70 + 230", "1,3×10⁻⁷"],
     ["Fita LTO-9", "Cartucho Ultrium LTO-9", "18 TB nativo", "25–121 s", "400 MB/s", "400 MB/s", "88 + drive", "4,9×10⁻⁹"],
     [{ text: "Fita LTO-10", options: { bold: true, color: BLUE } }, "Cartucho Ultrium LTO-10 (2026)", "30 → 40 TB", "25–121 s", "400 MB/s", "400 MB/s", "260–300 + drive", "9,3×10⁻⁹"],
-    ["Tape library", "IBM TS4500 / Quantum i6000", "até 927 PB", "25–121 s", "≈51,2 GB/s", "≈51,2 GB/s", "sob cotação", "n/d"],
+    ["Tape library", "IBM TS4500 / Quantum i6000", "926,8 PB; 2,317 EB a 2,5:1", "25–121 s", "≈51,2 GB/s", "≈51,2 GB/s", "sob cotação", "n/d"],
   ];
   table(s, rows, { y: 1.72, rowH: 0.36, fontSize: 11, colW: [1.85, 2.9, 1.62, 1.32, 1.28, 1.15, 1.83, 0.94] });
   card(s, M, 3.85, 5.85, 2.6, DARK);
@@ -520,7 +520,7 @@ const P = () => ++pg;
     ["HAMR entrou em produção", "HDD saltou de 24 TB para 32–36 TB; 44 TB anunciado"],
     ["LTO-10 lançado (30 → 40 TB nativos)", "Arquivamento a US$ 5–10/TB; roadmap revisado até 365 TB nativos"],
     [{ text: "SSD e HDD divergiram em custo", options: { bold: true, color: ACC } },
-     { text: "18,6× por TB no 3T26 (era 7× no 3T25) — invalida a premissa de convergência", options: { bold: true, color: ACC } }],
+     { text: "18,6× por TB em 05/09/2026; observação parcial do 3T26 (era 7× no 3T25)", options: { bold: true, color: ACC } }],
   ];
   table(s, rows, { y: 1.75, rowH: 0.42, fontSize: 12, colW: [4.6, 7.29] });
   foot(s, n);
@@ -541,7 +541,7 @@ const P = () => ++pg;
     ["+575%", "no mesmo kit DDR5-6000 de 32 GB, de meados de 2025 a set/2026"],
     ["5×", "no preço spot do NAND, de out/2025 a fev/2026 — e 8,5× até março"],
     ["+46%", "no preço do HDD em apenas quatro meses (15/set/2025 a 14/jan/2026, 12 modelos)"],
-    ["18,6×", "é o prêmio do SSD corporativo sobre o HDD por TB no 3T26 — foi 7× no 3T25 e 23× no 1T26"],
+    ["18,6×", "prêmio observado em 05/09/2026; não é fechamento do 3T26"],
   ];
   st.forEach((a, i) => {
     const x = M + i * 3.03;
@@ -599,14 +599,14 @@ const P = () => ++pg;
   const rows = [
     [hdr("Interface"), hdr("Ano"), hdr("Ser./Par."), hdr("Taxa útil"), hdr("Latência"), hdr("Distância"), hdr("Topologia / nº disp."), hdr("Uso em SBD")],
     ["USB 3.2 Gen 2×2", "2017", "Serial ×2", "2.424 MB/s", "≈100 µs", "1 m", "Estrela hierárq., 127", "Backup externo"],
-    ["USB4 v2.0", "2022", "Serial PAM3", "≈9,6 GB/s", "≈50 µs", "1 m ativo", "Roteado (tunneling)", "SSD externo NVMe"],
+    ["USB4 v2.0", "2022", "Serial PAM3", "≈9,6 GB/s nominal", "≈50 µs*", "cabo certificado", "80 Gb/s; 120 opcional/assim.", "SSD NVMe compatível"],
     ["Ultra-320 SCSI", "2002", { text: "Paralela", options: { bold: true, color: ACC } }, "320 MB/s", "ms", "12 m LVD", "Barramento, 16", "Obsoleto"],
     ["SATA 3.0", "2009", "Serial", "600 MB/s", "100–200 µs", "1 m", "Ponto-a-ponto", "Capacidade, backup"],
     ["SATA Express", "2013", "Serial (PCIe ×2)", "1,97 GB/s", "<1 µs", "≈0,3 m", "Ponto-a-ponto", "Fracassou"],
     ["SAS-4 (24G)", "2019", "Serial", "2.400 MB/s", "100–200 µs", "10 m", "Fabric, 65.535", "HDD, backplane"],
     ["PCIe 5.0 ×4 + NVMe", "2019", "Serial", "15,75 GB/s", "20–70 µs", "≈0,25 m", "65.535 filas", "OLTP, redo log"],
     ["Fibre Channel 64GFC", "2020", "Serial PAM4", "6.400 MB/s", "460 ns/switch", "10 km SMF", "Fabric, 2²⁴", "SAN corporativa"],
-    ["NVMe/TCP", "2018", "Fabric IP", "= Ethernet", "122–177 µs", "ilimitada", "Rede IP roteável", "Sucessor do iSCSI"],
+    ["NVMe/TCP", "2018", "Fabric IP", "= Ethernet", "122–177 µs P99,99", "roteável", "Rede IP", "Alternativa ao iSCSI"],
     ["iSCSI", "2004", "Protocolo IP", "= Ethernet", "500–800 µs", "ilimitada", "Rede IP", "PME, virtualização"],
     ["InfiniBand XDR 4×", "2023", "Serial PAM4", "800 Gb/s", "sub-µs", "10 km", "Fabric comutado", "Clusters de IA/LLM"],
     [{ text: "M.2 2280 / U.2 / EDSFF", options: { italic: true } }, "2013–20", { text: "fator de forma", options: { italic: true, color: INK2 } }, "= PCIe ×4", "= NVMe", "backplane", "M.2 sem hot-swap, 8–11 W; EDSFF 12 V, até 70 W", "Boot / servidor"],
@@ -795,7 +795,7 @@ const P = () => ++pg;
     ["Tamanho de bloco", "HDD: 8–64 KB, para amortizar a busca de 12,7 ms.  ·  SSD: 4–16 KB, alinhado à página NAND.  ·  Fita: ≥1 MB."],
     ["Buffer pool", "Emitir uma falta de página por vez usa ≈3% de um SSD NVMe. É preciso I/O assíncrono com muitas requisições em voo — daí io_uring e effective_io_concurrency."],
     ["Durabilidade", "O commit custa 1/latência_do_fsync. Group commit é o que separa usar o dispositivo de desperdiçá-lo."],
-    ["Modelo de custo", "random_page_cost = 4,0 codifica a premissa de disco magnético. Em SSD deve cair para 1,1–1,5, ou o planejador prefere varreduras que o hardware não favorece."],
+    ["Modelo de custo", "random_page_cost deve ser calibrado por workload, cache e medições. 1,1–1,5 é apenas faixa inicial ilustrativa para SSD, não regra universal."],
   ];
   dec.forEach((d, i) => {
     const y = 1.8 + i * 1.15;
@@ -805,7 +805,7 @@ const P = () => ++pg;
     s.addText(d[1], { x: M + 3.75, y: y + 0.14, w: 8.05, h: 0.75, isTextBox: true, margin: 0, fontFace: FB, fontSize: 12.5, color: INK2, lineSpacing: 17 });
   });
   card(s, M, 6.28, W - 2 * M, 0.58, DARK);
-  s.addText("Teto de commits por thread:  HDD ≈125/s  ·  SSD SATA ≈6.700/s  ·  NVMe local ≈33.000/s  ·  NVMe/TCP ≈8.200/s  ·  iSCSI ≈1.700/s", {
+  s.addText("Limite ilustrativo 1/fsync (sem group commit/cache/CPU): HDD ≈125/s · SATA ≈6.700/s · NVMe ≈33.000/s · NVMe/TCP ≈8.200/s · iSCSI ≈1.700/s", {
     x: M + 0.4, y: 6.39, w: 11.6, h: 0.38, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 12.5, bold: true, color: LIGHT,
   });
@@ -859,7 +859,7 @@ const P = () => ++pg;
   head(s, "Quatro conclusões", "Conclusão", true);
   const cs = [
     ["A SCM saiu do mercado", "O Optane foi descontinuado entre 2022 e 2025 e nada o substituiu. O teto de commits por thread continua ditado pela latência do NVMe."],
-    ["SSD e HDD divergiram", "18,6× em US$/TB no 3T26, contra a expectativa de convergência. O tiering ficou mais necessário, não menos."],
+    ["SSD e HDD divergiram", "18,6× em US$/TB na consulta de 05/09/2026; o 3T26 ainda não estava encerrado."],
     ["Banda deixou de ser o parâmetro", "Em NVMe local, <1 µs de 20–70 µs é barramento. Explica o SATA parado, a vitória do NVMe e a irrelevância do PCIe 6.0 para OLTP."],
     ["A fita é a mais viva do baixo da pirâmide", "LTO-10 a 40 TB nativos, roadmap até 365 TB, US$ 5–10/TB. Para retenção legal e air gap, não há substituto."],
   ];
@@ -957,7 +957,7 @@ const P = () => ++pg;
      { text: "Sem fonte: a Samsung não publica. Medições revisadas por pares dão 214–271 ns — reforça nossa tese", options: { bold: true, color: ACC } }],
     [{ text: "E15", options: { bold: true, color: ACC } },
      { text: "Razão SSD/HDD como “≈16× em 2026”, sem trimestre", options: { bold: true, color: ACC } },
-     { text: "Volátil: 7× no 3T25, 23× no 1T26, 16× no 2T26, 18,6× no 3T26. Razão sem data não é dado", options: { bold: true, color: ACC } }],
+     { text: "Volátil: 7× no 3T25, 23× no 1T26, 16× no 2T26 e 18,6× em 05/09/2026. Razão sem data não é dado", options: { bold: true, color: ACC } }],
     ["E16", "Janelas erradas na alta do HDD e do NAND", "HDD: 46% em quatro meses (não seis). NAND: 5× a partir de out/2025 (não ago)"],
     ["E17", "O resumo dizia “39 variantes” de interface", "A tabela tinha 49 linhas e passou a 56 com os fatores de forma e os HBA"],
     [{ text: "E18–E21", options: { bold: true, color: ACC } },
@@ -1038,7 +1038,7 @@ function footB(s) {
     [hdr("Categoria de origem"), hdr("Como aparece na tabela"), hdr("Exemplos")],
     [{ text: "Datasheet do fabricante", options: { bold: true, color: BLUE } }, "Sem marcação", "Capacidades e taxas do 9100 PRO, 870 EVO, D5-P5336, 9550 PRO, DT Max, Exos M; latência rotacional de 4,16 ms; taxas nativas do LTO-9 e LTO-10"],
     [{ text: "Medição publicada por terceiro", options: { bold: true, color: BLUE } }, "Citada no texto", "1,4 TB/s de L3 do Zen 5 (Chips and Cheese); 214–271 ns do CXL 2.0 (ASPLOS); 41–177 µs do NVMe-oF (Western Digital)"],
-    [{ text: "Derivação nossa", options: { bold: true, color: ACC } }, "Conta explicitada na nota", "Preço/KB (preço ÷ capacidade em KB); 51,2 GB/s por módulo DDR5-6400; 51,2 GB/s agregados da tape library (128 drives × 400 MB/s); 927 PB (23.170 × 40 TB); latência do cache em ns"],
+    [{ text: "Derivação nossa", options: { bold: true, color: ACC } }, "Conta explicitada na nota", "Preço/KB; 51,2 GB/s por módulo DDR5-6400; 51,2 GB/s da library; 926,8 PB (23.170 × 40 TB); 2,317 EB só no cenário 2,5:1"],
     [{ text: "Estimativa de ordem de grandeza", options: { bold: true, color: ACC } }, "Marcada com *", "≈50 µs do SSD de consumo; ≈8,5 ms de busca do HDD; ≈0,1–0,5 ms do pen drive; ≈150–250 ms do leitor óptico"],
     [{ text: "Não encontrado", options: { bold: true } }, "n/d", "Preço de módulo CXL e de tape library (só sob cotação); banda agregada do MD220; velocidade de leitura do M-DISC"],
   ];
@@ -1063,9 +1063,9 @@ function footB(s) {
     ["SATA 3.0 útil", "6,0 Gb/s × 8/10 ÷ 8 = 600 MB/s", "Codificação 8b/10b, 80% de eficiência"],
     ["PCIe 5.0 ×4", "32 GT/s × 4 × 128/130 ÷ 8 = 15,754 GB/s", "Codificação 128b/130b, 98,46%"],
     ["SAS-4 útil", "22,5 Gb/s × 128/150 ÷ 8 = 2.400 MB/s", "“24G” é marca; a taxa é 22,5 Gb/s"],
-    ["Teto de commits/s", "1 ÷ latência do fsync", "NVMe 30 µs → 33.333/s;  SATA 150 µs → 6.667/s;  HDD 8 ms → 125/s"],
+    ["Limite ilustrativo", "1 ÷ latência do fsync", "Sem group commit, cache protegido, fila e CPU; não é throughput previsto do SGBD"],
     ["Banda DDR5-6000", "6.000 MT/s × 8 B × 2 canais = 96 GB/s", "Dois canais no kit de desktop"],
-    ["Latência L3 do Zen 5", "46,5 ciclos ÷ 5,7 GHz = 8,16 ns", "46,5 = 50 (Zen 4) − 3,5 (delta AMD); +4 ciclos do V-Cache"],
+    ["Latência L3 do Zen 5", "(46,5 + 4) ÷ 5,6 GHz = 9,02 ns", "5,6 GHz é o boost oficial; ciclos continuam sendo derivação, não especificação"],
   ];
   contas.forEach((c, i) => {
     const x = M + (i % 2) * 6.15, y = 1.78 + Math.floor(i / 2) * 0.98;

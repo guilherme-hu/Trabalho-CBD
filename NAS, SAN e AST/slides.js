@@ -2,7 +2,7 @@ const PptxGenJS = require("pptxgenjs");
 const pres = new PptxGenJS();
 pres.layout = "LAYOUT_WIDE";                 // 13.333 x 7.5 pol -- ANTES de add slides
 pres.author = "Grupo CBD - UFRJ";
-pres.title  = "Arquiteturas de Armazenamento Fisico para SBD: NAS e SAN";
+pres.title  = "Arquiteturas de Armazenamento para SBD: NAS, SAN, AST e Objetos";
 
 const DARK="14181F", DARK2="232A35", INK="14181F", INK2="55606E",
       SOFT="F4F5F7", ACC="EB6834", BLUE="2A78D6", LINE="DFE3E8", W2="FFFFFF";
@@ -81,7 +81,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     x:M, y:0.66, w:CW, h:1.30, isTextBox:true,
     fontFace:TF, fontSize:31, bold:true, color:W2, lineSpacingMultiple:1.06 });
   s.addShape(pres.ShapeType.line, { x:M, y:2.10, w:3.4, h:0, line:{ color:ACC, width:2.6 } });
-  s.addText("NAS (Network Attached Storage) e SAN (Storage Area Network)", {
+  s.addText("NAS, SAN, Automated Storage Tiering e armazenamento por objetos", {
     x:M, y:2.26, w:CW, h:0.40, isTextBox:true, fontFace:BF, fontSize:16, color:"C9D1DC" });
   s.addText("Construção de Banco de Dados  ·  IM / DCC — UFRJ  ·  Prof. Milton Ramirez", {
     x:M, y:2.70, w:CW, h:0.32, isTextBox:true, fontFace:BF, fontSize:12, color:"8D99A8" });
@@ -237,9 +237,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   let y = 4.08;
   [["macOS 11 (2020)","Removido o SERVIDOR AFP: um Mac deixa de poder compartilhar pastas por AFP.", LINE],
    ["macOS 15.5 (mai./2025)","Depreciado o CLIENTE. Texto da Apple: “Apple Filing Protocol (AFP) client is deprecated and will be removed in a future version of macOS.”", LINE],
-   ["macOS 27 (jun./2026)","Os betas já não trazem o cliente AFP — encerrando também o Time Machine em Time Capsule e AirPort Disk.", ACC],
+   ["macOS 27 (Apple, jul./2026)","A Apple informa oficialmente o fim do suporte do Time Machine a destinos AFP.", ACC],
   ].forEach(r => { card(s, M, y, CW, 0.68, r[0], r[1], r[2]); y += 0.76; });
-  s.addText("Relevância para SBD: NENHUMA — e isso é o achado. Nenhum dos quatro SGBDs de maior participação o lista como configuração suportada. O motivo é técnico: sem travamento independente de sessão e sem disponibilidade contínua, falha os requisitos 4 e 5 do slide 4. Para NAS com clientes Apple: SMB 3.", {
+  s.addText("Relevância para novas implantações de SBD: protocolo legado e não recomendado. Nas matrizes consultadas de Oracle, Microsoft, PostgreSQL e MySQL, AFP não aparece como configuração suportada. Para NAS com clientes Apple: SMB 3.", {
     x:M, y:6.38, w:CW, h:0.42, isTextBox:true, fontFace:BF, fontSize:10.5, bold:true, color:INK });
 }
 
@@ -350,7 +350,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
   s.addText("Por que a distância decide entre síncrono e assíncrono — derivação nossa", {
     x:M+0.26, y:3.94, w:CW-0.52, h:0.30, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:ACC });
-  s.addText("Velocidade da luz em fibra ≈ 2 × 10⁸ m/s (índice ≈ 1,5). Replicação síncrona só confirma o commit após ida e volta:\n\nRTT = 2d / (2 × 10⁸)   →   d = 100 km   →   RTT = 2 × 10⁵ / 2 × 10⁸ = 1,0 ms\n\n1 ms por 100 km, só de propagação. Para um commit local de ~100 µs, replicar a 100 km multiplica a latência por mais de dez. É a razão FÍSICA de a replicação síncrona ser restrita a campus e área metropolitana — e de a intercontinental ser obrigatoriamente assíncrona, com RPO > 0.", {
+  s.addText("Velocidade da luz em fibra ≈ 2 × 10⁸ m/s (índice ≈ 1,5). Replicação síncrona só confirma o commit após ida e volta:\n\nRTT = 2d / (2 × 10⁸)   →   d = 100 km   →   RTT = 2 × 10⁵ / 2 × 10⁸ = 1,0 ms\n\n1 ms por 100 km, só de propagação. Para commit local de ~100 µs, 100 km multiplica a latência por mais de dez. Em longa distância o modo é tipicamente assíncrono; síncrono é possível se o SLA aceitar o impacto. O modo escolhido determina o RPO.", {
     x:M+0.26, y:4.26, w:CW-0.52, h:1.60, isTextBox:true, fontFace:BF, fontSize:12.5, color:INK, lineSpacingMultiple:1.05 });
 }
 
@@ -440,7 +440,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["Janela de relocação","Agendada; padrão diário, das 17h à 1h"],
       ["Políticas","Highest Available · Auto-Tier · START HIGH THEN AUTO-TIER (padrão) · Lowest Available"],
     ], [4.60,7.29], 11.5, 0.58);
-  fonteNota(s, 6.10, "Proveniência: Dell Technologies, white paper técnico H15086.3 — “Dell EMC Unity: FAST Technology Overview”.");
+  fonteNota(s, 6.10, "AST move dados; cache mantém cópia; backup cria versão recuperável; replicação mantém estado corrente. AST não substitui backup. Fonte: Dell H15086.3.");
 }
 
 /* ============================== 20. AST x BUFFER MANAGER ============================== */
@@ -475,7 +475,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["Unidade","Bloco de tamanho fixo","Arquivo em hierarquia","Objeto com metadados e ID global"],
       ["Endereçamento","LUN + LBA","Caminho hierárquico","Espaço de nomes plano (bucket + chave)"],
       ["Interface","SCSI / NVMe","POSIX, SMB, NFS","HTTP REST (PUT, GET, DELETE)"],
-      ["Atualização parcial","Sim, qualquer bloco","Sim, qualquer offset","NÃO — o objeto é substituído inteiro"],
+      ["Atualização parcial","Sim, qualquer bloco","Sim, qualquer offset","S3 PUT substitui a chave; multipart não muda a semântica"],
       ["Escala típica","TB a PB","TB a PB","EXABYTES"],
       ["Metadados","Nenhum","Fixos (dono, datas, permissões)","Arbitrários, definidos pela aplicação"],
     ], [2.30,2.90,3.10,3.59], 10.5, 0.44);
@@ -483,7 +483,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     fill:{ color:SOFT }, line:{ color:ACC, width:1.3 } });
   s.addText("Atualização essencial: o S3 NÃO é mais eventualmente consistente.", {
     x:M+0.26, y:4.96, w:CW-0.52, h:0.28, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:ACC });
-  s.addText("Desde dezembro de 2020 a AWS documenta “consistência forte read-after-write automaticamente”, valendo também para listagem. Durabilidade projetada: 99,999999999% (11 noves). Qualquer texto que ainda afirme consistência eventual está desatualizado em mais de cinco anos — e essa era uma das afirmações da NOSSA primeira versão.", {
+  s.addText("Desde dezembro de 2020 a AWS documenta consistência forte de leitura após escrita e de listagem. Isso vale por chave/operação; não cria transação ou locking entre chaves. Os 11 noves são objetivo de projeto, não SLA nem previsão empírica.", {
     x:M+0.26, y:5.24, w:CW-0.52, h:0.86, isTextBox:true, fontFace:BF, fontSize:12, color:INK });
   fonteNota(s, 6.32, "Fontes: Elmasri & Navathe §16.11.5; Amazon S3 FAQs (consultado em set./2026).");
 }
@@ -493,12 +493,12 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   const s = slide("Object storage: onde não serve e onde venceu", "A ressalva do livro continua correta — mas por razões que vale detalhar",
     "Elmasri & Navathe: 'como o armazenamento por objetos força o travamento a ocorrer no nível do objeto, não está claro quão adequado ele é para processamento concorrente de transações em sistemas de alta vazão'. Continua correto. Mas nos domínios em que a latência não importa, venceu completamente.");
   card(s, M, 1.54, 6.35, 2.60, "Por que não serve como armazenamento primário de OLTP",
-    "• Sem atualização parcial: alterar uma linha exigiria\n   reescrever o objeto inteiro\n• Latência uma ordem de grandeza acima — Silberschatz:\n   “dezenas a centenas de milissegundos […] não é ideal\n   como armazenamento subjacente para bancos de dados”\n• Sem fsync nem ordenação de escrita entre objetos:\n   não há como exprimir “grave o log antes da página”\n• Granularidade de travamento incompatível", INK2);
+    "• No modelo S3, PUT publica novo valor para a chave;\n   multipart muda o transporte, não essa semântica\n• Latência depende de colocalização e serviço\n• Sem fsync/ordenação transacional entre chaves\n• Sem locking transacional entre objetos", INK2);
   card(s, M+6.65, 1.54, 6.35, 2.60, "Onde venceu, e venceu completamente",
     "• Camada de armazenamento de data warehouses em nuvem:\n   objetos imutáveis em formato colunar (Parquet, ORC) com\n   metadados transacionais por cima (Iceberg, Delta Lake).\n   Escrever uma vez, ler muitas, varrer grandes extensões\n• Destino de backup e arquivamento\n• Repositórios de dados não estruturados", BLUE);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:4.34, w:CW, h:1.10, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:LINE, width:1.1 } });
-  s.addText("Derivação nossa, para dar escala aos 11 noves: perda esperada de 10⁻¹¹ dos objetos por ano → para 10⁷ objetos, 10⁷ × 10⁻¹¹ = 10⁻⁴ perdas/ano, ou uma perda esperada a cada 10.000 anos. Ressalva de rótulo: é durabilidade PROJETADA (“designed for”), não medida — e não protege contra exclusão acidental nem ransomware.", {
+  s.addText("Não converter 11 noves em “anos até uma perda”: é durabilidade de projeto, não probabilidade empírica independente por objeto. Não cobre exclusão por credencial válida, corrupção lógica, falhas correlacionadas nem ransomware.", {
     x:M+0.26, y:4.46, w:CW-0.52, h:0.86, isTextBox:true, fontFace:BF, fontSize:12.5, color:INK });
   fonteNota(s, 5.56, "Nota de atualização: o exemplo do livro (Seagate Kinetic) não obteve tração comercial. O padrão de fato tornou-se a API HTTP do S3.");
 }
@@ -506,18 +506,18 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 /* ============================== 23. RECOMENDAÇÃO SECUNDÁRIO ============================== */
 {
   const s = slide("Recomendação — nível secundário (storage online)", "Por perfil de CARGA, não por porte de empresa",
-    "Decisão do grupo: estruturar por perfil de carga, porque é ele — e não o tamanho da organização — que determina se o motor precisa de bloco ou de arquivo. Se houver uma única mensagem a levar: escolha pela unidade de abstração que o Database Engine precisa controlar, não pela velocidade do enlace.");
+    "Escolher por semântica oficialmente suportada, SLA, latência de cauda, failover, RPO/RTO, benchmark e TCO. Bloco não implica obrigatoriamente SAN: NFS/SMB homologados também podem servir ao SGBD.");
   tabela(s, 1.50, ["Perfil de carga","Recomendação","Justificativa"],
     [
-      ["OLTP crítico, alta taxa de commit","SAN (FC ou iSCSI dedicado)","A latência de fsync do log governa a vazão. Bloco cru tira o FS remoto do caminho crítico"],
+      ["OLTP crítico, alta taxa de commit","SAN ou NAS homologado","Validar persistência/locking, failover, P99 e suporte oficial do SGBD"],
       ["Cluster com armazenamento compartilhado","SAN (bloco)","Vários nós escrevem nos mesmos blocos com coordenação do SGBD (Oracle ASM sobre LUNs)"],
-      ["Relacional de médio porte, OLTP moderado","NAS ou SAN, indiferente","Com NFSv4.1 + O_DIRECT (ou dNFS) a diferença é operacionalmente irrelevante. Decida por custo"],
-      ["Data warehouse, OLAP, varredura","NAS","O custo dominante é banda, não latência. Compartilhamento nativo entre nós é vantagem"],
+      ["Relacional de médio porte, OLTP moderado","NAS ou SAN, após teste","Comparar matriz de suporte, falha, latência P99 e TCO"],
+      ["Data warehouse, OLAP, varredura","NAS ou objeto","Medir banda/concorrência e validar compatibilidade do motor"],
       ["Dev, homologação, muitas instâncias","NAS","Provisionamento simples, clones finos por instantâneo, sem requisito de latência"],
       ["Dump, export, staging de ETL","NAS","Semântica de arquivo é exatamente a abstração desejada"],
       ["Banco em nuvem gerenciado","Bloco de rede (= SAN)","Volumes de bloco em nuvem são SAN sob outro nome: iniciador no host, alvo remoto"],
     ], [3.35,2.65,5.89], 10.5, 0.575);
-  fonteNota(s, 6.28, "Princípio: a rede FC contribui com <5% da latência de um acesso NVMe. A diferença real entre as arquiteturas é semântica, não de velocidade.");
+  fonteNota(s, 6.28, "O cálculo <5% cobre apenas dois saltos de switch local; exclui HBA, ISL, filas, controladora e alvo. Não representa rede fim a fim.");
 }
 
 /* ============================== 24. AURORA ============================== */
@@ -558,7 +558,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
   s.addText("Rótulo obrigatório: NATIVO ≠ COMPRIMIDO. LTO-10 = 30 e 40 TB NATIVOS (75 e 100 TB comprimidos a 2,5:1). A razão 2,5:1 é ASSUMIDA, não medida — dados já comprimidos pelo SGBD raramente passam de 1,2:1.\nACHADO DA NOSSA VERIFICAÇÃO POR SCRIPT: a especificação do LTO não fecha. As capacidades batem a 2,5:1 (30×2,5=75 e 40×2,5=100), mas a taxa publicada — 400 MB/s nativos e 1.200 MB/s comprimidos “a 2,5:1” — exigiria 3:1, porque 400×2,5 = 1.000. Não adivinhamos qual era: adotamos só a taxa NATIVA de 400 MB/s.", {
     x:M+0.26, y:4.82, w:CW-0.52, h:1.16, isTextBox:true, fontFace:BF, fontSize:11, color:INK });
-  s.addText("Recomendação: não escolher — combinar. Regra 3-2-1: (1) backup em disco no NAS para restauração rápida; (2) cópia em objeto para retenção de meses a anos; (3) cópia em fita com cartucho ejetado — a única cópia inalcançável por um atacante com credenciais válidas.", {
+  s.addText("Combinar e testar: NAS para restauração rápida; objeto imutável/isolado para retenção; fita ejetada para forte air gap físico. A fita não é a única defesa: vaults/contas isolados, imutabilidade e cópias offline também reduzem o alcance de credenciais. Definir RPO/RTO.", {
     x:M, y:6.14, w:CW, h:0.58, isTextBox:true, fontFace:BF, fontSize:12, bold:true, color:INK });
 }
 
@@ -681,7 +681,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["Especificação normativa","RFCs 1094 / 1813 / 7530 / 8881 / 7862 / 7143 / 3821; T11 FC-BB-5 (INCITS 462-2010); dialetos SMB; portas 445, 2049, 548, 3260"],
       ["Datasheet de fabricante","Brocade G710: 460 ns e 2000 buffers · Dell EMC Unity FAST VP: 256 MB, análise horária, 17h–1h, 4 políticas · LTO-10: 30/40 TB nativos, 400 MB/s · S3: 11 noves, Deep Archive US$1/TB-mês e 12–48 h"],
       ["Medição publicada por terceiro","Aurora SIGMOD 2017: 27.378.000 vs 780.000 transações; 0,95 vs 7,4 IOs/transação · CERN: 1 PB/dia processado no Run 2, >600 PB no Run 3, 7 bilhões de arquivos (jun./2022)"],
-      ["Derivação nossa (conta à mostra)","16GFC: 14,025 × 64/66 ÷ 8 = 1.700 MB/s · FCIP: 2d ÷ 2×10⁸ = 1 ms por 100 km · 256 MiB ÷ 16 KiB = 16.384 · 40 TB ÷ 400 MB/s = 27,8 h · 10⁷ × 10⁻¹¹ = 1 perda / 10.000 anos · 7,4 ÷ 0,95 = 7,8×"],
+      ["Derivação nossa (conta à mostra)","16GFC: 14,025 × 64/66 ÷ 8 = 1.700 MB/s · FCIP: 2d ÷ 2×10⁸ = 1 ms/100 km · 256 MiB ÷ 16 KiB = 16.384 · 40 TB ÷ 400 MB/s = 27,8 h · 7,4 ÷ 0,95 = 7,8×"],
       ["NÃO ENCONTRADO (declarado)","Data exata de lançamento do macOS 27 em comunicado formal da Apple · Anúncio de descontinuação da Seagate Kinetic · Tabela numérica completa do FCIA speedmap v24"],
     ], [2.55,9.34], 8.5, 0.78);
 }
@@ -691,11 +691,11 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   const linhas = [
     ["16GFC por direção","14,025 GBd × 64/66 = 13,60 Gb/s ; 13,60 ÷ 8 = 1,70 GB/s = 1.700 MB/s. Excede em 6,3% o nominal de 1.600, que é CONVENÇÃO T11 (X GFC × 100), não resultado da conta."],
     ["FCIA = full-duplex","Speedmap 16GFC = 3.200 MB/s ; 3.200 ÷ 1.600 = 2,00 exato. Idem 8GFC (1.600 ÷ 800) e 64GFC (12.800 ÷ 6.400). DERIVAÇÃO NOSSA — a FCIA não declara isso."],
-    ["Latência de rede FC","1–2 saltos × 460 ns = 0,46–0,92 µs. Acesso NVMe = 20–100 µs. 0,92 ÷ 20 = 4,6% → a rede é <5% do tempo do acesso."],
+    ["Comutação local FC","1–2 saltos × 460 ns = 0,46–0,92 µs; 0,92 ÷ 20 = 4,6%. Exclui HBA, ISL, propagação, fila, controladora e alvo."],
     ["FCIP: síncrono × assíncrono","c/n = 3×10⁸ ÷ 1,5 = 2×10⁸ m/s. RTT = 2 × 100.000 m ÷ 2×10⁸ m/s = 1,0 ms por 100 km. Commit local ~100 µs → fator > 10."],
     ["AST × buffer manager","256 MiB ÷ 16 KiB = 268.435.456 ÷ 16.384 = 16.384 exatos. (Em MB decimais seriam 15.625 — adotamos a leitura binária, e declaramos.)"],
     ["Leitura de um LTO-10","40 × 10¹² bytes ÷ 400 × 10⁶ B/s = 100.000 s = 27,8 h."],
-    ["11 noves em escala","10⁷ objetos × 10⁻¹¹ perdas/objeto·ano = 10⁻⁴ perdas/ano = 1 perda esperada a cada 10.000 anos."],
+    ["11 noves","Objetivo de projeto, não SLA/probabilidade empírica; não converter em anos até perda."],
     ["Aurora","27.378.000 ÷ 780.000 = 35,1× (artigo diz 35×, confere). 7,4 ÷ 0,95 = 7,79 → 7,8× (artigo diz 7,7×, divergência de arredondamento)."],
     ["LTO-10 — a fonte NÃO fecha","Capacidades: 30 × 2,5 = 75 ✓ e 40 × 2,5 = 100 ✓. Taxa: 400 × 2,5 = 1.000, mas o LTO publica 1.200 “a 2,5:1” (exigiria 3:1). Adotamos só a taxa nativa."],
   ];
@@ -717,7 +717,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     x:M+0.28, y:6.10, w:CW-0.56, h:0.68, isTextBox:true, fontFace:BF, fontSize:10.5, color:W2 });
 }
 {
-  const s = slideBackup("Post-Mortem — as duas rodadas de verificação", "Rodada 1: 48 afirmações, 16 correções · Rodada 2: simulação da correção, 15 correções",
+  const s = slideBackup("Post-Mortem — as duas rodadas de verificação", "Rodada 1: 18 correções (16 do teste de 48 + 2 externas) · Rodada 2: 15",
     "Slide de defesa sobre o processo. As duas cláusulas do prompt são o que faz a técnica funcionar.");
   s.addShape(pres.ShapeType.roundRect, { x:M, y:1.56, w:CW, h:1.52, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.3 } });
@@ -727,7 +727,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     x:M, y:3.22, w:CW, h:0.56, isTextBox:true, fontFace:BF, fontSize:12.5, color:INK2 });
   tabela(s, 3.86, ["Rodada","Papel do verificador","Resultado"],
     [
-      ["1 — verificação de fatos","“Não confirme nada por plausibilidade — só com fonte.”","48 afirmações: 43 CONFIRMADO (11 com ressalva), 3 IMPRECISO, 1 FALSO, 1 NÃO VERIFICÁVEL → 16 correções, 3 graves"],
+      ["1 — verificação de fatos","“Não confirme nada por plausibilidade — só com fonte.”","16 correções no teste de 48 afirmações + 2 verificações externas = 18"],
       ["2 — simulação da correção","“As correções que o grupo alega ter encontrado nos livros estão certas mesmo?”","15 correções, 3 GRAVÍSSIMAS — todas de enquadramento, invisíveis à rodada 1"],
       ["TOTAL","","33 correções aplicadas (ver slide anterior)"],
     ], [2.40,3.85,5.64], 10, 0.62);

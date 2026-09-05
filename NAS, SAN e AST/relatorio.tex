@@ -619,10 +619,8 @@ processo de remoção do macOS, em duas etapas separadas por cerca de cinco anos
       NAS) foi \textbf{depreciado no macOS 15.5 Sequoia}, em maio de 2025. O texto da Apple é
       direto: ``o cliente do \textit{Apple Filing Protocol} (AFP) está depreciado e será removido em
       uma versão futura do macOS'' \cite{appleafp};
-\item essa versão futura chegou: o \textbf{macOS 27 ``Golden Gate''}, cujos \textit{betas} de
-      desenvolvedor, a partir de junho de 2026, \textbf{já não incluem o cliente AFP}, com o efeito
-      colateral de encerrar o suporte a \textit{backups} do Time Machine em Time Capsules e AirPort
-      Disks \cite{macos27}.
+\item para o \textbf{macOS 27}, a Apple informa oficialmente que o Time Machine deixa de
+      suportar destinos AFP, incluindo Time Capsules e AirPort Disks \cite{appleafptm}.
 \end{itemize}
 
 \correcao{Armadilha de rótulo: cliente $\neq$ servidor --- e correção da nossa própria primeira versão}{%
@@ -633,16 +631,13 @@ Dizer ``a Apple removeu o AFP no Big Sur'' é meia-verdade que erra por cinco an
 \textbf{Registro de erro nosso.} A primeira versão deste relatório afirmava que ``a versão de
 remoção efetiva ainda não foi anunciada''. Isso era verdade em maio de 2025 e \textbf{já não era
 verdade em setembro de 2026}: a rodada de verificação adversarial (Seção~\ref{sec:adversarial})
-localizou a cobertura de junho de 2026 documentando a ausência do cliente AFP nos \textit{betas} do
-macOS~27 \cite{macos27}, além do próprio aviso exibido pelo macOS~26 Tahoe sobre o fim do suporte a
-Time Capsule na versão seguinte.
+localizou a documentação oficial atualizada em julho de 2026 sobre o fim do suporte a
+destinos AFP do Time Machine no macOS~27 \cite{appleafptm}.
 
 \smallskip
-\textbf{Ressalva de proveniência, mantida:} não localizamos comunicado formal de imprensa da Apple
-declarando a remoção. A evidência é (i) o texto de depreciação da própria Apple \cite{appleafp},
-(ii) o aviso do sistema operacional no macOS 26 e (iii) a verificação dos \textit{betas} do macOS 27
-reportada pela imprensa especializada \cite{macos27}. \textbf{Categoria:} (ii) é fonte primária;
-(iii) é medição publicada por terceiro.}
+\textbf{Ressalva de alcance:} a fonte oficial confirma o fim do suporte do Time Machine a
+destinos AFP; não usamos isso para afirmar além do que a Apple documenta sobre todo cliente AFP.
+A depreciação do cliente permanece documentada separadamente \cite{appleafp}.}
 
 \textbf{Relevância para SBD: nenhuma, e isso é o achado.} \textbf{Alcance da afirmação:} pesquisamos
 as matrizes de suporte publicadas por Oracle, Microsoft, PostgreSQL e MySQL e não localizamos AFP em
@@ -987,9 +982,9 @@ portas comutadas localmente é de \textbf{460 ns} (incluindo FEC)'' \cite{brocad
 \textit{array} atravessa 1 a 2 saltos, somando $0{,}46$ a $0{,}92\ \mu$s. Comparado com a latência
 de uma leitura aleatória em SSD NVMe --- que Silberschatz situa em ``20 a 100 microssegundos''
 \cite{silberschatz2020} --- a rede FC responde por \textbf{menos de 5\%} do tempo total do acesso.
-Este é o argumento quantitativo central a favor da SAN: \emph{a rede deixou de ser o gargalo}. Não é
-um argumento a favor de gastar mais em FC; é a explicação de por que a alternativa Ethernet passou
-a ser viável.}
+O cálculo prova apenas que a \emph{comutação local} é uma fração pequena nesse cenário; não
+mede HBA, serialização, propagação, ISLs, filas, controladora nem alvo. Portanto não autoriza
+concluir que a rede fim a fim deixou de ser gargalo.}
 
 \subsection{Protocolo SAN I --- FCP sobre \textit{Fibre Channel}}
 \label{sec:fcp}
@@ -1173,9 +1168,11 @@ São \textbf{1 milissegundo por 100 km, só de propagação}, antes de somar o t
 serialização e processamento nas duas pontas. Para uma carga OLTP cujo \textit{commit} local custa
 $\approx$ 100~$\mu$s, replicar sincronamente a 100 km multiplica a latência de \textit{commit} por
 mais de dez. \textbf{Esta é a razão física} pela qual a replicação síncrona é restrita a
-\textit{campus} e área metropolitana, e a replicação intercontinental sobre FCIP é obrigatoriamente
-assíncrona --- com a consequência de aceitar um RPO (\textit{Recovery Point Objective}) maior que
-zero. \textbf{Categoria:} derivação nossa a partir de constante física.}
+\textit{campus} e área metropolitana. Em distâncias intercontinentais, a replicação sobre
+FCIP é \textbf{tipicamente assíncrona} porque a latência costuma violar o objetivo da
+aplicação; síncrono continua tecnicamente possível se o sistema aceitar o impacto. O modo
+assíncrono implica RPO (\textit{Recovery Point Objective}) maior que zero.
+\textbf{Categoria:} derivação nossa a partir de constante física, condicionada ao SLA.}
 
 \subsection{Protocolo SAN IV --- FCoE}
 \label{sec:fcoe}
@@ -1398,8 +1395,9 @@ com ressalvas: exige \texttt{O\_DIRECT} ou cliente próprio por causa da coerên
 
 \textbf{AFP} & NAS & Proprietário Apple (\textit{AppleTalk Filing Protocol}, 1985--88) & Operações
 de arquivo & TCP porta 548 & Sim & \textbf{Encerrado}: servidor removido no macOS 11 (2020);
-cliente depreciado no macOS 15.5 (mai./2025) \cite{appleafp} e ausente nos \textit{betas} do macOS 27
-(jun./2026) \cite{macos27} & \textbf{Nenhuma.} Sem travamento em intervalo de \textit{bytes}
+cliente depreciado no macOS 15.5 (mai./2025) \cite{appleafp}; a Apple informa oficialmente que
+destinos AFP do Time Machine deixam de ser suportados no macOS 27 \cite{appleafptm} &
+\textbf{Legado, sem recomendação para novas implantações.} Sem travamento em intervalo de \textit{bytes}
 adequado; nenhum SGBD de porte o suporta. Migrar para SMB~3 \\
 
 \textbf{FCP sobre FC} & SAN & T11/INCITS (FC-FS, FC-PI); FCP $=$ mapeamento FC-4 de SCSI-3 &
@@ -1424,7 +1422,7 @@ Comandos SCSI em TCP & TCP porta 3260 sobre Ethernet/IP & \textbf{Sim} --- LAN, 
 \textbf{FCIP} & SAN & IETF \textbf{RFC 3821} (2004) \cite{rfc3821} & \textbf{Quadros FC inteiros}
 em TCP/IP & TCP/IP sobre WAN & Sim & Vivo, com propósito único & \textbf{Não é caminho de dado
 primário.} É túnel entre duas \textit{fabrics} FC para replicação entre sítios. A distância impõe
-assincronia (ver derivação da Seção~\ref{sec:fcip}) \\
+latência e normalmente conduz ao modo assíncrono, conforme RPO/RTO (Seção~\ref{sec:fcip}) \\
 
 \textbf{FCoE} & SAN & T11 \textbf{FC-BB-5} $=$ ANSI/INCITS 462-2010; FC-BB-6 (VN2VN)
 \cite{fcbb5} & \textbf{Quadros FC inteiros} em quadros Ethernet, \textbf{sem TCP e sem IP} &
@@ -1625,6 +1623,34 @@ cabe no \textit{tier} rápido, o AST não cria capacidade --- ele apenas redistr
 acrescenta tráfego de migração à carga já saturada.
 \end{itemize}
 
+\subsection{AST, cache, ILM, HSM, backup e replicação}
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}p{2.2cm}p{3.1cm}p{3.2cm}p{3.2cm}p{3.3cm}@{}}
+\toprule
+\textbf{Mecanismo} & \textbf{Objetivo/gatilho} & \textbf{O dado muda ou é copiado?} &
+\textbf{Recuperação} & \textbf{Não substitui} \\
+\midrule
+Cache & Reduzir latência; acesso recente/frequente & Cópia rápida; original permanece &
+Não é cópia de recuperação & Backup, replicação, capacidade \\
+AST/tiering & Ajustar custo/desempenho; telemetria por faixa & Em geral muda de tier &
+Depende do array; não cria histórico & Backup e dimensionamento \\
+ILM & Aplicar política ao ciclo de vida, retenção e classe & Move/copia conforme política &
+Pode incluir retenção, mas exige desenho & Backup testado e governança \\
+HSM & Migrar arquivos frios preservando um stub & Move para mídia secundária/terciária &
+Reidratação sob demanda & Backup independente \\
+Backup & Recuperar estado anterior por RPO/RTO & Cria cópia versionada e independente &
+Restauração testada & Alta disponibilidade \\
+Replicação & Disponibilidade/DR; síncrona ou assíncrona & Cria réplica do estado corrente &
+Failover; corrupção lógica pode propagar & Histórico de backup \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent A decisão deve registrar \textbf{RPO}, \textbf{RTO}, domínio de falha, retenção e
+resultado de teste de restauração/failover. AST otimiza posicionamento; não cria, por si só,
+uma cópia recuperável.
+
 %=====================================================================
 \section{\textit{Object-Based Storage}}
 \label{sec:objeto}
@@ -1653,11 +1679,20 @@ Endereçamento & LUN $+$ LBA & Caminho hierárquico & Espaço de nomes plano (\t
 chave) \\
 Interface & SCSI / NVMe & POSIX, SMB, NFS & HTTP REST (\textsc{put}, \textsc{get},
 \textsc{delete}) \\
-Atualização parcial & Sim, qualquer bloco & Sim, qualquer \textit{offset} & \textbf{Não}: o objeto
-é substituído inteiro \\
+Atualização parcial & Sim, qualquer bloco & Sim, qualquer \textit{offset} & Em APIs S3,
+\textsc{put} substitui o valor da chave; multipart não é atualização in-place \\
 Escala típica & Terabytes a petabytes & Terabytes a petabytes & \textbf{Exabytes} \\
 Metadados & Nenhum (o \textit{array} não sabe o que guarda) & Fixos (dono, datas, permissões) &
 \textbf{Arbitrários, definidos pela aplicação} \\
+Consistência/locking & Definidos pelo host/SGBD & NFS/SMB oferecem locks/leases conforme versão &
+S3 é forte por chave/listagem; não há transação/lock entre chaves \cite{awss3consistency} \\
+Disponibilidade & Depende de duas fabrics, MPIO e array & Depende de nós/cluster e failover do
+protocolo & Distribuída pelo serviço; conferir SLA e região \\
+Melhor uso & OLTP, logs, clusters homologados & Compartilhamento, DW, dumps e SGBD homologado &
+Data lake, backup, arquivo e dados não estruturados \\
+Limitação principal & Custo/operação e compartilhamento exige coordenação & Semântica e latência
+dependem do protocolo/cliente & Latência de API e ausência de atualização/ordenação entre chaves \\
+Exemplos & LUN FC/iSCSI/NVMe-oF & NFSv4.1, SMB 3 & Amazon S3, Ceph RGW, MinIO \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -1738,12 +1773,10 @@ versionamento nativo.
 \textit{bytes}, sem semântica de \textit{rename} atômico; sobra HTTP, que atravessa qualquer rede.
 \item \textbf{Em troca, ganha durabilidade extrema por codificação de apagamento.} A AWS declara
 que o S3 é ``projetado para durabilidade de \textbf{99,999999999\% (11 noves)}''
-\cite{awss3faq}. \textbf{Derivação nossa para dar escala a esse número:} com 11 noves, a
-expectativa é de perder $10^{-11}$ dos objetos por ano; para $10^{7}$ objetos armazenados, o
-número esperado de perdas é $10^{7} \times 10^{-11} = 10^{-4}$ por ano, isto é, uma perda esperada
-a cada 10.000 anos. \textbf{Ressalva importante de rótulo:} isso é durabilidade
-\emph{projetada} (do inglês \textit{designed for}), não medida --- e não protege contra exclusão
-acidental nem contra \textit{ransomware}, apenas contra falha de mídia.
+\cite{awss3faq}. Trata-se de \textbf{objetivo de projeto}, não de SLA nem de probabilidade
+empírica independente por objeto. Portanto, não o convertemos em anos até uma perda:
+essa extrapolação ocultaria falhas correlacionadas, exclusão por credencial válida,
+corrupção lógica e \textit{ransomware}.
 \end{itemize}
 
 \destaque{Uma atualização essencial: o S3 não é mais eventualmente consistente}{%
@@ -1767,7 +1800,8 @@ Portanto, ainda não é considerado viável para aplicações de banco de dados 
 Seção~\ref{sec:engine}:
 
 \begin{enumerate}[leftmargin=0.9cm,itemsep=2pt]
-\item \textbf{Sem atualização parcial.} Alterar uma linha exigiria reescrever o objeto inteiro. Um
+\item \textbf{Sem atualização in-place no modelo S3.} Alterar uma linha exige publicar novo valor
+para a chave; multipart upload muda o transporte, não a semântica de substituição. Um
 \textit{tablespace} de 100 GB como um objeto é inviável; fatiado em objetos de 8 KiB, perde-se toda
 a vantagem de escala e ganha-se uma requisição HTTP por página.
 \item \textbf{Latência de uma ordem de grandeza acima.} Silberschatz já registrava:
@@ -1804,17 +1838,18 @@ solução, tanto em nível secundário (\textit{online}) quanto em nível terci�
 \subsection{Princípio orientador}
 
 \destaque{A regra de decisão, em uma frase}{%
-\textbf{Escolha pela unidade de abstração que o \textit{Database Engine} precisa controlar, não
-pela velocidade do enlace.} Se o motor precisa ser dono da ordenação de escrita, da atomicidade da
-página e do travamento --- OLTP transacional, \textit{cluster} com armazenamento compartilhado ---
-ele precisa de \textbf{bloco}, e portanto de SAN. Se o motor pode delegar essas garantias porque a
-carga é de leitura, de varredura ou de ingestão em lote, então \textbf{arquivo} basta, e o NAS
-entrega o mesmo resultado por uma fração do custo.}
+\textbf{Escolha pela semântica oficialmente suportada pelo SGBD e pelo SLA, não apenas pela
+velocidade do enlace.} Bloco/SAN é frequente em OLTP e \textit{clusters} compartilhados,
+mas NFS/SMB homologados (como dNFS e SMB 3) também podem fornecer durabilidade, locking e
+failover adequados. Compare protocolo/cliente, latência de cauda, disponibilidade, RPO/RTO,
+benchmark e TCO; não se presume equivalência nem menor custo sem medir a configuração.
+Objeto é indicado quando a aplicação foi projetada para sua API e sua granularidade.}
 
-O corolário quantitativo vem da derivação da Seção~\ref{sec:topologias}: a rede FC contribui com
-menos de 5\% da latência de um acesso NVMe. \textbf{A rede deixou de ser o gargalo}, e portanto o
-argumento ``FC é mais rápido'' perdeu força; o que resta como diferença real é a
-\emph{semântica}, não a velocidade.
+O cálculo da Seção~\ref{sec:topologias} mostra somente que \textbf{dois saltos de comutação
+local FC}, nas condições do datasheet, somam menos de 5\% de um acesso NVMe de 20\,$\mu$s.
+Ele exclui HBA, serialização, cabos, ISLs, filas, controladora e alvo; portanto não prova
+que a rede fim a fim deixou de ser gargalo. O resultado serve para isolar o custo do
+switch, enquanto a decisão completa continua dependendo de semântica e medições.
 
 \subsection{Nível secundário (\textit{storage online})}
 \label{sec:recsecundario}
@@ -1832,21 +1867,21 @@ empresa.
 \toprule
 \textbf{Perfil de carga} & \textbf{Recomendação} & \textbf{Justificativa} \\
 \midrule
-OLTP crítico, alta taxa de \textit{commit} & \textbf{SAN} (FC ou iSCSI em rede dedicada) &
-A latência de \texttt{fsync} do \textit{log} governa a vazão de transações. Bloco cru elimina a
-camada de sistema de arquivos remoto do caminho crítico e dá ao motor o controle da ordenação. \\
+OLTP crítico, alta taxa de \textit{commit} & \textbf{SAN ou NAS homologado e medido} &
+A latência de \texttt{fsync} do \textit{log} governa a vazão. Bloco oferece controle direto;
+NFS/SMB só entra com suporte oficial, persistência/locking corretos, failover e benchmark de cauda. \\
 \addlinespace
 \textit{Cluster} com armazenamento compartilhado (Oracle RAC) & \textbf{SAN} (bloco) &
 Vários nós escrevem nos mesmos blocos com coordenação própria do SGBD (Oracle ASM sobre LUNs). É a
 configuração de referência do fornecedor. \\
 \addlinespace
-Banco relacional de médio porte, OLTP moderado & \textbf{NAS ou SAN}, indiferente &
-Com NFSv4.1 e \texttt{O\_DIRECT} (ou dNFS \cite{oracledn}), a diferença é operacionalmente
-irrelevante. Decida pelo custo e pela competência da equipe. \\
+Banco relacional de médio porte, OLTP moderado & \textbf{NAS ou SAN, após validação} &
+NFSv4.1 com \texttt{O\_DIRECT}/dNFS \cite{oracledn} pode ser adequado, mas a escolha exige
+matriz de suporte, teste de falha, latência P99 e TCO da configuração completa. \\
 \addlinespace
-\textit{Data warehouse}, OLAP, varredura sequencial & \textbf{NAS} & O custo dominante é banda, não
-latência: um acesso já amortiza o custo de rede sobre megabytes. O NAS entrega a mesma banda por
-menos, e o compartilhamento nativo entre nós de processamento é uma vantagem, não um problema. \\
+\textit{Data warehouse}, OLAP, varredura sequencial & \textbf{NAS ou objeto} & Acesso em
+extensões grandes reduz a sensibilidade à latência por operação; medir banda, concorrência,
+custo por TB/TCO e compatibilidade do motor antes de escolher. \\
 \addlinespace
 Desenvolvimento, homologação, muitas instâncias pequenas & \textbf{NAS} & Provisionamento simples,
 \textit{clones} finos por instantâneo de arquivo, e nenhum requisito de latência. \\
@@ -2031,9 +2066,10 @@ Retenção operacional, conformidade com recuperação rara, quando não se quer
 dois tipos de mídia, uma delas fora do sítio. Um desenho defensável para um SBD corporativo:
 (i) \textit{backup} operacional em disco no NAS, para restauração rápida dos últimos dias;
 (ii) cópia em objeto, classe de arquivamento, para retenção de meses a anos; (iii) cópia em fita
-com cartucho ejetado, para o arquivo de longo prazo e como única cópia genuinamente inalcançável
-por um atacante com credenciais válidas. O item (iii) é o que a nuvem, por construção, não
-oferece.}
+com cartucho ejetado, para arquivo de longo prazo e forte isolamento físico. A fita não é o
+único mecanismo defensivo: contas/vaults isolados, imutabilidade e cópias offline também
+reduzem o alcance de credenciais comprometidas. Cada cópia deve ter restauração testada,
+RPO, RTO e domínio de falha explícitos.}
 
 %=====================================================================
 \section{Exemplos reais}
@@ -2349,11 +2385,18 @@ corporativas do macOS Sequoia 15.5 (2025). Texto literal: ``\textit{Apple Filing
 client is deprecated and will be removed in a future version of macOS}''. Documento de suporte
 121011. Disponível em: \url{https://support.apple.com/121011}.
 
+\bibitem{appleafptm} APPLE. \textit{Types of disks you can use with Time Machine on Mac}.
+Atualizado em jul. 2026; informa o fim do suporte a destinos AFP no macOS 27.
+Disponível em: \url{https://support.apple.com/102423}.
+
 \bibitem{lto10} LTO PROGRAM. \textit{LTO-10: LTO Generation 10 Technology}. Disponível em:
 \url{https://www.lto.org/lto-10/}.
 
 \bibitem{awss3faq} AMAZON WEB SERVICES. \textit{Amazon S3 FAQs}. Disponível em:
 \url{https://aws.amazon.com/s3/faqs/}.
+
+\bibitem{awss3consistency} AMAZON WEB SERVICES. \textit{Amazon S3 strong consistency}.
+Disponível em: \url{https://aws.amazon.com/s3/consistency/}. Consulta: 05/09/2026.
 
 \bibitem{awsglacier} AMAZON WEB SERVICES. \textit{Amazon S3 Glacier storage classes}. Preços e
 prazos consultados em set. 2026. Disponível em:
@@ -2378,10 +2421,6 @@ Disponível em:
 performance during the start of the LHC Run 3 and the various lessons learnt}. EPJ Web of
 Conferences (CHEP 2024). Disponível em:
 \url{https://www.epj-conferences.org/articles/epjconf/abs/2024/05/epjconf_chep2024_01049/epjconf_chep2024_01049.html}.
-
-\bibitem{macos27} MACRUMORS. \textit{macOS 27 Golden Gate Kills Time Capsule Support}. 17 jun. 2026.
-Cobertura da ausência do cliente AFP nos \textit{betas} do macOS 27. Disponível em:
-\url{https://www.macrumors.com/2026/06/17/macos-27-golden-gate-kills-time-capsule-support/}.
 
 \end{thebibliography}
 
@@ -2460,7 +2499,7 @@ de compressão o consórcio assume?''; ``o S3 ainda é eventualmente consistente
 Channel}, e confronte com as normas. Se algum estiver errado, documente com fonte e consequência
 prática.''}
 
-\promptbox{P6 --- primeira rodada adversarial}{48 afirmações, 16 correções}{%
+\promptbox{P6 --- primeira rodada adversarial}{48 afirmações: 16 correções, mais 2 externas}{%
 ``Você é um verificador de fatos adversarial. Verifique cada afirmação abaixo com busca web e
 classifique como CONFIRMADO (com URL), IMPRECISO (com o valor correto), NÃO VERIFICÁVEL ou FALSO.
 Seja implacável: o objetivo é encontrar erros antes que o professor os encontre. \textbf{Não
@@ -2488,8 +2527,9 @@ Os oito se dividem em três funções, e a proporção importa: \textbf{um} \tex
 (P1), \textbf{três} de coleta com proveniência (P3--P5) e \textbf{três} de destruição do próprio
 resultado (P6--P8), mais um de decisão humana (P2). \textbf{A maior parte do esforço de
 \textit{prompting} foi gasta tentando derrubar o que a IA havia escrito}, não pedindo que
-escrevesse mais. Os \textit{prompts} P6 e P8 produziram, juntos, 31 das 33 correções da
-Seção~\ref{sec:erros}.}
+escrevesse mais. A primeira rodada totalizou 18 correções: 16 vieram do teste de 48
+afirmações e 2 de verificações externas. Somadas às 15 da segunda rodada, resultam nas 33
+correções da Seção~\ref{sec:erros}.}
 
 \subsection{Autoria: quem fez o quê, quem decidiu o quê e por quê}
 \label{sec:autoria}
@@ -2599,9 +2639,9 @@ diferentes, e o enunciado pergunta pelo segundo.
 \endhead
 \bottomrule
 \endfoot
-1 & ``A versão de remoção do cliente AFP ainda não foi anunciada.'' & Verdadeiro em mai./2025,
-falso em set./2026: o macOS 27 já não traz o cliente AFP nos \textit{betas} de jun./2026
-\cite{macos27}. & Rodada 1 & Gabriel Schmitz \\
+1 & ``A versão de remoção do cliente AFP ainda não foi anunciada.'' & A Apple documenta
+oficialmente o fim do suporte do Time Machine a destinos AFP no macOS 27
+\cite{appleafptm}. & Rodada 1 & Gabriel Schmitz \\
 2 & ``A FCIA publica \textit{full-duplex}'', apresentado como citação. & Nenhum documento da FCIA
 diz isso. Reclassificado como derivação nossa. & Rodada 1 & Bernardo Brandão \\
 3 & \textit{Speedmap} v21 (2016) apresentado como vigente. & Data explicitada; ressalva de revisão

@@ -3,7 +3,10 @@
 (1) refaz TODA conta publicada; (2) confere que os numeros-chave aparecem
 identicos no relatorio (.tex) e nos slides (.pptx); (3) confere a checklist
 do enunciado; (4) confere invariantes internos do proprio Post-Mortem."""
-import io, sys
+import io, sys, zipfile
+from pathlib import Path
+from xml.etree import ElementTree
+BASE = Path(__file__).resolve().parent
 falhas = []
 
 def chk(nome, calc, publicado, tol=0.01):
@@ -67,8 +70,7 @@ print("  NOTA  LTO-10: 400 x 2,5 = 1000 MB/s, mas o LTO publica 1200 (exigiria 3
 print("        -> divergencia na fonte primaria, documentada na Secao 9.2 do relatorio.")
 
 print("-- Objeto e nuvem --")
-chk("11 noves: 1e7 objetos (perdas/ano)",1e7*1e-11, 1e-4)
-chk("11 noves: anos por perda",          1/(1e7*1e-11), 10000)
+print("  NOTA  11 noves e um objetivo de projeto; nao e probabilidade empirica")
 chk("Deep Archive: US$/GB-mes -> TB-mes",0.00099*1000, 0.99, tol=0.02)
 
 print("-- Aurora (totais de 30 min, SysBench write-only) --")
@@ -85,10 +87,10 @@ chk("Rodada 1: 43+3+1+1 afirmacoes",              43+3+1+1, 48)
 
 # ---------- (2) cruzamento .tex x .pptx ----------
 print("\n== 2. Cruzamento relatorio (.tex) x slides (.pptx) ==")
-tex = io.open("relatorio.tex", encoding="utf-8").read()
+tex = io.open(BASE / "relatorio.tex", encoding="utf-8").read()
 try:
     from pptx import Presentation
-    prs = Presentation("Slides_NAS_SAN_Armazenamento_SBD.pptx")
+    prs = Presentation(BASE / "Slides_NAS_SAN_Armazenamento_SBD.pptx")
     partes = []
     for sl in prs.slides:
         for sh in sl.shapes:
@@ -100,7 +102,28 @@ try:
         except Exception: pass
     ppt = "\n".join(partes)
 except Exception as e:
-    print("  (python-pptx indisponivel: %s)" % e); ppt = None
+    # Fallback sem dependências: extrai todos os nós <a:t> dos slides e notas.
+    # Falhar silenciosamente aqui invalidaria toda a verificação cruzada.
+    print("  (python-pptx indisponivel: %s; usando parser OOXML)" % e)
+    try:
+        partes = []
+        with zipfile.ZipFile(BASE / "Slides_NAS_SAN_Armazenamento_SBD.pptx") as pacote:
+            nomes = sorted(
+                n for n in pacote.namelist()
+                if (n.startswith("ppt/slides/slide") or
+                    n.startswith("ppt/notesSlides/notesSlide")) and n.endswith(".xml")
+            )
+            for nome in nomes:
+                raiz = ElementTree.fromstring(pacote.read(nome))
+                partes.extend(no.text or "" for no in raiz.iter()
+                              if no.tag.endswith("}t"))
+        if not partes:
+            raise ValueError("nenhum texto encontrado no PPTX")
+        ppt = "\n".join(partes)
+    except Exception as fallback:
+        print("  ERRO  nao foi possivel ler o PPTX: %s" % fallback)
+        falhas.append("leitura do PPTX")
+        ppt = ""
 
 def norm(t):
     # normaliza notacao LaTeX: 27{,}8 -> 27,8 ; 1.700 -> 1700 ; ~ -> espaco
@@ -127,7 +150,7 @@ CHAVES = [
   ("porta 2049",         ["2049"]),
   ("porta 445",          ["445"]),
   ("porta 548",          ["548"]),
-  ("11 noves",           ["99,999999999", "99.999999999"]),
+  ("11 noves",           ["99,999999999", "99.999999999", "11 noves"]),
   ("LTO-10 400 MB/s",    ["400 MB/s", "400 MBps"]),
   ("LTO-6 do livro",     ["2,5 TB"]),
   ("Aurora 27.378.000",  ["27378000", "27.378.000"]),
@@ -145,7 +168,7 @@ CHAVES = [
 ]
 for nome, alts in CHAVES:
     t_ok = any(a in tex or a in norm(tex) for a in alts)
-    p_ok = ppt is None or any(a in ppt or a in norm(ppt) for a in alts)
+    p_ok = any(a in ppt or a in norm(ppt) for a in alts)
     status = "  OK  " if (t_ok and p_ok) else "  ERRO"
     if not (t_ok and p_ok): falhas.append("cruzamento: "+nome)
     print("%s  %-22s tex=%s pptx=%s" % (status, nome, t_ok, p_ok))

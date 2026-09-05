@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Dados consolidados da Tabela 16.1 atualizada (setembro/2026)."""
+"""Fonte canônica dos números da Tabela 16.1 (consulta: 05/09/2026).
+
+Capacidades de armazenamento são decimais (1 KB = 1.000 bytes). Memórias
+seguem a capacidade comercial binária (1 KiB = 1.024 bytes); por isso o campo
+continua se chamando ``cap_KB`` apenas para manter compatibilidade com os
+gráficos existentes. Preços são referências documentadas, não cotações.
+"""
 
 # nome, tier, capacidade_bytes_representativa, tempo_acesso_s, leitura_Bps, escrita_Bps, preco_USD, capacidade_KB
 # KB = 1000 B para armazenamento; KiB = 1024 B para memórias (convenção de cada indústria)
@@ -9,19 +15,20 @@ MiB = 1024**2; GiB = 1024**3
 
 LINHAS = [
  # nome curto,               tier,      preco,        cap_KB,            t_acesso_s, leit_Bps,      escr_Bps
- ("Cache SRAM (L3)",         "primario", 199.0,       64*1024,           9.4e-9,     1.4e12,        1.4e12),
+ ("Cache SRAM (L3)",         "primario", 199.0,       64*1024,           9.02e-9,    1.4e12,        1.4e12),
  ("DRAM DDR5 desktop",       "primario", 539.99,      32*1024*1024,      70e-9,      96e9,          96e9),
  ("DRAM DDR5 RDIMM",         "primario", 2833.95,     64*1024*1024,      75e-9,      51.2e9,        51.2e9),
- ("Memoria CXL 2.0",         "primario", None,        256*1024*1024,     140e-9,     36e9,          36e9),
- ("SSD NVMe PCIe 5.0",       "secundario", 399.99,    2*TB//1000,        50e-6,      14.7e9,        13.3e9),
- ("SSD NVMe datacenter",     "secundario", 16245.78,  61.44*TB/1000,     110e-6,     7.0e9,         3.0e9),
+ ("Memoria CXL 2.0",         "primario", None,        256*1024*1024,     242.5e-9,   36e9,          36e9),
+ ("SSD NVMe PCIe 5.0",       "secundario", 219.99,    1*TB//1000,        50e-6,      14.7e9,        13.3e9),
+ ("SSD NVMe datacenter QLC", "secundario", 16245.78,  61.44*TB/1000,     10e-6,      7.0e9,         3.0e9),
+ ("SSD NVMe datacenter TLC", "secundario", 33217.0,   30.72*TB/1000,     80e-6,      14.0e9,        10.0e9),
  ("SSD SATA",                "secundario", 344.75,    1*TB/1000,         77e-6,      560e6,         530e6),
  ("Pen drive USB 3.2",       "secundario", 129.70,    1*TB/1000,         300e-6,     1.0e9,         0.9e9),
  ("HDD HAMR 30 TB",          "secundario", 799.99,    30*TB/1000,        12.7e-3,    275e6,         275e6),
- ("Optico M-DISC BD-XL",     "terciario", 12.70,      100*GB/1000,       0.2,        27e6,          27e6),
+ ("Optico M-DISC BD-XL",     "terciario", 12.70,      100*GB/1000,       0.2,        36e6,          18e6),
  ("Fita LTO-9",              "terciario", 87.99,      18*TB/1000,        55.0,       400e6,         400e6),
  ("Fita LTO-10",             "terciario", 279.99,     30*TB/1000,        55.0,       400e6,         400e6),
- ("Tape library (LTO-10)",   "terciario", None,       927*1000*TB/1000,  73.0,       51.2e9,        51.2e9),
+ ("Tape library (LTO-10)",   "terciario", None,       926.8*1000*TB/1000,73.0,       51.2e9,        51.2e9),
 ]
 
 def preco_por_KB(preco, cap_KB):

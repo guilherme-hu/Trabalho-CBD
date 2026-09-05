@@ -31,11 +31,14 @@ for tier in ["primario","secundario","terciario"]:
     xs=[a[2] for a in pts if a[1]==tier]; ys=[a[3] for a in pts if a[1]==tier]
     ax.scatter(xs,ys,s=70,color=C[tier],edgecolor=SURF,linewidth=1.6,zorder=3,label=ROT[tier])
 off={"Cache SRAM (L3)":(9,4),"DRAM DDR5 desktop":(9,-13),"DRAM DDR5 RDIMM":(9,6),
-     "SSD NVMe PCIe 5.0":(-30,15),"SSD NVMe datacenter":(9,4),"SSD SATA":(-58,-3),
+     "SSD NVMe PCIe 5.0":(-30,15),"SSD NVMe datacenter QLC":(9,4),
+     "SSD NVMe datacenter TLC":(-30,-15),"SSD SATA":(-58,-3),
      "Pen drive USB 3.2":(2,-14),"HDD HAMR 30 TB":(10,-3),"Optico M-DISC BD-XL":(-30,10),
      "Fita LTO-9":(-52,-4),"Fita LTO-10":(9,2)}
 lbl={"Optico M-DISC BD-XL":"Óptico M-DISC","SSD NVMe PCIe 5.0":"SSD NVMe (PCIe 5.0)",
-     "SSD NVMe datacenter":"SSD NVMe datacenter","Cache SRAM (L3)":"Cache SRAM (L3)"}
+     "SSD NVMe datacenter QLC":"SSD NVMe DC (QLC)",
+     "SSD NVMe datacenter TLC":"SSD NVMe DC (TLC)",
+     "Cache SRAM (L3)":"Cache SRAM (L3)"}
 for n,t,ta,v in pts:
     ax.annotate(lbl.get(n,n),(ta,v),textcoords="offset points",xytext=off.get(n,(8,4)),
                 fontsize=7.5,color=INK)
@@ -48,7 +51,7 @@ ax.set_xlim(2e-9,4e2); ax.set_ylim(2e-9,2e-2)
 for lab,x in [("ns",1e-9),("µs",1e-6),("ms",1e-3),("s",1e0)]:
     pass
 leg=ax.legend(frameon=False,fontsize=8,loc="upper right")
-ax.set_title("Hierarquia de armazenamento: tempo de acesso × preço por KB (set./2026)",
+ax.set_title("Hierarquia de armazenamento: tempo de acesso × preço por KB (05/09/2026)",
              fontsize=10,color=INK,loc="left",pad=10)
 fig.tight_layout(); fig.savefig(os.path.join(FIG, "fig1_hierarquia.pdf")); plt.close(fig)
 
@@ -71,7 +74,7 @@ def fmt(v):
 for yy,v in zip(y+h/2,leit): ax.text(v*1.15,yy,fmt(v),va="center",fontsize=7,color=INK2)
 for yy,v in zip(y-h/2,escr): ax.text(v*1.15,yy,fmt(v),va="center",fontsize=7,color=INK2)
 ax.legend(frameon=False,fontsize=8,loc="lower right")
-ax.set_title("Largura de banda máxima por tecnologia (set./2026)",fontsize=10,color=INK,loc="left",pad=10)
+ax.set_title("Largura de banda máxima por tecnologia (05/09/2026)",fontsize=10,color=INK,loc="left",pad=10)
 fig.tight_layout(); fig.savefig(os.path.join(FIG, "fig2_banda.pdf")); plt.close(fig)
 
 # ---------- Fig 3: evolução das interfaces ----------
