@@ -1,0 +1,401 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% O pacote de hifenização em português não está presente em todas as instalações
+% mínimas do TeX Live. O texto continua em UTF-8 e compila sem essa dependência.
+\usepackage{lmodern}
+\usepackage[a4paper,left=2.3cm,right=2.1cm,top=2.2cm,bottom=2.1cm]{geometry}
+\usepackage{amsmath,booktabs,longtable,tabularx,array,multirow}
+\usepackage{graphicx,xcolor,microtype,enumitem,ragged2e,float,pdflscape}
+\usepackage{caption,fancyhdr,titlesec}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\contentsname}{Sumário}
+\renewcommand{\refname}{Referências}
+\renewcommand{\tablename}{Tabela}
+
+\definecolor{azul}{HTML}{2A78D6}
+\definecolor{laranja}{HTML}{EB6834}
+\definecolor{tinta}{HTML}{14181F}
+\definecolor{tinta2}{HTML}{525B66}
+\definecolor{linha}{HTML}{DFE3E8}
+\definecolor{fundo}{HTML}{F4F5F7}
+\captionsetup{font=small,labelfont={bf,color=tinta},textfont={color=tinta2},
+  justification=justified,singlelinecheck=false,skip=5pt}
+\titlespacing*{\section}{0pt}{12pt plus 2pt minus 2pt}{5pt}
+\titlespacing*{\subsection}{0pt}{9pt plus 2pt minus 2pt}{3pt}
+\setlength{\parskip}{2pt plus 1pt}
+\setlist{topsep=3pt,itemsep=2pt,parsep=1pt}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcommand{\destaque}[2]{\begin{center}\begin{minipage}{.96\textwidth}
+  \colorbox{fundo}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep}
+  \textbf{\color{azul}#1}\par\small #2\end{minipage}}\end{minipage}\end{center}}
+
+% Preencher apenas com informação confirmada pelo grupo.
+\newcommand{\numerogrupo}{3}
+
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{tinta2}Cloud Computing e Cloud Storage --- AWS}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{.4pt}
+\hypersetup{pdftitle={Cloud Computing e Cloud Storage: estudo de caso AWS},
+  pdfauthor={Grupo de Construcao de Banco de Dados --- UFRJ}}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+{\large\scshape Universidade Federal do Rio de Janeiro}\\[2pt]
+{\normalsize Instituto de Matemática --- Departamento de Ciência da Computação}\\[2pt]
+{\normalsize Disciplina: Construção de Banco de Dados}\\[2pt]
+{\normalsize Professor: Milton Ramirez}\\[17mm]
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[6mm]
+{\LARGE\bfseries Cloud Computing e Cloud Storage}\\[4mm]
+{\Large Estudo de caso: Amazon Web Services (AWS)}\\[4mm]
+{\large Arquitetura, serviços, segurança e análise de 3,5 PB}\\[6mm]
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[8mm]
+{\large\bfseries Grupo \numerogrupo}\\[6mm]
+\begin{tabular}{@{}ll@{}}\toprule
+\textbf{Nome completo} & \textbf{DRE}\\\midrule
+Bernardo Brandão Pozzato Carvalho Costa & 123289593\\
+Enzo de Carvalho Sampaio & 123386206\\
+Gabriel Schmitz Corrêa Rizawinsk & 123225573\\
+Guilherme En Shih Hu & 123224674\\
+Raphael Henrique da Silva Pereira & 123311073\\
+Vivian Maria da Silva e Souza & 123205793\\\bottomrule
+\end{tabular}\\[12mm]
+{\normalsize Rio de Janeiro --- Setembro de 2026}
+\end{center}
+\clearpage
+
+\section*{Resumo}
+\addcontentsline{toc}{section}{Resumo}
+Este trabalho explica computação e armazenamento em nuvem e analisa a AWS como provedor. Partimos
+das cinco características do NIST, distinguimos IaaS, PaaS, SaaS, DBaaS e DWaaS e comparamos
+nuvens pública, privada e híbrida. Em seguida relacionamos requisitos de banco de dados aos
+serviços EC2, S3, EBS, classes S3 Glacier, RDS, Aurora, DynamoDB e Redshift. O estudo econômico
+trata 3,5~PB como um problema de arquitetura, não como simples multiplicação de preço por GB:
+separa armazenamento, processamento, requisições, recuperação, transferência, proteção e suporte.
+Com preços públicos da região us-east-1 consultados em 5 de setembro de 2026, 3,5~PB decimais
+custariam US\$~74.050/mês somente em S3 Standard, US\$~43.750 em Standard-IA,
+US\$~12.600 em Glacier Flexible Retrieval ou US\$~3.465 em Deep Archive. Esses valores não são
+alternativas equivalentes: possuem latências, cobranças de recuperação e durações mínimas distintas.
+Propomos, por isso, um data lake em S3 com dados colunares e particionados, catálogo, políticas de
+ciclo de vida e computação escolhida segundo o perfil da consulta. O Post-Mortem registra os
+prompts, as intervenções humanas ainda pendentes de confirmação e as correções de erros da IA.
+
+\noindent\textbf{Palavras-chave:} computação em nuvem; AWS; armazenamento de objetos; DBaaS;
+DWaaS; data lake; custo total de propriedade; 3,5 PB.
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Introdução}
+A nuvem troca a compra antecipada de infraestrutura por recursos medidos, provisionados por API e
+compartilhados com isolamento. Para um SBD, essa troca altera o local do controle: o cliente pode
+administrar sistema operacional e SGBD em EC2, delegar tarefas operacionais ao RDS ou Aurora, ou
+usar serviços com modelos de dados próprios, como DynamoDB e Redshift. O ganho de elasticidade não
+elimina decisões de engenharia. Região, zonas, consistência, latência, modelo de falha, RPO, RTO,
+governança e custo continuam sob responsabilidade do arquiteto.
+
+O enunciado pede também uma decisão para 3,5~PB. Sem caracterizar o conjunto de dados, não existe
+um único preço tecnicamente honesto: uma base transacional, um data warehouse e um arquivo regulatório
+exigem serviços diferentes. Este relatório explicita premissas e oferece três cenários comparáveis.
+
+\begin{table}[H]\centering\caption{Checklist do enunciado.}\label{tab:checklist}
+\small\begin{tabularx}{\textwidth}{@{}Yl@{}}\toprule
+\textbf{Exigência} & \textbf{Localização}\\\midrule
+Cloud Computing e Cloud Storage & Seção~\ref{sec:conceitos}\\
+IaaS, PaaS, SaaS, DBaaS e DWaaS & Seção~\ref{sec:modelos}\\
+Nuvem pública, privada e híbrida & Seção~\ref{sec:implantacao}\\
+Acesso, disponibilidade, latência, escala, confiabilidade, segurança e custo & Seção~\ref{sec:qualidades}\\
+EC2; S3, EBS e Glacier; RDS, Aurora, DynamoDB e Redshift & Seção~\ref{sec:aws}\\
+Custo, vantagens e desvantagens para 3,5 PB & Seção~\ref{sec:custo}\\
+Post-Mortem, prompts, autoria e correções da IA & Seção~\ref{sec:postmortem}\\
+Folha de rosto com nomes e DRE & página 1\\\bottomrule
+\end{tabularx}\end{table}
+
+\section{Conceitos fundamentais}\label{sec:conceitos}
+\subsection{Computação em nuvem}
+O NIST define computação em nuvem como um modelo de acesso conveniente e sob demanda, pela rede,
+a um conjunto compartilhado de recursos configuráveis que podem ser rapidamente provisionados e
+liberados com pouco esforço de gestão \cite{nist}. A definição contém cinco características:
+autoatendimento sob demanda, amplo acesso por rede, agrupamento de recursos, elasticidade rápida e
+serviço mensurável. Virtualização é uma tecnologia habilitadora frequente, mas não é sinônimo de
+nuvem: uma máquina virtual criada manualmente em um único servidor não satisfaz, por si, esses cinco
+critérios.
+
+\subsection{Cloud Storage}
+Cloud Storage é a oferta de persistência como serviço. A expressão abrange pelo menos três
+semânticas. Armazenamento de \textbf{objetos} endereça objetos por chave e metadados via API; bloco
+expõe volumes para um host montar sistema de arquivos; arquivo exporta diretórios por protocolos
+como NFS ou SMB. S3, EBS e EFS representam essas três famílias na AWS. As classes S3 Glacier são
+classes frias de objetos dentro do S3, e não um volume de disco para montar em um servidor.
+
+\destaque{Distinção central}{Durabilidade mede a probabilidade de o dado persistir; disponibilidade
+mede a probabilidade de o serviço responder. Consistência descreve o que uma leitura pode observar.
+Uma porcentagem de ``11 noves'' de durabilidade do S3 não promete 100\% de disponibilidade nem
+substitui versionamento, cópia entre regiões e teste de restauração.}
+
+\section{Modelos de serviço}\label{sec:modelos}
+As siglas expressam até onde vai a responsabilidade operacional do provedor. Elas não retiram do
+cliente a responsabilidade pelos dados, identidades, classificação, consultas e configurações.
+
+\begin{table}[H]\centering\caption{Modelos de serviço e fronteira de responsabilidade.}
+\small\begin{tabularx}{\textwidth}{@{}p{1.6cm}p{2.8cm}Y Y@{}}\toprule
+\textbf{Modelo} & \textbf{Exemplo AWS} & \textbf{Provedor opera} & \textbf{Cliente opera/decide}\\\midrule
+IaaS & EC2 + EBS & instalação física, rede de base, hipervisor & SO, patches, SGBD, HA, backup, dados e IAM\\
+PaaS & Elastic Beanstalk & infraestrutura, plataforma e orquestração & código, configuração, dados e acesso\\
+SaaS & QuickSight & aplicação e toda a pilha subjacente & usuários, conteúdo, permissões e governança\\
+DBaaS & RDS/Aurora & engine e tarefas descritas pelo serviço & esquema, SQL, índices, acesso, retenção e capacidade\\
+DWaaS & Redshift & engine MPP e infraestrutura & modelo dimensional, ingestão, consultas, WLM e custos\\\bottomrule
+\end{tabularx}\end{table}
+
+DBaaS e DWaaS podem ser entendidos como especializações de PaaS. A separação é útil porque bancos
+possuem requisitos próprios: consistência, recuperação, logs, réplicas, desempenho de consulta e
+governança. ``Gerenciado'' também é gradual: RDS automatiza tarefas, mas Multi-AZ, retenção,
+criptografia, parâmetros e escalabilidade precisam ser configurados.
+
+\section{Modelos de implantação}\label{sec:implantacao}
+Na \textbf{nuvem pública}, um provedor opera recursos padronizados para múltiplos clientes com
+isolamento lógico. Pública não significa que todo tráfego passe pela Internet: VPC, VPN, Direct
+Connect e endpoints privados preservam conectividade privada. Na \textbf{nuvem privada}, os recursos
+são dedicados a uma organização, no próprio datacenter ou hospedados; há maior controle, acompanhado
+de capacidade finita e responsabilidade operacional. A \textbf{nuvem híbrida} integra ambientes
+privado/on-premises e público com identidade, rede, gestão e fluxo de dados coerentes. Apenas manter
+dois ambientes desconectados não constitui uma arquitetura híbrida útil.
+
+\section{Critérios de avaliação}\label{sec:qualidades}
+\begin{description}[style=nextline,leftmargin=0pt]
+\item[ Acessibilidade.] APIs, consoles, SDKs e protocolos permitem acesso amplo, mas IAM, redes
+privadas e políticas devem restringi-lo ao necessário. Facilidade de acesso e exposição pública não
+são a mesma coisa.
+\item[ Disponibilidade.] Deve ser lida no SLA específico e na arquitetura escolhida. Uma dependência
+single-AZ pode limitar todo o sistema; Multi-AZ reduz essa classe de falha, mas recuperação regional
+exige outra estratégia. 99,99\% corresponde a cerca de 52,6 minutos por ano como referência
+aritmética, sem converter SLA em garantia de continuidade.
+\item[ Latência.] Inclui propagação, filas, serviço e aplicação. S3 Standard responde em escala de
+milissegundos; Deep Archive exige restauração em horas. Proximidade regional e cache não corrigem
+um modelo de acesso incompatível.
+\item[ Escalabilidade e elasticidade.] Escalar é suportar crescimento; elasticidade é ajustar
+capacidade para cima e para baixo conforme a demanda. Bancos relacionais possuem limites e gargalos
+que não desaparecem apenas porque estão na nuvem.
+\item[ Confiabilidade e durabilidade.] S3 Standard é projetado para 99,999999999\% de durabilidade e
+99,99\% de disponibilidade, armazenando dados em pelo menos três zonas \cite{s3durability}. A
+proteção contra exclusão, credencial comprometida ou erro lógico exige versionamento, Object Lock,
+backup e separação de privilégios.
+\item[ Segurança.] O provedor protege a infraestrutura; o cliente configura identidade, dados,
+rede e workloads \cite{shared}. Controles mínimos incluem privilégio mínimo, MFA, criptografia,
+KMS, logs imutáveis, classificação e resposta a incidentes. Para LGPD, finalidade, base legal,
+retenção, operadores e transferências internacionais precisam ser analisados; escolher uma região
+brasileira, sozinho, não demonstra conformidade.
+\item[ Custo.] A conta combina capacidade, tempo, operações, desempenho provisionado, recuperação,
+tráfego, replicação, observabilidade, suporte e tributos. CAPEX versus OPEX é uma diferença contábil,
+não prova automática de economia.
+\end{description}
+
+\section{Estudo de caso: AWS}\label{sec:aws}
+\subsection{Computação: EC2}
+EC2 fornece máquinas virtuais de famílias otimizadas para computação, memória, armazenamento ou uso
+geral. On-Demand cobra sem compromisso; Spot usa capacidade interrompível; Savings Plans aplicam
+desconto por compromisso de gasto; Reserved Instances são principalmente benefício de cobrança,
+com reserva de capacidade apenas em modalidades zonais específicas. Em um SGBD autogerenciado, o
+cliente continua responsável por SO, engine, patches, cluster, backup e recuperação.
+
+\subsection{Armazenamento: S3, EBS, EFS e Glacier}
+\textbf{S3} é objeto, acessado por API e adequado a data lakes, backup e conteúdo. Operações PUT e
+DELETE e leituras posteriores são fortemente consistentes por chave \cite{s3consistency}. Objetos
+não oferecem a semântica de escrita aleatória em bloco que um banco tradicional espera.
+
+\textbf{EBS} fornece volumes em bloco para EC2. gp3 separa capacidade de IOPS/throughput e cobra o
+que é provisionado; um volume gp3 possui limite de 16~TiB, portanto 3,5~PB exigiriam centenas de
+volumes e uma camada distribuída, não um único disco \cite{ebs}. Snapshots ficam no serviço S3 de
+forma gerenciada, mas volume e snapshot têm cobrança própria.
+
+\textbf{EFS} fornece sistema de arquivos NFS elástico e compartilhável. Foi incluído para fechar a
+taxonomia objeto--bloco--arquivo, embora o enunciado cite explicitamente S3, EBS e Glacier.
+
+\textbf{S3 Glacier Instant Retrieval, Flexible Retrieval e Deep Archive} são classes frias do S3.
+Elas reduzem US\$/GB-mês em troca de frequência esperada menor, duração mínima, tamanho mínimo em
+alguns casos e custo/tempo de recuperação. Deep Archive é adequado quando RTO de 12--48 horas é
+aceitável \cite{s3classes}.
+
+\subsection{Bancos e analytics}
+\begin{table}[H]\centering\caption{Serviços de dados exigidos no enunciado.}
+\small\begin{tabularx}{\textwidth}{@{}p{2.2cm}p{2.6cm}Y Y@{}}\toprule
+\textbf{Serviço} & \textbf{Modelo} & \textbf{Adequação} & \textbf{Cuidado de projeto}\\\midrule
+RDS & DBaaS relacional & MySQL, PostgreSQL, MariaDB, Oracle e SQL Server & HA/failover dependem da implantação Multi-AZ; limites por instância/engine\\
+Aurora & DBaaS relacional & compatibilidade MySQL/PostgreSQL, storage distribuído & preço por capacidade/I/O; limites de cluster; validar versão e região\\
+DynamoDB & NoSQL gerenciado & chave--valor/documento, escala horizontal & chave de partição, tamanho de item, consistência e capacidade determinam resultado\\
+Redshift & DWaaS colunar/MPP & OLAP recorrente, data warehouse e acesso ao S3 & compute, RMS, WLM, concorrência e dados escaneados são cobrados/dimensionados\\\bottomrule
+\end{tabularx}\end{table}
+
+RDS não é uma solução plausível para colocar 3,5~PB em uma única instância: a documentação de preço
+apresenta armazenamento por instância de até 64~TiB em opções comuns \cite{rds}. Aurora também tem
+limites por cluster. Para essa escala, a fronteira correta costuma ser S3 como camada durável e
+serviços de processamento desacoplados, reservando bancos operacionais para subconjuntos que exigem
+transações.
+
+\section{Estudo de 3,5 PB}\label{sec:custo}
+\subsection{Premissas e unidade}
+Adotamos 3,5~PB \textbf{decimais}: $3{,}5\times10^{15}$ bytes = 3.500~TB = 3.500.000~GB.
+Não misturamos PB com PiB. A região de referência é us-east-1 e a consulta ocorreu em 05/09/2026.
+São preços públicos, sem impostos, suporte, descontos privados ou compromisso. Por isso, os valores
+servem para comparar ordens de grandeza e não constituem cotação.
+
+\subsection{Armazenamento}
+No S3 Standard, us-east-1 cobra US\$~0,023/GB nos primeiros 50~TB, US\$~0,022 nos 450~TB seguintes
+e US\$~0,021 acima de 500~TB \cite{s3pricing}. Assim:
+\[
+C_{Standard}=50.000(0{,}023)+450.000(0{,}022)+3.000.000(0{,}021)
+=\boxed{\text{US\$ 74.050/mês}}.
+\]
+
+\begin{table}[H]\centering\caption{Custo de capacidade para 3,5 PB; serviços não equivalentes.}
+\label{tab:custos}\small
+\begin{tabularx}{\textwidth}{@{}p{3.4cm}p{2.8cm}p{2.7cm}Y@{}}\toprule
+\textbf{Classe} & \textbf{Preço adotado} & \textbf{US\$/mês} & \textbf{Condição dominante}\\\midrule
+S3 Standard & faixas 0,023/0,022/0,021 & 74.050 & acesso frequente; requisições separadas\\
+S3 Standard-IA & 0,0125/GB & 43.750 & 30 dias, mínimo de 128 KB e recuperação cobrada\\
+Glacier Flexible Retrieval & 0,0036/GB & 12.600 & 90 dias; restauração e metadados cobrados\\
+Glacier Deep Archive & 0,00099/GB & 3.465 & 180 dias; recuperação usual em 12--48 h\\
+Redshift Managed Storage & 0,024/GB & 84.000 & somente storage; nós/RPUs e snapshots à parte\\
+EBS gp3 & 0,08/GB & 280.000 & somente capacidade; ao menos 199 volumes de 16 TiB, mais compute/IOPS\\\bottomrule
+\end{tabularx}\end{table}
+
+O valor de Redshift RMS segue o exemplo oficial de US\$~0,024/GB-mês; o próprio exemplo separa
+armazenamento e compute \cite{redshiftpricing}. EBS gp3 usa US\$~0,08/GB-mês no exemplo de preço,
+antes de IOPS e throughput adicionais \cite{ebs}. A linha de EBS é um contraste econômico e de
+limite, não uma recomendação de montar um volume gigante.
+
+\subsection{Processamento e transferência}
+Com Athena a US\$~5/TB escaneado, uma varredura integral dos 3.500~TB custa US\$~17.500; uma por dia
+durante 30 dias, US\$~525.000/mês. Se Parquet, compressão, particionamento e projeção de colunas
+reduzirem a leitura faturada para 10\%, cada consulta cai para US\$~1.750. Essa comparação mostra
+por que o formato físico pode custar mais que a capacidade. EMR e Redshift precisam de um perfil de
+CPU, memória, concorrência e horas ativas; sem ele, publicar um total seria precisão falsa.
+
+A carga inicial também é uma operação de engenharia. O limite físico idealizado é
+\[
+t=\frac{3{,}5\times10^{15}\times8}{B}.
+\]
+Em 10~Gb/s contínuos, $t\approx32{,}4$ dias; em 100~Gb/s, $t\approx3{,}24$ dias, antes de overhead,
+criptografia, contenção e retransmissão. Direct Connect, DataSync ou dispositivos de transferência
+devem ser cotados com as quotas vigentes. Egress, recuperação de arquivo e replicação entre regiões
+dependem do volume e destino e foram deliberadamente deixados como variáveis, não zerados.
+
+\subsection{Arquitetura recomendada e cenários}
+\begin{table}[H]\centering\caption{Três interpretações possíveis para os mesmos 3,5 PB.}
+\small\begin{tabularx}{\textwidth}{@{}p{2.5cm}p{3cm}Y Y@{}}\toprule
+\textbf{Cenário} & \textbf{SLO de acesso} & \textbf{Arquitetura} & \textbf{Custos decisivos}\\\midrule
+Arquivo regulatório & raro; RTO 12--48 h & Deep Archive, Object Lock, catálogo e cópia independente & capacidade, objetos/metadados, recuperação e permanência mínima\\
+Data lake analítico & consultas seletivas & S3 Parquet/ORC particionado, Glue, Athena/EMR; lifecycle & TB lido, requests, compute, catálogo e dados quentes\\
+Analytics recorrente & baixa latência/concurrency & S3 como verdade durável + Redshift dimensionado e cache & nós/RPUs, RMS, snapshots, carga e concorrência\\\bottomrule
+\end{tabularx}\end{table}
+
+Recomendamos o segundo cenário como base quando ``base de 3,5 PB'' significa dados analíticos:
+S3 desacopla compute e storage; Parquet/ORC, compressão e particionamento reduzem bytes lidos; Glue
+mantém catálogo; Athena atende exploração; EMR atende lotes; Redshift atende consultas previsíveis e
+recorrentes. Lifecycle move partições frias após medir acesso. Um banco operacional separado recebe
+o conjunto que precisa de transações e baixa latência.
+
+Antes da implantação, o grupo deve registrar: crescimento mensal, taxa de compressão medida,
+distribuição quente/morna/fria, número e tamanho dos objetos, frequência e seletividade de consultas,
+região, RPO/RTO, retenção, egress, suporte e teste de restauração. Sem esses dados, a Tabela
+\ref{tab:custos} responde apenas à parcela ``capacidade''.
+
+\subsection{Vantagens, desvantagens e decisão}
+As vantagens são eliminar aquisição inicial, obter escala e durabilidade regional, integrar catálogo,
+analytics e ML e pagar compute sob demanda. As desvantagens são custo recorrente, dependência de
+APIs e competências específicas, egress, risco de configuração, residência/transferência de dados e
+necessidade permanente de FinOps. Em 3,5~PB, o poder de negociação também importa: preços públicos
+constituem teto comparativo, enquanto um compromisso privado pode alterar a decisão.
+
+\section{Conclusão}
+A AWS oferece serviços suficientes para armazenar e processar 3,5~PB, mas ``caber'' não significa
+``ser adequado''. S3 é a fundação mais plausível para um conjunto analítico dessa escala; EBS e
+bancos relacionais devem atender subconjuntos e workloads próprios. O custo de capacidade varia de
+US\$~3.465 a US\$~74.050 por mês entre classes frias e quentes, mas a consulta diária integral pode
+custar US\$~525.000/mês. Logo, arquitetura de dados, formato, particionamento e frequência de acesso
+dominam a decisão tanto quanto US\$/GB. A solução defensável é aquela que declara SLOs, premissas,
+limites e custo total, e que testa recuperação e segurança.
+
+\section{Questões para apresentação e debate}
+\begin{enumerate}
+\item Quando um data lake deixa de ser mais barato que um warehouse por causa do volume escaneado?
+\item ``Onze noves'' de durabilidade justificam dispensar backup entre contas ou regiões?
+\item Qual componente cria maior lock-in: formato dos dados, serviço de banco, IAM ou egress?
+\item Que fração dos 3,5 PB precisa realmente de acesso em milissegundos?
+\item Uma comparação justa com on-premises deve incluir energia, equipe, renovação, capacidade ociosa e risco?
+\end{enumerate}
+
+\section{Post-Mortem}\label{sec:postmortem}
+Esta seção atende aos três elementos exigidos: log dos prompts, autoria/decisões e erros da IA com
+correções. Ela distingue fatos verificáveis nesta revisão de informações humanas que ainda precisam
+ser confirmadas. A IA utilizada na revisão de 05/09/2026 foi o Codex, da OpenAI; o documento anterior
+registra também Claude, da Anthropic.
+
+\subsection{Log dos prompts-chave}
+\begin{longtable}{@{}p{.7cm}p{7.3cm}p{6.4cm}@{}}\toprule
+\textbf{Nº} & \textbf{Prompt ou instrução-chave} & \textbf{Efeito verificável}\\\midrule\endhead
+1 & Enunciado completo e pedido de um trabalho sobre AWS com nível ``nota 10''. & Definiu checklist, provedor e produtos obrigatórios.\\
+2 & Pesquisa de preços atualizados de S3 e construção de estudo para 3,5 PB. & Gerou a primeira tabela de preços e a conversão PB/PiB.\\
+3 & Pedido anterior para reforçar autoria, auditoria e arquivos editáveis. & Criou matriz, declaração e lista inicial de erros.\\
+4 & ``Ajustar os trabalhos de Cloud e DAS e RAID; avaliar como professor; transformar o relatório em LaTeX e gerar o PDF; seguir NAS, SAN e AST.'' & Motivou a revisão adversarial, a reconstrução em LaTeX, os novos PDFs e o alinhamento dos slides.\\
+5 & Verificação web restrita a documentação oficial da AWS para preços, limites e semântica. & Corrigiu/confirmou preços, separou durabilidade de disponibilidade e explicitou limites e custos omitidos.\\\bottomrule
+\end{longtable}
+
+\subsection{Autoria e decisões}
+Os nomes e DREs da capa foram reaproveitados do trabalho NAS/SAN/AST do mesmo repositório. O número
+do grupo e as contribuições anteriores não podem ser inferidos com segurança de arquivos finais.
+Para não fabricar autoria, a tabela abaixo separa o que o histórico comprova do que cada participante
+deve confirmar antes da entrega.
+
+\begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
+\textbf{Participante/agente} & \textbf{Contribuição comprovada} & \textbf{Decisão a confirmar ou justificar}\\\midrule\endhead
+Vivian Maria da Silva e Souza & Solicitou a avaliação crítica, a conversão para LaTeX e a geração dos artefatos. & Confirmar grupo, divisão real e aprovação do conteúdo final.\\
+Bernardo Brandão Pozzato Carvalho Costa & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+Enzo de Carvalho Sampaio & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+Gabriel Schmitz Corrêa Rizawinsk & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+Guilherme En Shih Hu & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+Raphael Henrique da Silva Pereira & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+Claude (Anthropic) & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
+Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
+\end{longtable}
+
+\subsection{Erros da IA e correções aplicadas}
+\begin{longtable}{@{}p{.7cm}p{5cm}p{4.4cm}p{4.6cm}@{}}\toprule
+\textbf{Nº} & \textbf{Erro/risco encontrado} & \textbf{Verificação} & \textbf{Correção}\\\midrule\endhead
+1 & Seção ``8.5'' aparecia no sumário antes do corpo e referências soltas também entravam no sumário. & Inspeção do DOCX/PDF. & Documento reconstruído com hierarquia LaTeX e referências no fim.\\
+2 & Parágrafo sobre nuvem privada estava duplicado. & Comparação textual. & Duplicata removida.\\
+3 & ``Cloud Storage'' sugeria apenas armazenamento remoto replicado. & Taxonomia AWS e literatura. & Separação explícita entre objeto, bloco, arquivo, arquivo frio e storage gerenciado.\\
+4 & Durabilidade de 11 noves podia ser lida como disponibilidade. & Documentação S3. & As métricas e seus efeitos foram separados.\\
+5 & O custo de 3,5 PB parecia total, embora só cobrisse capacidade. & Páginas oficiais de preço. & Tabela rotulada como capacidade; compute, requests, egress, recuperação, replicação e suporte separados.\\
+6 & PB e PiB foram misturados na primeira versão. & Reexecução dimensional. & Base decimal única: 3.500.000 GB; PiB aparece apenas como contraste.\\
+7 & Não havia comparação econômica com Redshift RMS e EBS nem limite prático. & Documentação oficial. & Acrescentadas linhas de contraste, limites e advertência de não equivalência.\\
+8 & ``S3 ilimitado'' escondia quotas dos consumidores e impossibilidade de um único volume/cluster. & Documentação EBS/RDS/Aurora. & Arquitetura distribuída e limites por recurso explicitados.\\
+9 & ``Gerenciado'' sugeria que backup e failover existiam em toda configuração RDS. & Documentação RDS Multi-AZ. & Responsabilidade e modalidade Multi-AZ explicitadas.\\
+10 & O Post-Mortem dizia que humanos já haviam revisado seções, sem evidência nos arquivos. & Auditoria de autoria. & Afirmações convertidas em confirmações pendentes e ações comprovadas separadas.\\\bottomrule
+\end{longtable}
+
+\destaque{Pendência humana obrigatória}{Antes de entregar, registrar, com os próprios integrantes,
+quem revisou cada seção, que decisão tomou, a data e a
+confirmação. A omissão é visível e foi mantida para evitar uma declaração falsa de autoria.}
+
+\clearpage
+\begin{thebibliography}{99}
+\bibitem{nist} MELL, P.; GRANCE, T. \textit{The NIST Definition of Cloud Computing}. NIST SP 800-145, 2011. \url{https://doi.org/10.6028/NIST.SP.800-145}.
+\bibitem{silberschatz} SILBERSCHATZ, A.; KORTH, H.; SUDARSHAN, S. \textit{Sistema de Banco de Dados}. 7. ed. Elsevier, 2020.
+\bibitem{elmasri} ELMASRI, R.; NAVATHE, S. \textit{Sistemas de Banco de Dados}. 7. ed. Pearson, 2019.
+\bibitem{ozsu} ÖZSU, M. T.; VALDURIEZ, P. \textit{Principles of Distributed Database Systems}. 4. ed. Springer, 2020.
+\bibitem{erl} ERL, T.; PUTTINI, R.; MAHMOOD, Z. \textit{Cloud Computing: Concepts, Technology \& Architecture}. Prentice Hall, 2013.
+\bibitem{huawei} HUAWEI TECHNOLOGIES. \textit{Cloud Computing Technology}. Springer, 2023.
+\bibitem{shared} AWS. \textit{Shared Responsibility Model}. \url{https://aws.amazon.com/compliance/shared-responsibility-model/}. Acesso em 05 set. 2026.
+\bibitem{s3durability} AWS. \textit{Data protection in Amazon S3}. \url{https://docs.aws.amazon.com/AmazonS3/latest/userguide/DataDurability.html}. Acesso em 05 set. 2026.
+\bibitem{s3consistency} AWS. \textit{Amazon S3 data consistency model}. \url{https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel}. Acesso em 05 set. 2026.
+\bibitem{s3classes} AWS. \textit{Understanding and managing Amazon S3 storage classes}. \url{https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html}. Acesso em 05 set. 2026.
+\bibitem{s3pricing} AWS. \textit{Amazon S3 pricing}. \url{https://aws.amazon.com/s3/pricing/}. Acesso em 05 set. 2026.
+\bibitem{ebs} AWS. \textit{Amazon EBS pricing}. \url{https://aws.amazon.com/ebs/pricing/}. Acesso em 05 set. 2026.
+\bibitem{rds} AWS. \textit{Amazon RDS pricing}. \url{https://aws.amazon.com/rds/pricing/}. Acesso em 05 set. 2026.
+\bibitem{redshiftpricing} AWS. \textit{Amazon Redshift pricing}. \url{https://aws.amazon.com/redshift/pricing/}. Acesso em 05 set. 2026.
+\bibitem{athena} AWS. \textit{Amazon Athena pricing}. \url{https://aws.amazon.com/athena/pricing/}. Acesso em 05 set. 2026.
+\end{thebibliography}
+\end{document}

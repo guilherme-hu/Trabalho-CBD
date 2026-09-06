@@ -1,0 +1,389 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% O pacote de hifenização em português não está presente em todas as instalações
+% mínimas do TeX Live. O texto continua em UTF-8 e compila sem essa dependência.
+\usepackage{lmodern}
+\usepackage[a4paper,left=2.3cm,right=2.1cm,top=2.2cm,bottom=2.1cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable,tabularx,array,multirow}
+\usepackage{graphicx,xcolor,microtype,enumitem,ragged2e,float,pdflscape}
+\usepackage{caption,fancyhdr,titlesec}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\contentsname}{Sumário}
+\renewcommand{\refname}{Referências}
+\renewcommand{\tablename}{Tabela}
+\definecolor{azul}{HTML}{2A78D6}\definecolor{laranja}{HTML}{EB6834}
+\definecolor{tinta}{HTML}{14181F}\definecolor{tinta2}{HTML}{525B66}
+\definecolor{fundo}{HTML}{F4F5F7}
+\captionsetup{font=small,labelfont={bf,color=tinta},textfont={color=tinta2},
+  justification=justified,singlelinecheck=false,skip=5pt}
+\titlespacing*{\section}{0pt}{12pt plus 2pt minus 2pt}{5pt}
+\titlespacing*{\subsection}{0pt}{9pt plus 2pt minus 2pt}{3pt}
+\setlength{\parskip}{2pt plus 1pt}\setlist{topsep=3pt,itemsep=2pt,parsep=1pt}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcommand{\destaque}[2]{\begin{center}\begin{minipage}{.96\textwidth}
+\colorbox{fundo}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep}
+\textbf{\color{azul}#1}\par\small #2\end{minipage}}\end{minipage}\end{center}}
+\newcommand{\numerogrupo}{3}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{tinta2}Armazenamento físico para SBD --- DAS e RAID}
+\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{.4pt}
+\hypersetup{pdftitle={DAS e RAID para Sistemas de Banco de Dados},
+pdfauthor={Grupo de Construcao de Banco de Dados --- UFRJ}}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+{\large\scshape Universidade Federal do Rio de Janeiro}\\[2pt]
+{\normalsize Instituto de Matemática --- Departamento de Ciência da Computação}\\[2pt]
+{\normalsize Disciplina: Construção de Banco de Dados}\\[2pt]
+{\normalsize Professor: Milton Ramirez}\\[17mm]
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[6mm]
+{\LARGE\bfseries Arquiteturas de Armazenamento Físico para SBD}\\[4mm]
+{\Large Direct Attached Storage (DAS) e RAID}\\[4mm]
+{\large Interfaces, desempenho, confiabilidade e critérios de decisão}\\[6mm]
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[8mm]
+{\large\bfseries Grupo \numerogrupo}\\[6mm]
+\begin{tabular}{@{}ll@{}}\toprule
+\textbf{Nome completo} & \textbf{DRE}\\\midrule
+Bernardo Brandão Pozzato Carvalho Costa & 123289593\\
+Enzo de Carvalho Sampaio & 123386206\\
+Gabriel Schmitz Corrêa Rizawinsk & 123225573\\
+Guilherme En Shih Hu & 123224674\\
+Raphael Henrique da Silva Pereira & 123311073\\
+Vivian Maria da Silva e Souza & 123205793\\\bottomrule
+\end{tabular}\\[12mm]
+{\normalsize Rio de Janeiro --- Setembro de 2026}
+\end{center}\clearpage
+
+\section*{Resumo}\addcontentsline{toc}{section}{Resumo}
+Este trabalho analisa Direct Attached Storage (DAS) e arranjos RAID no contexto de Sistemas de
+Banco de Dados. Comparamos SATA, eSATA, SAS, FireWire, USB 3/USB4 e HBA, distinguindo taxa nominal
+de vazão efetiva, protocolo de tipo de adaptador. Em RAID, relacionamos paralelismo, redundância,
+striping em bits e blocos, mirroring, shadowing, paridade, write penalty, write hole, rebuild e
+falhas correlacionadas. Os níveis 0 a 6, 0+1 e 10 são comparados por capacidade, falhas toleradas,
+leitura, escrita e aplicação. RAID 2, 3 e 4 são mantidos como referência histórica; RAID 5 recebe
+uso condicionado para discos grandes; RAID 6 e 10 aparecem como opções usuais sob requisitos
+distintos. Também examinamos RAID 1.5, RAID 7, RAID-DP, RAID-S, Matrix RAID e RAID-Z, deixando
+claro o caráter proprietário ou não padronizado desses nomes. A recomendação final parte do
+workload, tamanho da I/O, RPO/RTO, janela de reconstrução e proteção de cache. RAID aumenta
+disponibilidade diante de falhas previstas, mas não substitui backup independente e testado. O
+Post-Mortem registra prompts, autoria comprovável e correções feitas sobre versões geradas por IA.
+
+\noindent\textbf{Palavras-chave:} DAS; RAID; striping; mirroring; paridade; MTTDL; SBD; backup.
+\clearpage\tableofcontents\clearpage
+
+\section{Introdução}
+O subsistema de armazenamento participa do caminho de toda leitura de página e de todo commit que
+precisa tornar o log durável. Ele deve conciliar latência, vazão, concorrência, capacidade e
+continuidade. DAS descreve como os dispositivos se ligam ao host; RAID descreve como dados e
+redundância são distribuídos entre dispositivos. Um servidor pode usar DAS sem RAID, RAID sobre
+DAS ou RAID dentro de um array de rede. Confundir as duas dimensões leva a recomendações frágeis.
+
+\begin{table}[H]\centering\caption{Checklist literal do enunciado.}\label{tab:checklist}
+\small\begin{tabularx}{\textwidth}{@{}Yl@{}}\toprule
+\textbf{Exigência} & \textbf{Localização}\\\midrule
+SATA, eSATA, SAS, FireWire, USB 3/4 e HBA & Seção~\ref{sec:interfaces}\\
+Paralelismo, disponibilidade e confiabilidade & Seções~\ref{sec:fundamentos} e \ref{sec:metricas}\\
+Data, bit-level e block-level striping & Seção~\ref{sec:striping}\\
+Mirroring e shadowing & Seção~\ref{sec:mirror}\\
+MTTR, MTTDL, MTTF e MTBF & Seção~\ref{sec:metricas}\\
+RAID 0 a 6, 0+1/10 e bloco de paridade & Seções~\ref{sec:padrao} e \ref{sec:paridade}\\
+RAID não padrão: 1.5, 7, DP, S, Matrix etc. & Seção~\ref{sec:naopadrao}\\
+Vantagens, desvantagens e recomendações & Seção~\ref{sec:decisao}\\
+Post-Mortem com prompts, autoria e correções & Seção~\ref{sec:postmortem}\\\bottomrule
+\end{tabularx}\end{table}
+
+\section{DAS e sua fronteira}\label{sec:das}
+DAS é armazenamento conectado diretamente a um host, sem uma rede de armazenamento entre iniciador
+e alvo. Discos SATA internos, SSDs NVMe locais e uma gaveta SAS ligada por HBA são exemplos. O host
+vê dispositivos de bloco e normalmente mantém sistema de arquivos e cache. A conexão direta tende
+a simplificar implantação e reduzir componentes no caminho, mas não garante baixa latência: mídia,
+firmware, fila, controlador, cache e sincronização dominam o resultado.
+
+Em NAS, o cliente pede operações de arquivo por NFS/SMB; em SAN, recebe blocos por uma fabric como
+Fibre Channel ou iSCSI. DAS tem menor facilidade de compartilhamento, expansão limitada por baias,
+portas, lanes e chassis, e pode prender dados ao ciclo de vida de um servidor. Por outro lado,
+funciona bem para um nó isolado, appliances, edge, réplicas locais e workloads cujo failover ocorre
+na camada do SGBD.
+
+\section{Interfaces de conexão}\label{sec:interfaces}
+\subsection{SATA e eSATA}
+Serial ATA é ponto a ponto e usa comandos ATA. A nomenclatura recomendada pela SATA-IO é SATA
+6~Gb/s, não ``SATA III''; revisões 1.x, 2.x e 3.x correspondem a até 1,5, 3 e 6~Gb/s
+\cite{sata}. A codificação e o protocolo fazem 6~Gb/s resultar em cerca de 600~MB/s máximos de
+interface, antes de outras perdas. NCQ permite ao dispositivo ordenar comandos; profundidade e
+benefício dependem de drive e workload. Hot-plug também depende de controladora, AHCI/backplane e SO.
+
+eSATA usa sinalização SATA em conector externo mais robusto e cabo tipicamente de até 2~m. O padrão
+original não entrega energia; eSATAp foi uma combinação posterior sem adoção universal. USB e
+Thunderbolt reduziram seu uso, portanto é escolha de legado, não projeto novo.
+
+\subsection{SAS}
+Serial Attached SCSI transporta comandos SCSI e foi projetado para ambiente empresarial. Oferece
+full-duplex, expansores, dual-port e múltiplos caminhos, atributos úteis a enclosures e alta
+disponibilidade. SAS-4/``24G SAS'' usa 22,5~Gb/s por lane; a taxa útil publicada deve ser distinguida
+da taxa de linha. SAS aceita discos SAS e, em muitas controladoras/backplanes, SATA; um disco SATA
+não se torna dual-port por estar nesse chassi. SAS continua relevante em HDDs empresariais, enquanto
+NVMe domina muitos SSDs de baixa latência.
+
+\subsection{FireWire}
+IEEE~1394/FireWire nasceu como barramento serial peer-to-peer com tráfego assíncrono e isócrono.
+FireWire 400 e 800 oferecem 400 e 800~Mb/s e permitem encadeamento. O modo isócrono reserva tempo de
+barramento para áudio/vídeo; não significa baixa latência de banco. A interface está descontinuada
+em produtos novos e só deve aparecer em migração ou suporte a equipamento legado.
+
+\subsection{USB 3 e USB4}
+USB 3.x é host-cêntrico e apresenta 5, 10 ou 20~Gb/s conforme geração e número de lanes. UASP pode
+transportar SCSI com filas, mas ponte, driver, cabo e dispositivo determinam a implementação de
+flush, TRIM e erro. USB4 compartilha dinamicamente o enlace Type-C entre protocolos. A USB-IF
+publica operação agregada de até 80~Gb/s com cabo certificado; conexão negocia a capacidade mútua
+\cite{usb4}. O modo 120~Gb/s é opcional e assimétrico, por isso não deve ser anunciado como taxa
+universal ou como vazão sustentada de SSD. É adequado a transporte, desenvolvimento e backup
+externo; dados primários de produção exigem teste de durabilidade, energia e recuperação.
+
+\subsection{HBA}
+Host Bus Adapter é uma \textbf{categoria de adaptador}, não uma interface única. Um HBA liga o host,
+normalmente via PCIe, a SAS, Fibre Channel ou outro transporte. Em modo initiator target/``IT'',
+expõe cada disco ao SO; uma controladora RAID agrega firmware, cache e cálculo de paridade. Cache
+write-back só pode confirmar durabilidade quando protegido por bateria/capacitor+flash e quando
+respeita comandos de flush/FUA. Uma falha comum de projeto é obter benchmark alto desabilitando a
+semântica de persistência necessária ao log do SGBD.
+
+\begin{landscape}
+\begin{table}[p]\centering\caption{Comparação das interfaces pedidas.}\label{tab:interfaces}
+\scriptsize\begin{tabularx}{\linewidth}{@{}p{2.1cm}p{2.5cm}p{2.6cm}p{3.3cm}Y Y@{}}\toprule
+\textbf{Interface} & \textbf{Taxa nominal} & \textbf{Topologia} & \textbf{Recursos relevantes} & \textbf{Vantagens} & \textbf{Limitações/uso em SBD}\\\midrule
+SATA 6 Gb/s & 6 Gb/s; $\sim$600 MB/s de interface & ponto a ponto; $\sim$1 m & NCQ; hot-plug condicionado & baixo custo e ampla oferta & fila/caminho/recurso empresarial limitados; capacidade/entrada\\
+eSATA & 3 ou 6 Gb/s & externo; $\sim$2 m & conector blindado; normalmente sem energia & sem ponte USB & legado; pouca disponibilidade em hardware novo\\
+SAS-4 & 22,5 Gb/s por lane & expansores e wide ports & dual-port, multipath, filas e enclosure management & caminhos redundantes e ecossistema empresarial & custo; SSDs novos frequentemente usam NVMe\\
+FireWire 800 & 800 Mb/s & peer-to-peer; daisy-chain & tráfego isócrono/assíncrono & determinismo útil a mídia histórica & obsoleto para projeto novo de SBD\\
+USB 3.2 Gen 2x2 & 20 Gb/s agregados & host-cêntrico & UASP quando suportado; energia/hot-plug & portátil e barato & ponte/cabo/energia/flush variáveis; backup e dev\\
+USB4 v2 & até 80 Gb/s; 120 opcional assimétrico & túneis sobre USB-C & alocação dinâmica; capacidade negociada & SSD externo de alta banda & taxa nominal não é vazão; produção requer validação\\
+HBA & depende de PCIe e protocolo & adaptador interno & SAS/FC; modo IT ou RAID; cache opcional & conecta/gerencia caminhos & não é protocolo; controladora pode virar ponto de falha\\\bottomrule
+\end{tabularx}\end{table}
+\end{landscape}
+
+\section{RAID: mecanismos e objetivos}\label{sec:fundamentos}
+RAID combina dispositivos em um espaço lógico para obter paralelismo, redundância ou ambos. O artigo
+de Patterson, Gibson e Katz sistematizou níveis 1 a 5 em 1988 \cite{patterson}; RAID 0 e 6 foram
+consolidados depois. Um número maior não significa nível melhor: cada layout resolve um perfil.
+
+Paralelismo aumenta vazão ou concorrência ao colocar dados em discos diferentes. Escalabilidade não
+é linear: controladora, barramento, cache, fila, paridade e mídia limitam o ganho. Redundância grava
+informação extra para continuar após falhas previstas. Disponibilidade é continuidade do serviço;
+confiabilidade/durabilidade tratam a probabilidade de operação correta ou preservação do dado.
+
+\subsection{Striping em bits e blocos}\label{sec:striping}
+Data striping é a distribuição ordenada dos dados entre membros. No \textbf{bit-level striping},
+bits ou unidades muito finas de uma palavra são espalhados e os discos trabalham em lockstep; RAID 2
+é o exemplo acadêmico. No \textbf{byte-level/fine-grained striping}, associado a RAID 3, uma grande
+requisição usa todos os discos. Isso favorece streaming, mas impede que discos atendam requisições
+independentes ao mesmo tempo.
+
+No \textbf{block-level striping}, cada chunk inteiro fica em um disco. Requisições pequenas para
+chunks distintos podem ocorrer em paralelo; RAID 0, 4, 5, 6 e níveis aninhados usam essa ideia. A
+\emph{stripe unit} (chunk) é a unidade gravada por disco; uma \emph{stripe} reúne unidades na mesma
+posição lógica; \emph{stripe width} de dados é o volume de dados antes da paridade. O tamanho ideal
+depende de página/I/O, sequencialidade e número de membros. ``Chunk pequeno é melhor para OLTP'' não
+é regra: pode espalhar uma única I/O e aumentar operações de paridade.
+
+\subsection{Mirroring e shadowing}\label{sec:mirror}
+Mirroring mantém cópias completas: cada escrita chega aos membros, e leituras podem ser balanceadas.
+RAID 1 tolera a falha de um membro por par; vários pares formam RAID 10. \emph{Disk shadowing} foi
+usado historicamente como nome de espelhamento físico, inclusive em sistemas tolerantes a falha,
+mas não é sinônimo universal de RAID 1. Shadow paging do SGBD, snapshot copy-on-write e réplica
+lógica possuem granularidade e objetivos diferentes.
+
+\subsection{Paridade, read-modify-write e write hole}\label{sec:paridade}
+Com XOR, $P=D_0\oplus D_1\oplus\cdots\oplus D_k$. Se $D_1$ faltar,
+$D_1=P\oplus D_0\oplus D_2\oplus\cdots\oplus D_k$. RAID 6 acrescenta uma segunda equação
+independente (frequentemente sobre um campo de Galois), permitindo resolver duas incógnitas.
+
+Uma escrita pequena em RAID 5 costuma fazer \emph{read-modify-write}: ler dado antigo e paridade
+antiga, calcular a diferença, gravar novo dado e nova paridade --- quatro operações de membro. RAID 6
+pode exigir seis. Escrita de stripe completo calcula paridade a partir dos novos dados e evita as
+leituras antigas. Se energia cair entre dado e paridade, surge o \emph{write hole}; cache protegido,
+journal, bitmap e layouts como RAID-Z reduzem o risco, mas precisam ser testados em conjunto com os
+flushes do SGBD.
+
+\section{Métricas de confiabilidade}\label{sec:metricas}
+\textbf{MTTF} é o tempo médio até falha de item não reparado. \textbf{MTTR} inclui detectar, substituir
+e reconstruir. Para um sistema reparável, uma convenção didática usa $MTBF=MTTF+MTTR$; datasheets
+por vezes usam MTBF como sinônimo aproximado de MTTF, portanto a definição deve acompanhar o número.
+Disponibilidade estacionária simplificada é
+\[
+A=\frac{MTTF}{MTTF+MTTR}.
+\]
+Com MTTF de 1.000.000 h e MTTR de 24 h, $A\approx99{,}9976\%$. Isso não estima perda de dados.
+
+\textbf{MTTDL} é o tempo médio até uma combinação de falhas causar perda. Sob discos idênticos,
+falhas independentes e exponenciais, detecção imediata e reparo perfeito, uma aproximação didática
+para RAID 5 com $N$ discos é
+\[
+MTTDL_{R5}\approx\frac{MTTF^2}{N(N-1)MTTR}.
+\]
+Ela mostra que reduzir MTTR reduz a janela vulnerável. Não é previsão operacional: URE, setores
+latentes, erro humano, firmware comum, lote de discos, temperatura, backplane/controladora e carga
+do rebuild criam correlação. RAID 6 tolera duas falhas, mas sua aproximação ideal também não captura
+esses riscos. Por isso, projeto sério combina telemetria, scrubbing, hot spare, limite do conjunto,
+rebuild medido e backup restaurável.
+
+\clearpage
+\begin{landscape}
+\section{Níveis RAID padrão e aninhados}\label{sec:padrao}
+\begin{longtable}{@{}p{1.3cm}p{1.7cm}p{2.8cm}p{2.5cm}p{2.5cm}p{3.2cm}p{5.5cm}@{}}\caption{Comparação dos níveis pedidos.}\label{tab:raid}\\\toprule
+\textbf{Nível} & \textbf{Mínimo / útil} & \textbf{Layout} & \textbf{Falhas toleradas} & \textbf{Leitura / escrita} & \textbf{Rebuild} & \textbf{Recomendação}\\\midrule\endfirsthead
+\toprule\textbf{Nível} & \textbf{Mínimo / útil} & \textbf{Layout} & \textbf{Falhas toleradas} & \textbf{Leitura / escrita} & \textbf{Rebuild} & \textbf{Recomendação}\\\midrule\endhead
+0 & 2 / $N S$ & blocos; sem redundância & nenhuma & alta / alta & não existe: restaura-se de outra fonte & scratch recriável dentro do RTO; nunca única cópia\\
+1 & 2 / $S$ por par & espelho & 1 por par & boa / duas gravações & cópia do membro sobrevivente & logs, sistema e conjuntos pequenos; backup ainda obrigatório\\
+2 & vários / depende do código & bits + Hamming em discos dedicados & depende do código & lockstep & recálculo pelo código & histórico; ECC já existe no drive\\
+3 & 3 / $(N-1)S$ & granularidade fina + paridade dedicada & 1 & sequencial boa / paridade central & todos os membros participam & histórico/streaming; pouca concorrência\\
+4 & 3 / $(N-1)S$ & blocos + paridade dedicada & 1 & leituras paralelas / escrita limitada & paridade é ponto quente & nicho/histórico; RAID 5 remove gargalo fixo\\
+5 & 3 / $(N-1)S$ & blocos + paridade distribuída & 1 & boa / penalidade em escrita pequena & lê todos os sobreviventes; janela vulnerável & leitura predominante, somente após analisar URE e tempo/carga de rebuild\\
+6 & 4 / $(N-2)S$ & blocos + duas paridades distribuídas & 2 & boa / penalidade maior & degradado, mas mantém uma falha de margem & grandes conjuntos de capacidade/leitura; medir rebuild e escrita\\
+0+1 & 4 / $NS/2$ & espelho de stripes & 1; outras dependem do lado & alta / alta & frequentemente recopia stripe & geralmente inferior a RAID 10 na tolerância após a primeira falha\\
+10 & 4 / $NS/2$ & stripe de pares espelhados & várias se em pares distintos & alta / alta & localizado no par & OLTP, logs/dados de alta escrita e RTO curto; custo de 50\%\\\bottomrule
+\end{longtable}
+\end{landscape}
+
+Após uma falha em RAID 0+1, todo o stripe que continha o disco pode ser tratado como falho; a segunda
+falha em qualquer disco do outro stripe perde o volume. Em RAID 10, apenas o par afetado fica
+exposto; falhas simultâneas em pares distintos podem ser toleradas. A SNIA formaliza essa distinção
+como mirror sobre stripes versus stripe sobre mirrors \cite{snia}.
+
+\section{RAID não padrão}\label{sec:naopadrao}
+Nomes fora dos níveis Berkeley podem representar produto, composição ou algoritmo de sistema de
+arquivos; não são uma escala ordinal.
+\begin{description}[style=nextline,leftmargin=0pt]
+\item[RAID 1.5.] Nome comercial associado a controladoras HighPoint para dois discos, combinando
+escrita espelhada e leitura distribuída. RAID 1 já pode balancear leituras; o rótulo não define um
+padrão interoperável.
+\item[RAID 7.] Marca da extinta Storage Computer Corporation para arquitetura com cache e controlador
+em tempo real. Não é sucessor padronizado do RAID 6.
+\item[RAID-DP.] Implementação de dupla paridade da NetApp integrada ao WAFL/ONTAP. A proteção se
+assemelha ao objetivo de RAID 6, mas layout, metadados e recuperação pertencem ao produto
+\cite{raiddp}.
+\item[RAID-S.] Nome associado a layouts de paridade de arrays EMC Symmetrix e sua cache. Descrição e
+comportamento dependem da geração; não se deve inferir sem documentação do modelo.
+\item[Matrix RAID.] Tecnologia Intel que cria volumes de níveis diferentes em regiões dos mesmos
+discos, por exemplo RAID 0 e RAID 1 em um par. Isso não cria independência: os volumes compartilham
+os mesmos domínios de falha.
+\item[RAID-Z1/Z2/Z3.] Layout do ZFS de paridade simples, dupla ou tripla, com checksums de ponta a
+ponta e stripes dinâmicos. Foi desenhado para evitar write hole e corrupção silenciosa dentro do
+modelo ZFS \cite{raidz}; não deve ser reduzido a ``RAID 5 por software''.
+\item[Outros compostos.] RAID 50 e 60 fazem striping entre conjuntos RAID 5/6; RAID 1E distribui
+espelhos em mais de dois membros. A capacidade e a tolerância dependem da composição e do domínio
+de falha, não apenas do rótulo.
+\end{description}
+
+\section{Recomendação para SBD}\label{sec:decisao}
+\begin{table}[H]\centering\caption{Matriz de decisão orientada por workload.}
+\footnotesize\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{3cm}p{2.8cm}Y@{}}\toprule
+\textbf{Componente} & \textbf{Candidato} & \textbf{Interface típica} & \textbf{Condição}\\\midrule
+WAL/redo/undo & RAID 1 ou 10 & SAS/NVMe por HBA/controladora & latência de flush, cache protegido e caminho redundante medidos\\
+Dados OLTP & RAID 10; 6 em leitura predominante & SAS ou NVMe & IOPS, tail latency, capacidade e custo; separar domínio do log quando útil\\
+DW/OLAP sequencial & RAID 6/60 ou solução distribuída & SAS/SATA/NVMe & throughput, paralelismo da engine e rebuild sob carga\\
+Backup local & RAID 6/Z2 como disponibilidade do repositório & SATA/SAS & cópia continua independente, versionada, off-site/imutável e testada\\
+Temp/scratch & RAID 0 quando justificável & mídia adequada & conteúdo totalmente recriável e reinício dentro do RTO\\
+DAS externo & USB4/SAS externo & USB/SAS & compatibilidade, energia, flush, cabo e recuperação validados\\\bottomrule
+\end{tabularx}\end{table}
+
+Cada escolha deve registrar: tamanho/alinhamento de I/O e página, razão leitura/escrita, simultaneidade,
+capacidade útil, número/tamanho dos discos, taxa de URE, tempo e impacto de rebuild, cache, RPO, RTO,
+hot spare, scrubbing e procedimento de restauração. RAID 5 pode ser aceitável em conjunto pequeno e
+monitorado de leitura predominante; não é a recomendação universal do passado. RAID 10 compra
+latência e rebuild localizado com 50\% de capacidade. RAID 6 compra tolerância adicional com mais
+paridade. Nenhum nível protege contra exclusão, corrupção replicada, ransomware, erro do operador,
+perda do controlador/site ou falha não modelada.
+
+\destaque{RAID não é backup}{RAID fornece continuidade diante das falhas previstas pelo layout.
+Backup fornece retorno a um estado anterior. Alta disponibilidade, backup e recuperação de desastre
+são controles complementares, e a restauração deve ser exercitada.}
+
+\section{Conclusão}
+DAS é simples e eficiente quando um host pode possuir o armazenamento; suas limitações são
+compartilhamento, expansão e domínio de falha. Entre as interfaces pedidas, SATA prioriza custo,
+SAS acrescenta recursos empresariais, USB atende mobilidade, FireWire/eSATA são legados e HBA é a
+categoria que conecta o host a um protocolo. A taxa do conector jamais substitui uma medição de
+latência de flush e de comportamento sob falha.
+
+RAID transforma capacidade em paralelismo e/ou redundância. RAID 0 não tolera falha; RAID 1/10
+espelha; RAID 5/6 distribui paridade; RAID 2--4 explicam a evolução histórica. Métricas como MTTDL
+são úteis para raciocinar, desde que suas hipóteses não escondam URE, correlação e rebuild. A melhor
+resposta para SBD não é um número de RAID isolado: é uma política verificável que liga workload,
+falhas, RPO/RTO, backup e teste.
+
+\section{Questões para apresentação e debate}
+\begin{enumerate}
+\item SSDs grandes tornam RAID 5 mais seguro por falharem menos, ou mais arriscado por rebuilds maiores?
+\item Quando RAID por software é superior a uma controladora com cache?
+\item Em qual momento replicação do SGBD deve substituir RAID como unidade de disponibilidade?
+\item O MTTDL independente é útil quando discos compartilham lote, energia, firmware e temperatura?
+\item RAID 10 justifica perder metade da capacidade em um workload de escrita intensa?
+\end{enumerate}
+
+\section{Post-Mortem}\label{sec:postmortem}
+O enunciado exige o log de prompts, a autoria dos participantes e quem corrigiu erros da IA. A versão
+anterior declarava uso de Claude (Anthropic); a revisão de 05/09/2026 foi feita com Codex (OpenAI).
+
+\subsection{Log dos prompts-chave}
+\begin{longtable}{@{}p{.7cm}p{7.3cm}p{6.4cm}@{}}\toprule
+\textbf{Nº} & \textbf{Prompt/instrução} & \textbf{Efeito verificável}\\\midrule\endhead
+1 & Enunciado completo de DAS/RAID e pedido inicial de relatório e slides. & Definiu interfaces, níveis e Post-Mortem obrigatórios.\\
+2 & Uso do trabalho de Cloud como referência de formatação na geração anterior. & Produziu DOCX/PPTX iniciais com capa, tabelas e seções.\\
+3 & Pesquisa de SAS-4 e USB4 e correção técnica anterior. & Atualizou taxas e separou nominal de efetivo.\\
+4 & ``Ajustar Cloud e DAS e RAID; avaliar como professor; transformar o relatório em LaTeX; gerar PDF; seguir NAS, SAN e AST.'' & Disparou auditoria adversarial, reconstrução LaTeX e alinhamento com slides.\\
+5 & Verificação em fontes de SATA-IO, USB-IF, SNIA e documentação de fabricantes. & Corrigiu nomenclatura SATA, escopo de HBA, níveis, write penalty e não padronizados.\\\bottomrule
+\end{longtable}
+
+\subsection{Autoria e decisões}
+Os nomes/DREs foram reaproveitados do relatório NAS/SAN/AST existente. O histórico não prova a
+divisão humana do trabalho anterior. A tabela evita atribuir atividades que não ocorreram.
+\begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
+\textbf{Participante/agente} & \textbf{Contribuição comprovada} & \textbf{Ação/decisão a confirmar}\\\midrule\endhead
+Vivian Maria da Silva e Souza & Solicitou a auditoria, conversão LaTeX e geração final. & Confirmar grupo, divisão real e aprovação da revisão.\\
+Bernardo Brandão Pozzato Carvalho Costa & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+Enzo de Carvalho Sampaio & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+Gabriel Schmitz Corrêa Rizawinsk & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+Guilherme En Shih Hu & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+Raphael Henrique da Silva Pereira & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+Claude (Anthropic) & Geração inicial declarada no DOCX. & Saída tratada como rascunho, não autoria acadêmica.\\
+Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e slides em 05/09/2026. & Separou fatos confirmados de autoria humana pendente.\\\bottomrule
+\end{longtable}
+
+\subsection{Erros da IA e correções}
+\begin{longtable}{@{}p{.7cm}p{5cm}p{4.4cm}p{4.6cm}@{}}\toprule
+\textbf{Nº} & \textbf{Erro/risco} & \textbf{Como foi detectado} & \textbf{Correção}\\\midrule\endhead
+1 & Seção 10.1 aparecia no sumário antes da Seção 1; referências também estavam fora do corpo. & Inspeção do DOCX/PDF. & Hierarquia reconstruída em LaTeX.\\
+2 & ``SATA III'' era usado como nome recomendado. & Guia de nomenclatura SATA-IO. & Adotado SATA 6 Gb/s; rótulo popular explicado.\\
+3 & HBA era tratado como protocolo/ponte apenas para SAS/SATA. & Definição arquitetural. & Reclassificado como adaptador para SAS, FC etc.; USB/SATA integrado não exige placa HBA.\\
+4 & Taxa USB4 de 120 Gb/s podia parecer universal. & USB-IF. & 80 Gb/s agregado separado do modo 120 opcional e assimétrico.\\
+5 & Ganho RAID era descrito como até $N\times$ sem gargalos. & Modelo de filas e caminho de I/O. & Ganho rotulado como limite ideal; controladora, workload e mídia incluídos.\\
+6 & Shadowing aparecia como sinônimo universal de mirroring. & Comparação com shadow paging e snapshots. & Termos e camadas separados.\\
+7 & MTTDL aparecia sem hipóteses, URE ou falhas correlacionadas. & Revisão do modelo probabilístico. & Hipóteses e limites incluídos; disponibilidade separada.\\
+8 & RAID 5 era recomendado para uso geral de SBD. & Análise de discos grandes, URE e rebuild. & Uso condicionado por workload, janela de rebuild e RPO/RTO.\\
+9 & RAID era recomendado para backup/arquivo como se fosse backup. & Análise de cenários de perda. & RAID passou a proteger apenas a disponibilidade do repositório; cópia independente exigida.\\
+10 & Slides essenciais foram inseridos depois do ``Obrigado''. & Inspeção da ordem do PPTX. & Roteiro reorganizado; conclusão e perguntas voltaram ao final.\\
+11 & Post-Mortem afirmava revisão humana sem evidência. & Auditoria do repositório. & Contribuições comprovadas separadas das confirmações humanas pendentes.\\\bottomrule
+\end{longtable}
+
+\destaque{Pendência humana obrigatória}{Confirmar o número do grupo e registrar quem revisou o quê,
+que decisão tomou e em qual data. Esses dados não foram inferidos, pois autoria inventada violaria o
+próprio objetivo do Post-Mortem.}
+
+\clearpage
+\begin{thebibliography}{99}
+\bibitem{silberschatz} SILBERSCHATZ, A.; KORTH, H.; SUDARSHAN, S. \textit{Sistema de Banco de Dados}. 7. ed. Elsevier, 2020, Seção 12.5.
+\bibitem{elmasri} ELMASRI, R.; NAVATHE, S. \textit{Sistemas de Banco de Dados}. 7. ed. Pearson, 2019, Seção 16.10.
+\bibitem{garcia} GARCIA-MOLINA, H.; ULLMAN, J.; WIDOM, J. \textit{Database Systems: The Complete Book}. 2. ed. Pearson, 2009, Seções 13.3--13.4.
+\bibitem{patterson} PATTERSON, D.; GIBSON, G.; KATZ, R. \textit{A Case for Redundant Arrays of Inexpensive Disks (RAID)}. SIGMOD, 1988. \url{https://doi.org/10.1145/50202.50214}.
+\bibitem{snia} SNIA. \textit{Dictionary: Berkeley RAID Levels; RAID 01; RAID 10}. \url{https://www.snia.org/education/online-dictionary/term/berkeley-raid-levels}. Acesso em 05 set. 2026.
+\bibitem{sata} SATA-IO. \textit{SATA Naming Guidelines}. \url{https://sata-io.org/developers/sata-naming-guidelines}. Acesso em 05 set. 2026.
+\bibitem{usb4} USB-IF. \textit{USB4 Specification and performance}. \url{https://www.usb.org/usb4}. Acesso em 05 set. 2026.
+\bibitem{sas} SCSI Trade Association. \textit{24G SAS technology}. \url{https://www.scsita.org/}. Acesso em 05 set. 2026.
+\bibitem{raiddp} NETAPP. \textit{TR-3298: RAID-DP}. \url{https://www.netapp.com/media/19939-tr-3298.pdf}. Acesso em 05 set. 2026.
+\bibitem{raidz} BONWICK, J. \textit{ZFS: The Last Word in File Systems}. SNIA. \url{https://dev.snia.org/sites/default/orig/sdc_archives/2009_presentations/monday/JeffBonwickzfs-Basic_and_Advanced.pdf}.
+\bibitem{intel} INTEL. \textit{Intel RAID Software User Guide}. \url{https://cdrdv2-public.intel.com/840787/SWUG_full_featured_entry_RAID.pdf}. Acesso em 05 set. 2026.
+\end{thebibliography}
+\end{document}
