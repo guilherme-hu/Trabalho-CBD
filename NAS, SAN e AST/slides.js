@@ -743,7 +743,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["Enzo de Carvalho Sampaio","iSCSI, FCIP, FCoE, derivação de latência de propagação","Incluir a derivação física (1 ms/100 km) em vez de repetir “serve para longas distâncias”"],
       ["Gabriel Schmitz Corrêa Rizawinsk","NAS; SMB/CIFS, NFS e AFP","NÃO fabricar aplicação de banco para o AFP; transformar o item em análise de fim de vida"],
       ["Guilherme En Shih Hu","Coordenação, integração, AS DUAS rodadas adversariais, Post-Mortem","Escopo enxuto para sobrar tempo de revisão; e registrar os 3 erros gravíssimos NO CORPO DO TEXTO em vez de corrigi-los em silêncio"],
-      ["Raphael Henrique da Silva Pereira","AST e object storage","Adotar a tensão AST × buffer manager como eixo analítico — nenhum livro faz essa ligação"],
+      ["Raphael Henrique da Silva Pereira","AST, object storage e apoio à conferência complementar do Post-Mortem em 06/09","Adotar a tensão AST × buffer manager e solicitar ao Codex uma conferência complementar dos artefatos atuais"],
       ["Vivian Maria da Silva e Souza","Recomendação (secundário e terciário) e exemplos reais","Critério de seleção: só casos com documentação primária. Recomendar por PERFIL DE CARGA"],
     ], [3.10,3.70,5.09], 9, 0.72);
 }

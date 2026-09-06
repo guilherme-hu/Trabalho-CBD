@@ -1,0 +1,87 @@
+Cloud Computing & Cloud Storages
+Condições de conclusão
+Tarefas: Fazer um envio
+Aberto: quarta-feira, 26 ago. 2026, 00:00
+Vencimento: sexta-feira, 11 set. 2026, 23:59
+Descrição da Tarefa:
+
+Esta tarefa possui a seguinte dinâmica:
+
+Serve como NOTA DE AVALIAÇÂO.
+Até DOIS grupos terão que apresentar os seus resultados para esta TAREFA. Os grupos escolhidos serão anunciado pelo professor até o dia 13 de setembro de 2026. A apresentação desta tarefa se dará no dia 14 de setembro de 2026, a menos de fato relevante.
+Os grupos escolhidos apresentarão os seus resultados para esta TAREFA em sala de aula, através de exposição de slides seguida de perguntas abertas aos presentes.
+Em seguida os grupos debaterão entre si, mediado pelo professor.
+Todos poderão estender a discussão utilizando o Fórum do AVA@UFRJ a discussão associada à esta tarefa. Esta participação pode render pontos extras na média final
+É permitido e encorajado o uso de assistentes de IA gerativa na execução desta tarefa.
+ 
+
+Cloud Computing & Cloud Storages
+
+O objeto desta tarefa é realizar um estudo sobre um dentre os principais serviços de nuvens do mercado (Cloud Provider) : AWS, Azure, Google Cloud, ou Oracle Cloud. Abaixo segue um roteiro que pode auxiliar nessas pesquisas:
+
+1.         Conceito de Cloud Computing e Definição de Cloud Storage
+
+2.         Modelos de serviço: IaaS, PaaS, SaaS, DBaaS, DWaaS
+
+3.         Definição dos tipos de nuvem (pública, privada, híbrida)
+
+4.         Discussão sobre as características de acessibilidade, disponibilidade, latência, escalabilidade, confiabilidade, segurança, custo etc.
+
+5.         Sendo a escolha a AWS (Grupos 3 e 7), mencionar:
+
+a)      Computação: EC2
+
+b)      Armazenamento: S3 (armazenamento de objetos), EBS, Glacier
+
+c)      Banco de dados: RDS (DBaaS para MySQL, PostgreSQL, Oracle, SQL Server), Aurora, DynamoDB, Redshift (DWaaS)
+
+6.         Sendo a escolha a Azure (Grupos 4 e 5), mencionar:
+
+a)      Computação: Azure Virtual Machines
+
+b)      Armazenamento: Azure Blob Storage, Disk, File Storage
+
+c)      Banco de dados: Azure SQL Database (DBaaS), Cosmos DB, PostgreSQL, MySQL, Azure Synapse Analytics (DWaaS)
+
+7.         Sendo a escolha a Google Clould Platform (GCP) (Grupos 1 e 2), mencionar:
+
+a)      Computação: Compute Engine
+
+b)      Armazenamento: Cloud Storage, Persistent Disk
+
+c)      Banco de dados: Cloud SQL (DBaaS), Firestore, Bigtable, BigQuery (DWaaS)
+
+8.         Sendo a escolha a Oracle Cloud Infrastructure (OCI) (Grupo 6), mencionar:
+
+a)      Computação: Compute
+
+b)      Armazenamento: Object Storage, Block Volumes
+
+c)      Banco de dados: Oracle Autonomous DB (DBaaS), MySQL HeatWave, Oracle Analytics Cloud (DWaaS)
+
+9.      Qual o custo, vantagens e desvantagens para armazenar e processar uma base de dados de 3.5 PetaBytes?
+
+A maioria das informações atualizadas sobre esse assunto podem ser encontradas em livros não listados como referências dessa disciplina. Em destaque temos o livro do T. Erl, R. Puttini e Z Mahmood (Cloud Computing: Concepts, Technology & Architecture), que oferece uma visão completa desse tema, e o livro "open access" da Huawei Technologies (Cloud Computing Technology, 2023). Há um material introdutório online da Beatriz Oliveira e Mariana Carvalho (Guia da Computação em Nuvem) em português no site (https://archive.org/details/guia-da-computacao-em-nuvem). Outras informações podem ser levantadas nos sites dos provedores de nuvem mencionados (Cloud Providers) e através de assistentes de IA (recomendo o uso crítico).
+
+Nas referências desta disciplina, esse assunto é abordado nos finais das seções 1.9 (History of Database Systems, Years 2010) e 12.2 (Storage Interfaces), e na seção 20.7 do livro do Silberschatz, Korth e Sudarshan (Sistema de Banco de Dados, 7a edição). Já no livro do Elmasri e Navathe (Sistemas de Banco de Dados, 7a edição) esse assunto é mencionado nas aberturas dos Capítulos 1 e 2 e nas seções 25.6.2 (Big Data in Cloud Computing) e 25.6.3. Nas referências complementares este assunto é discutido na seção 1.6.5 do livro do M.T. Özsu e P. Valduriez (Principles of Distributed Database Systems).
+
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br
+ 
+
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br

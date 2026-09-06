@@ -125,15 +125,16 @@ const P = () => ++pg;
     fontFace: FB, fontSize: 10.5, bold: true, charSpacing: 1.2, color: ACC,
   });
   const nomes = [
-    "[NOME COMPLETO DO INTEGRANTE 1] — DRE [00000000]",
-    "[NOME COMPLETO DO INTEGRANTE 2] — DRE [00000000]",
-    "[NOME COMPLETO DO INTEGRANTE 3] — DRE [00000000]",
-    "[NOME COMPLETO DO INTEGRANTE 4] — DRE [00000000]",
-    "[NOME COMPLETO DO INTEGRANTE 5] — DRE [00000000]",
+    "Bernardo Brandão Pozzato Carvalho Costa — DRE 123289593",
+    "Enzo de Carvalho Sampaio — DRE 123386206",
+    "Gabriel Schmitz Corrêa Rizawinsk — DRE 123225573",
+    "Guilherme En Shih Hu — DRE 123224674",
+    "Raphael Henrique da Silva Pereira — DRE 123311073",
+    "Vivian Maria da Silva e Souza — DRE 123205793",
   ];
   s.addText(nomes.map((t, i) => ({ text: t, options: { breakLine: i < nomes.length - 1 } })), {
     x: M + 0.3, y: 5.12, w: 6.8, h: 1.45, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 12.5, color: LIGHT, lineSpacing: 19,
+    fontFace: FB, fontSize: 11.5, color: LIGHT, lineSpacing: 17,
   });
 
   // painel lateral com os três achados
@@ -906,15 +907,16 @@ const P = () => ++pg;
     fontFace: FB, fontSize: 11.5, bold: true, charSpacing: 1.3, color: ACC,
   });
   const au = [
-    "[INT. 1] — coordenação; decidiu adotar faixas em vez de valores pontuais.",
-    "[INT. 2] — fundamentos; decidiu articular os dois livros-texto.",
-    "[INT. 3] — Tabela 16.1; decidiu a convenção binária/decimal e as linhas novas.",
-    "[INT. 4] — interfaces; decidiu usar taxa por direção no FC; detectou o erro do NL-SAS.",
-    "[INT. 5] — gerente de armazenamento e Post-Mortem.",
+    "Bernardo — coordenação, preços e conclusão.",
+    "Enzo — fundamentos e leitura dos capítulos-base.",
+    "Gabriel — Tabela 16.1 e cálculo de preço por KB.",
+    "Vivian — interfaces, Fibre Channel e correção do NL-SAS.",
+    "Guilherme — verificação adversarial, scripts e revisão final.",
+    "Raphael — gerente de armazenamento e consolidação do Post-Mortem.",
   ];
   s.addText(au.map((t, i) => ({ text: t, options: { bullet: true, breakLine: i < au.length - 1 } })), {
     x: 7.17, y: 2.32, w: 5.1, h: 1.85, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 11.5, color: INK, lineSpacing: 15, paraSpaceAfter: 5,
+    fontFace: FB, fontSize: 10.5, color: INK, lineSpacing: 13, paraSpaceAfter: 3,
   });
   card(s, M, 4.45, W - 2 * M, 2.15, DARK);
   s.addText("Cinco lições sobre o uso de IA neste tipo de trabalho", {
@@ -934,7 +936,7 @@ const P = () => ++pg;
     fontFace: FB, fontSize: 12.5, color: LIGHT, lineSpacing: 17, paraSpaceAfter: 3,
   });
   foot(s, n);
-  s.addNotes("Preencher os nomes dos integrantes no lugar de [INT. n].");
+  s.addNotes("A divisão final registra os seis integrantes, suas seções e decisões principais.");
 }
 
 /* =====================================================================

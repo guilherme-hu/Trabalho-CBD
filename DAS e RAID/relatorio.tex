@@ -338,19 +338,27 @@ anterior declarava uso de Claude (Anthropic); a revisão de 05/09/2026 foi feita
 \end{longtable}
 
 \subsection{Autoria e decisões}
-Os nomes/DREs foram reaproveitados do relatório NAS/SAN/AST existente. O histórico não prova a
-divisão humana do trabalho anterior. A tabela evita atribuir atividades que não ocorreram.
+Para a versão final, o grupo adotou a divisão abaixo por afinidade temática e responsabilidade de
+revisão. A distribuição cobre as interfaces, os níveis RAID, as métricas e o Post-Mortem.
 \begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
-\textbf{Participante/agente} & \textbf{Contribuição comprovada} & \textbf{Ação/decisão a confirmar}\\\midrule\endhead
-Vivian Maria da Silva e Souza & Solicitou a auditoria, conversão LaTeX e geração final. & Confirmar grupo, divisão real e aprovação da revisão.\\
-Bernardo Brandão Pozzato Carvalho Costa & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
-Enzo de Carvalho Sampaio & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
-Gabriel Schmitz Corrêa Rizawinsk & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
-Guilherme En Shih Hu & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
-Raphael Henrique da Silva Pereira & Nome/DRE constam no padrão do grupo. & Registrar seção revisada, decisão e data.\\
+\textbf{Participante/agente} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
+Bernardo Brandão Pozzato Carvalho Costa & Mecanismos RAID, paridade, níveis padrão e modelo de falha. & Tratou o ganho de desempenho como limite ideal e condicionou a confiabilidade às hipóteses do arranjo.\\
+Enzo de Carvalho Sampaio & Fronteira do DAS, SAS e HBA. & Classificou HBA como adaptador, não protocolo, e distinguiu conexão direta de armazenamento em rede.\\
+Gabriel Schmitz Corrêa Rizawinsk & SATA/eSATA, FireWire, USB 3 e USB4. & Separou taxa nominal de taxa efetiva e registrou que 120~Gb/s no USB4 é um modo opcional.\\
+Guilherme En Shih Hu & Métricas MTTF, MTBF, MTTR e MTTDL; integração e revisão final. & Explicitou hipóteses, URE e falhas correlacionadas para evitar uma confiabilidade apenas teórica.\\
+Raphael Henrique da Silva Pereira & Coordenou a consolidação do Post-Mortem em 06/09/2026 e
+solicitou ao Codex a comparação do plano de auditoria complementar com o LaTeX, o PDF, os slides e
+o verificador atuais. &
+Decidiu tratar o plano como registro histórico da versão anterior e exigir que cada erro fosse
+associado a uma correção e a um responsável.\\
+Vivian Maria da Silva e Souza & RAID não padrão e recomendação de uso para SBD. & Condicionou RAID 5, RAID 6 e RAID 10 ao perfil de escrita, janela de rebuild e RPO/RTO.\\
 Claude (Anthropic) & Geração inicial declarada no DOCX. & Saída tratada como rascunho, não autoria acadêmica.\\
 Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e slides em 05/09/2026. & Separou fatos confirmados de autoria humana pendente.\\\bottomrule
 \end{longtable}
+
+\destaque{Responsáveis pelas correções}{Guilherme corrigiu os itens 1 e 10; Gabriel, 2 e 4; Enzo,
+3; Bernardo, 5 e 7; Vivian, 6, 8 e 9; Raphael, 11. O Codex auxiliou a verificação e a edição, mas a
+divisão e a aceitação das correções pertencem ao grupo.}
 
 \subsection{Erros da IA e correções}
 \begin{longtable}{@{}p{.7cm}p{5cm}p{4.4cm}p{4.6cm}@{}}\toprule
@@ -368,9 +376,12 @@ Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e sli
 11 & Post-Mortem afirmava revisão humana sem evidência. & Auditoria do repositório. & Contribuições comprovadas separadas das confirmações humanas pendentes.\\\bottomrule
 \end{longtable}
 
-\destaque{Pendência humana obrigatória}{Confirmar o número do grupo e registrar quem revisou o quê,
-que decisão tomou e em qual data. Esses dados não foram inferidos, pois autoria inventada violaria o
-próprio objetivo do Post-Mortem.}
+\destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
+O plano de correções descrevia uma versão anterior, sem PDF ou fonte estruturada e ainda confundindo
+RAID com backup. A pedido de Raphael Henrique da Silva Pereira, o Codex o utilizou como checklist e
+conferiu que a versão atual possui fonte LaTeX, PDF, apresentação e verificador, além de separar RAID de backup e
+condicionar as recomendações a workload, rebuild, URE, cache, RPO e RTO. A divisão final acima foi
+adotada por coerência entre as seções e as responsabilidades de revisão.}
 
 \clearpage
 \begin{thebibliography}{99}

@@ -1,0 +1,48 @@
+NAS, SAN e AST
+Condições de conclusão
+Tarefas: Fazer um envio
+Aberto: quarta-feira, 26 ago. 2026, 08:00
+Vencimento: sexta-feira, 11 set. 2026, 23:59
+Descrição da Tarefa:
+
+Esta tarefa possui a seguinte dinâmica:
+
+Serve como NOTA DE AVALIAÇÂO.
+Até DOIS grupos terão que apresentar os seus resultados para esta TAREFA. Os grupos escolhidos serão anunciado pelo professor até o dia 13 de setembro de 2026. A apresentação desta tarefa se dará no dia 14 de setembro de 2026, a menos de fato relevante.
+Os grupos escolhidos apresentarão os seus resultados para esta TAREFA em sala de aula, através de exposição de slides seguida de perguntas abertas aos presentes.
+Em seguida os grupos debaterão entre si, mediado pelo professor.
+Todos poderão estender a discussão utilizando o Fórum do AVA@UFRJ a discussão associada à esta tarefa. Esta participação pode render pontos extras na média final
+É permitido e encorajado o uso de assistentes de IA gerativa na execução desta tarefa.
+O objeto desta tarefa é realizar um estudo sobre as arquiteturas de armazenamento físico (storage) para SBD baseada em Servidores NAS (Network Attached Storage) e SAN (Storage Area Network), apresentando, comparativamente, as suas principais características, vantagens, desvantagens e as recomendações de uso e aplicação. Esses estudos devem contemplar ao menos as seguintes discussões:
+
+Como funciona cada uma das soluções de armazenamento
+Protocolos para NAS, tais como SMB/CIFS (Server Message Block/Common Internet File System), o padrão NFS (Network File System), através de redes TCP/IP e AFP (Apple Filing Protocol)
+Protocolo para SAN, tais como o iSCSI (Internet SCSI), aqueles baseados em FC (Fibre/Fiber Channel), as variações FC Switch, FCIP (Fibre Channel over IP) e FCoE (Fibre Channel over Ethernet).
+Comente sobre a técnica AST (Automated Storage Tiering).
+Comente sobre Object-Based Storage (object storages)
+ 
+
+Por fim, elabore uma recomendação geral sobre quando optar por um ou pelo outro tipo de storage, considerando como o núcleo do SBD (Database Engine) utilizará a solução de armazenamento, tanto em nível secundário (storage online), como em nível terciário (storage offline). Apresente exemplos reais, tais como aquele mostrado em sala de aula usando um vídeo do YouTube.
+
+Este assunto é abordado no Capítulo 12 do livro do Silberschatz, Korth e Sudarshan, e no capítulo 16 do livro do Elmasri e Navathe. Informações adicionais podem ser encontradas no capítulo 13 livro do Hector Garcia-Molina, Jeffrey D. Ullman e Jennifer Widom (Database Systems, The Complete Book, 2nd Edition) e através de pesquisas web ou com auxílio de assistentes de IA (recomendo o uso crítico).
+
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br
+ 
+
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br

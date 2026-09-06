@@ -1,5 +1,5 @@
 % =====================================================================
-%  Construção de Banco de Dados — UFRJ
+%  Construção de Banco de Dados --- UFRJ
 %  Tarefa: Dispositivos de Armazenamento Físico para SBD
 % =====================================================================
 \documentclass[11pt,a4paper]{article}
@@ -37,7 +37,7 @@
 \titlespacing*{\subsection}{0pt}{14pt}{6pt}
 
 \pagestyle{fancy}\fancyhf{}
-\fancyhead[L]{\footnotesize\color{tinta2}Armazenamento Físico para SBD — CBD/UFRJ}
+\fancyhead[L]{\footnotesize\color{tinta2}Armazenamento Físico para SBD --- CBD/UFRJ}
 \fancyhead[R]{\footnotesize\color{tinta2}\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\color{linha}\hrule height 0.4pt}
@@ -85,11 +85,12 @@
 \toprule
 \textbf{Nome completo} & \textbf{DRE} \\
 \midrule
-{}[NOME COMPLETO DO INTEGRANTE 1] & [DRE] \\
-{}[NOME COMPLETO DO INTEGRANTE 2] & [DRE] \\
-{}[NOME COMPLETO DO INTEGRANTE 3] & [DRE] \\
-{}[NOME COMPLETO DO INTEGRANTE 4] & [DRE] \\
-{}[NOME COMPLETO DO INTEGRANTE 5] & [DRE] \\
+Bernardo Brandão Pozzato Carvalho Costa & 123289593 \\
+Enzo de Carvalho Sampaio & 123386206 \\
+Gabriel Schmitz Corrêa Rizawinsk & 123225573 \\
+Guilherme En Shih Hu & 123224674 \\
+Raphael Henrique da Silva Pereira & 123311073 \\
+Vivian Maria da Silva e Souza & 123205793 \\
 \bottomrule
 \end{tabular}
 \end{minipage}
@@ -1987,34 +1988,40 @@ não afetarem o conteúdo técnico.
 \toprule
 \textbf{Integrante} & \textbf{Responsabilidade} & \textbf{Decisões tomadas e justificativa} \\
 \midrule
-{}[INTEGRANTE 1] &
+Bernardo Brandão Pozzato Carvalho Costa &
 Coordenação; Seções 1 e 6; revisão final &
 Decidiu adotar faixas de preço em vez de valores pontuais, por causa da divergência entre
 rastreadores; decidiu incluir o aviso metodológico sobre a crise de preços de 2026. \\
 
-{}[INTEGRANTE 2] &
+Enzo de Carvalho Sampaio &
 Seção 2 (fundamentos); leitura dos capítulos-base &
 Decidiu articular os dois livros-texto em vez de seguir um só, por Elmasri detalhar as
 arquiteturas modernas (SAN/NAS/iSCSI) e Silberschatz detalhar a física do \emph{flash} e a
 FTL. \\
 
-{}[INTEGRANTE 3] &
+Gabriel Schmitz Corrêa Rizawinsk &
 Seção 3 (Tabela 16.1 atualizada); cálculo de preço por KB &
 Decidiu usar convenção binária para memórias e decimal para armazenamento, seguindo a
 prática de cada indústria, e documentar a escolha; decidiu acrescentar as três linhas novas
 (CXL, SSD de datacenter, LTO-10) e justificá-las. \\
 
-{}[INTEGRANTE 4] &
+Vivian Maria da Silva e Souza &
 Seção 4 (interfaces); verificação normativa &
 Decidiu adotar taxa \textbf{por direção} para Fibre Channel, contra a convenção
 \emph{full-duplex} da FCIA, para manter comparabilidade com as demais interfaces; detectou
 e documentou a correção sobre NL-SAS. \\
 
-{}[INTEGRANTE 5] &
-Seção 5 (gerente de armazenamento); Post-Mortem &
+Raphael Henrique da Silva Pereira &
+Seção 5 (gerente de armazenamento); coordenação da consolidação do Post-Mortem em 06/09/2026,
+com conferência executada pelo Codex &
 Decidiu ancorar a discussão em parâmetros verificáveis de SGBD real
-(\texttt{random\_page\_cost}, \texttt{effective\_io\_concurrency}) em vez de permanecer no
-plano abstrato. \\
+(\texttt{random\_page\_cost}, \texttt{effective\_io\_concurrency}) e separar os problemas da
+versão auditada das pendências que ainda existem nos artefatos atuais. \\
+
+Guilherme En Shih Hu &
+Rodada de verificação adversarial; execução do verificador e revisão final dos artefatos &
+Decidiu manter uma segunda rodada independente para encontrar contradições internas e só fechar a
+entrega depois que as contas e os termos-chave coincidissem entre relatório e slides. \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -2025,6 +2032,12 @@ integrantes consistiu em definir o escopo, decidir a estrutura, verificar cada n
 contra a fonte primária, corrigir os erros documentados em~9.4 e escrever as análises
 interpretativas --- que são as partes onde este documento diverge do que a IA produziu
 espontaneamente.
+
+\destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
+A pedido de Raphael Henrique da Silva Pereira, o Codex confrontou o plano de correções da versão anterior com
+\texttt{dados.py}, \texttt{relatorio.tex}, os artefatos atuais e o verificador. Os ajustes
+quantitativos já incorporados foram mantidos como histórico de revisão; a identificação e a
+confirmação dos demais integrantes continuam pendentes e não foram inferidas.}
 
 \subsection{Erros gerados pela IA e correções aplicadas}
 
@@ -2046,71 +2059,71 @@ espontaneamente.
 E1 & Apresentou o preço da SRAM derivado do \emph{delta} de V-Cache como se fosse preço de
 mercado da tecnologia. &
 Reclassificado como \emph{proxy} com margem embutida; acrescentada a Nota N2 explicando o
-método e sua limitação. & [INTEGRANTE 3], ao tentar reproduzir a conta. \\
+método e sua limitação. & Gabriel Schmitz, ao tentar reproduzir a conta. \\
 
 E2 & Misturou convenção binária e decimal ao converter US\$/MB em US\$/GB para a SRAM,
 gerando divergência de $\approx$5\% entre valores reportados. &
 Fixada a convenção por categoria (binária para memórias, decimal para armazenamento) e
 documentada no texto; todos os valores recalculados em \emph{script} único. &
-{}[INTEGRANTE 3], ao verificar $199/64\,\text{MiB}$. \\
+Gabriel Schmitz, ao verificar $199/64\,\text{MiB}$. \\
 
 E3 & Sugeriu manter o Intel Optane como linha da tabela, por ser a tecnologia citada no
 livro-texto. &
 Linha removida: o critério C2 exige disponibilidade comercial, e o Optane foi
 descontinuado. A ausência foi transformada em achado (Seção 2.5) em vez de omissão. &
-{}[INTEGRANTE 1]. \\
+Bernardo Brandão. \\
 
 E4 & Reportou capacidade do LTO-10 de forma inconsistente entre trechos: 36\,TB
 (\emph{roadmap} antigo), 30\,TB (lançamento) e 40\,TB (cartucho de 2026). &
 Reconstruída a cronologia completa: 36\,TB era meta de \emph{roadmap} nunca cumprida;
 30\,TB foi o lançamento de 2025; 40\,TB é a especificação de nov./2025, embarcada em
 jan./2026 e compatível com os \emph{drives} existentes. Adotados 30 e 40\,TB, com a
-transição explicada. & [INTEGRANTE 3]. \\
+transição explicada. & Gabriel Schmitz. \\
 
 E5 & Reportou 64GFC como ``12.800\,MB/s'' sem qualificar. &
 Identificado que a FCIA publica \emph{throughput} \textbf{full-duplex}. Adotada a taxa
 \textbf{por direção} (6.400\,MB/s) em toda a Tabela~\ref{tab:if}, para manter
-comparabilidade, com nota explicativa. & [INTEGRANTE 4]. \\
+comparabilidade, com nota explicativa. & Vivian Maria. \\
 
 E6 & Referiu-se a SAS-4 como ``24\,Gb/s''. &
 Corrigido para \textbf{22,5\,Gb/s}; ``24G'' é marca comercial, não taxa. Taxa útil
-recalculada com 128b/150b: 2.400\,MB/s. & [INTEGRANTE 4]. \\
+recalculada com 128b/150b: 2.400\,MB/s. & Vivian Maria. \\
 
 E7 & Ecoou a afirmação do enunciado de que ``SATA também é conhecida como NL-SAS''. &
 Verificação dirigida (\emph{prompt} P4) mostrou que NL-SAS é mecânica SATA \emph{nearline}
 com interface e protocolo SAS. Erro documentado em destaque na Seção~4.3.3, com tabela
 comparativa e consequência prática (\emph{dual-port}, STP, \emph{interposer}). &
-{}[INTEGRANTE 4], por suspeita levantada na leitura de Elmasri §16.11. \\
+Vivian Maria, por suspeita levantada na leitura de Elmasri §16.11. \\
 
 E8 & Apresentou tempo de busca do Seagate Exos~M como se fosse dado de \emph{datasheet}. &
 Verificação no manual oficial mostrou que a Seagate \textbf{removeu} o \emph{seek time} da
 documentação. O valor foi remarcado como estimativa da classe e somado à latência
 rotacional publicada (4,16\,ms), com a Nota N6 registrando o procedimento. &
-{}[INTEGRANTE 3]. \\
+Gabriel Schmitz. \\
 
 E9 & Reportou mediana de preço de DRAM de servidor de US\$\,37,31/GB e, em outro trecho,
 US\$\,4,47/GB, sem sinalizar a contradição. &
 Identificado que os dois valores vêm de rastreadores com metodologias distintas. Adotada
-\textbf{faixa}, com registro explícito da divergência na Nota N9. & [INTEGRANTE 1]. \\
+\textbf{faixa}, com registro explícito da divergência na Nota N9. & Bernardo Brandão. \\
 
 E10 & Apresentou \emph{throughput} agregado de biblioteca de fita como especificação de
 fabricante. &
 Verificação mostrou que nem IBM nem Quantum publicam esse número. Reclassificado como
 derivação nossa (128 \emph{drives} $\times$ 400\,MB/s) e marcado como teto teórico
-(Nota N8). & [INTEGRANTE 5]. \\
+(Nota N8). & Guilherme En Shih. \\
 
 E11 & Na primeira versão da tabela de dispositivos, repetiu o mesmo valor nas colunas de
 leitura e escrita para todos os meios, sem verificar se a assimetria era conhecida. &
 Segregação efetiva onde a informação existe (SSD: 14,7 contra 13,3\,GB/s; SSD SATA: 560
 contra 530\,MB/s; Solidigm: 7,0 contra 3,0\,GB/s --- assimetria de 2,3$\times$ típica de
 QLC). Para meios genuinamente simétricos (DRAM, fita, HDD), mantido o mesmo valor com nota.
-& [INTEGRANTE 3]. \\
+& Gabriel Schmitz. \\
 
 E12 & Tendeu a apresentar estimativas de latência de SSD de consumo com a mesma confiança
 de dados publicados. &
 Introduzido o sistema de marcação de origem em toda a tabela e a Nota N4, que recomenda
 explicitamente usar os valores \emph{enterprise} (publicados) em vez dos de consumo
-(estimados) para citação acadêmica. & [INTEGRANTE 2]. \\
+(estimados) para citação acadêmica. & Enzo de Carvalho. \\
 
 \multicolumn{4}{@{}l}{\emph{Erros abaixo detectados na rodada de verificação adversarial
 descrita na Seção~9.5.}}\\
@@ -2121,7 +2134,7 @@ LTO-14. &
 a nativa é \textbf{365\,TB}. E o número vinha do \emph{roadmap} antigo, \textbf{revisado para
 baixo em novembro de 2025} (LTO-11 de 72 para 70\,TB, LTO-12 de 144 para 120, LTO-13 de 288
 para 210, LTO-14 de 576 para 365). Corrigido em três pontos do documento e em três slides.
-& Verificação adversarial (Seção~9.5); confirmado por [INTEGRANTE 3] contra o
+& Verificação adversarial (Seção~9.5); confirmado por Gabriel Schmitz contra o
 \emph{roadmap} oficial. \\
 
 E14 & Atribuiu ao módulo Samsung CMM-D uma latência de $\approx$140\,ns. &

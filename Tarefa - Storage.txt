@@ -1,0 +1,53 @@
+Storage e Interfaces
+Condições de conclusão
+Tarefas: Fazer um envio
+Aberto: quarta-feira, 26 ago. 2026, 08:00
+Vencimento: sexta-feira, 11 set. 2026, 23:59
+Descrição da Tarefa:
+Esta tarefa possui a seguinte dinâmica:
+
+Serve como NOTA DE AVALIAÇÂO.
+Até DOIS grupos terão que apresentar os seus resultados para esta TAREFA. Os grupos escolhidos serão anunciado pelo professor até o dia 13 de setembro de 2026. A apresentação desta tarefa se dará no dia 14 de setembro de 2026, a menos de fato relevante.
+Os grupos escolhidos apresentarão os seus resultados para esta TAREFA em sala de aula, através de exposição de slides seguida de perguntas abertas aos presentes.
+Em seguida os grupos debaterão entre si, mediado pelo professor.
+Todos poderão estender a discussão utilizando o Fórum do AVA@UFRJ a discussão associada à esta tarefa. Esta participação pode render pontos extras na média final
+É permitido e encorajado o uso de assistentes de IA gerativa na execução desta tarefa.
+O objeto desta tarefa é realizar um estudo sobre dispositivos de armazenamento físico para SBD, suas interfaces e parâmetros para o “Gerente de Armazenamento do SBD”. Este assunto é abordado no Capítulo 12 do livro do Silberschatz, Korth e Sudarshan, e no capítulo 16 do livro do Elmasri e Navathe. Informações adicionais podem ser encontradas no capítulo 13 livro do Hector Garcia-Molina, Jeffrey D. Ullman e Jennifer Widom (Database Systems, The Complete Book, 2nd Edition) e através de pesquisas na web e uso crítico de assistentes de IA.
+
+Os estudos devem contemplar ao menos as seguintes três discussões:
+
+Fundamentos dos Sistemas de Armazenamento Físico para SBD
+A atualização da tabela 16.1, apresentada ao final da seção 16.1.1 do livro “Sistemas de Banco de Dados; R. Elmasri e S. B. Navathe; 7a Edição”, trocando cada tipo de storage por exemplo comercialmente disponíveis nos dias atuais. Escolha dispositivos para os quais sejam fornecidas as informações listadas nas quatro colunas da tabela. No caso da informação de “Capacity” e “Commondity Prices”, atualize com as faixas de preço atual. Quando disponível a informação segregada, divida a coluna de “Max Bandwidth” em duas, uma para a taxa de leitura (read) e outra para a taxa de escrita (write). Também, acrescente uma nova coluna que apresenta a razão “preço/kilobyte”. Observação: Se não encontrar o “Access time”, mantenha o da tabela 16.1.
+A elaboração de uma tabela comparativa entre as interfaces de conexão entre os dispositivos físicos de armazenamento citados anteriormente e o sistema computacional, comparando as suas principais características, tais como, se são seriais ou paralelas, latência, taxa máxima de transferência, portabilidade, distância máxima (ou recomendada) entre o dispositivo físico e o sistema computacional e outros atributos que achar apropriado. A lista a seguir pode ser usada como base de estudo:
+USB (1, 2, 3 e 4),
+SCSI (small computer system interface),
+SATA (serial ATA – PC/AT Attachment, nas suas versões 1, 2 e 3. SATA também é conhecida como NL-SAS)
+NVMe e PCIe para SSD, M2 e U2
+eSATA (external SATA)
+SATA express
+SAS (serial attached SCSI, versão 1, 2 e 3)
+iSCSI (Internet SCSI)
+Firewire
+HBA (Host Bus Adapter)
+FC (Fiber channel ou Fibre channel) e suas variantes, tais como o FCIP (Fibre channel over IP) e a FCoE (Fiber channel over Ethernet)
+InfinitBand (IB) para HPC e processamento de IA/ML/DL/LLM
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br
+ 
+
+A resposta a esta tarefa é composta dos seguintes produtos e ações:
+
+Um PDF, a ser postado nesta tarefa, contendo o resultado do estudo, podendo conter resumo, introdução, desenvolvimento, conclusão, observações, dúvidas, considerações e qualquer texto que o grupo achar conveniente que seja avaliado para obtenção da nota. Como é suposto o uso de assistentes de IA para conclusão desta tarefa dentro do prazo estipulado, este documento deverá conter, pelo menos, (i) o log dos prompts chaves utilizados, (ii) demonstração da autoria dos participantes, ou seja, quem fez o quê, quem decidiu o quê e por que, e (iii) quem corrigiu e otimizou o que a IA fez de errado. Neste último caso, listar quais foram os erros gerados e qual o acerto feito. Todas estas partes relacionadas com o uso da IA devem ser escritas em uma seção intitulada Post-Mortem (ou relatório Post-Mortem, que é o termo atual utilizado no mercado para relatar a análise de erros gerados pela IA).
+A postagem deste PDF é obrigatória.
+Os slides da apresentação a ser realizada pelo grupo. Esta postagem é obrigatória
+Uma apresentação, por até DOIS grupos, do resultado do estudo, que será a partir do dia 14 de setembro de 2026, ou melhor data. Esta apresentação será feita pelos grupos escolhidos pelo professor. Neste dia o integrante do grupo que não comparecer terá a sua nota rebaixada.
+Um debate entre os grupos que se apresentaram, em dinâmica de competição conduzida pelo professor.
+Os produtos PDF e SLIDES devem conter uma FOLHA DE ROSTO com a lista dos nomes completos e DRE dos integrantes do grupo. Estes produtos devem ser postados nesta tarefa por APENAS UM componente do grupo. Os demais postam apenas a folha de rosto em PDF. O aluno que não postar nada, mesmo estando no grupo, terá a sua nota reduzida, podendo ser ZERO.
+Devido a possível problema de disponibilidade do AVA@UFRJ no dia do prazo final de entrega, será considerado com entregue o trabalho (PDF e SLIDES) enviado dentro do prazo para o endereço de correio eletrônico milton@matematica.ufrj.br

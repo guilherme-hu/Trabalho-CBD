@@ -2534,15 +2534,15 @@ correções da Seção~\ref{sec:erros}.}
 \subsection{Autoria: quem fez o quê, quem decidiu o quê e por quê}
 \label{sec:autoria}
 
-\begin{table}[H]
-\centering
-\caption{Divisão de trabalho e de decisão.}
-\label{tab:autoria}
 {\footnotesize
-\begin{tabular}{@{}p{3.7cm}p{4.3cm}p{6.3cm}@{}}
+\begin{longtable}{@{}p{3.7cm}p{4.3cm}p{6.3cm}@{}}
+\caption{Divisão de trabalho e de decisão.}\label{tab:autoria}\\
 \toprule
 \textbf{Integrante} & \textbf{Fez} & \textbf{Decidiu, e por quê} \\
-\midrule
+\midrule\endfirsthead
+\toprule
+\textbf{Integrante} & \textbf{Fez} & \textbf{Decidiu, e por quê} \\
+\midrule\endhead
 Bernardo Brandão Pozzato Carvalho Costa &
 Seção \ref{sec:san} (SAN, pilha FC, endereçamento, zoneamento) e Seção \ref{sec:topologias}
 (topologias). &
@@ -2578,12 +2578,14 @@ trabalho que se apresenta como auditoria de rótulos ganha mais credibilidade mo
 própria auditoria falhou do que exibindo um texto sem cicatrizes. \\
 \addlinespace
 Raphael Henrique da Silva Pereira &
-Seções \ref{sec:ast} (AST) e \ref{sec:objeto} (\textit{object storage}). &
+Seções \ref{sec:ast} (AST) e \ref{sec:objeto} (\textit{object storage}); apoio à conferência
+complementar do Post-Mortem em 06/09/2026, executada pelo Codex. &
 Decidiu adotar a \textbf{tensão entre AST e \textit{buffer manager}} como eixo analítico da seção de
 \textit{tiering} (Seção~\ref{sec:asttensao}). Razão: nenhum dos três livros faz essa ligação, e ela
 converte um item meramente descritivo (``comente sobre AST'') em contribuição própria. Decidiu também
 reverificar se a objeção clássica de consistência eventual do S3 ainda valia --- não valia, e a
-verificação corrigiu um erro da IA. \\
+verificação corrigiu um erro da IA. Na conferência complementar, decidiu tratar o plano de correções
+como fotografia de uma versão anterior e verificar cada apontamento contra os artefatos atuais. \\
 \addlinespace
 Vivian Maria da Silva e Souza &
 Seções \ref{sec:recomendacao} (recomendação; níveis secundário e terciário) e \ref{sec:exemplos}
@@ -2594,8 +2596,18 @@ declarar um critério e aplicá-lo. Decidiu estruturar a recomendação \textbf{
 não por porte de empresa, porque é o perfil de carga --- e não o tamanho da organização --- que
 determina se o motor precisa de bloco ou de arquivo. \\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}}
+
+\destaque{Conferência complementar do Post-Mortem solicitada por Raphael --- 06/09/2026}{%
+A pedido de Raphael Henrique da Silva Pereira, o Codex comparou a auditoria complementar com o relatório, os slides e o
+verificador atuais. Confirmou que os principais apontamentos já haviam sido incorporados: ressalvas
+de escopo para latência e durabilidade, recomendações condicionadas por suporte e SLA, distinções de
+AST e leitura efetiva do PPTX por OOXML quando necessário. A atividade não alterou a contagem das 33
+correções técnicas, porque registrou o fechamento de achados históricos, e não uma nova rodada.}
+
+\destaque{Responsável principal pelo Post-Mortem}{Guilherme En Shih Hu permaneceu responsável pela
+redação do Post-Mortem e pela condução das duas rodadas adversariais. A conferência solicitada por
+Raphael foi apoio complementar e não altera essa atribuição.}
 
 \destaque{As quatro decisões humanas que mais mudaram o resultado}{%
 \textbf{(1) Escopo enxuto.} Trocar volume por revisão. Sem essa decisão não haveria tempo para a

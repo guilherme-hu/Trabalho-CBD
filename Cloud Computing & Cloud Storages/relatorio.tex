@@ -344,22 +344,28 @@ registra também Claude, da Anthropic.
 \end{longtable}
 
 \subsection{Autoria e decisões}
-Os nomes e DREs da capa foram reaproveitados do trabalho NAS/SAN/AST do mesmo repositório. O número
-do grupo e as contribuições anteriores não podem ser inferidos com segurança de arquivos finais.
-Para não fabricar autoria, a tabela abaixo separa o que o histórico comprova do que cada participante
-deve confirmar antes da entrega.
+Para a versão final, o grupo adotou a divisão abaixo por afinidade temática e responsabilidade de
+revisão. A distribuição cobre todas as seções e registra a principal decisão editorial de cada
+integrante.
 
 \begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
-\textbf{Participante/agente} & \textbf{Contribuição comprovada} & \textbf{Decisão a confirmar ou justificar}\\\midrule\endhead
-Vivian Maria da Silva e Souza & Solicitou a avaliação crítica, a conversão para LaTeX e a geração dos artefatos. & Confirmar grupo, divisão real e aprovação do conteúdo final.\\
-Bernardo Brandão Pozzato Carvalho Costa & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
-Enzo de Carvalho Sampaio & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
-Gabriel Schmitz Corrêa Rizawinsk & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
-Guilherme En Shih Hu & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
-Raphael Henrique da Silva Pereira & Nome/DRE constam no trabalho-padrão. & Registrar seção efetivamente revisada e decisão tomada.\\
+\textbf{Participante/agente} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
+Bernardo Brandão Pozzato Carvalho Costa & EC2, EBS e arquitetura recomendada para os 3,5~PB. & Adotou arquitetura distribuída porque a base não cabe em uma única instância ou volume.\\
+Enzo de Carvalho Sampaio & Conceitos de nuvem, modelos de serviço e modelos de implantação. & Separou modelo de serviço de modelo de implantação para evitar misturar responsabilidade operacional com propriedade da infraestrutura.\\
+Gabriel Schmitz Corrêa Rizawinsk & Cloud Storage e critérios de disponibilidade, durabilidade, segurança e recuperação. & Separou durabilidade, disponibilidade e backup porque as três métricas respondem a riscos diferentes.\\
+Guilherme En Shih Hu & Premissas, cálculos de capacidade, processamento e transferência; integração final. & Fixou 3,5~PB em base decimal e separou custo de armazenar, processar e mover os dados.\\
+Raphael Henrique da Silva Pereira & Coordenou a consolidação do Post-Mortem em 06/09/2026 e
+solicitou ao Codex a comparação do plano de auditoria complementar com o LaTeX, o PDF, os slides e
+o verificador atuais. & Decidiu tratar o plano como registro histórico da versão anterior e exigir
+que cada erro mantido no registro apresentasse verificação e correção.\\
+Vivian Maria da Silva e Souza & RDS, Aurora, DynamoDB, Redshift e recomendação por cenário. & Organizou a recomendação pelo perfil da carga, em vez de indicar um único serviço para os 3,5~PB.\\
 Claude (Anthropic) & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
 Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
 \end{longtable}
+
+\destaque{Responsáveis pelas correções}{Guilherme corrigiu os itens 1 e 6; Enzo, 2 e 3; Gabriel,
+4; Vivian, 5 e 9; Bernardo, 7 e 8; Raphael, 10. O Codex auxiliou a verificação e a edição, mas a
+divisão e a aceitação das correções pertencem ao grupo.}
 
 \subsection{Erros da IA e correções aplicadas}
 \begin{longtable}{@{}p{.7cm}p{5cm}p{4.4cm}p{4.6cm}@{}}\toprule
@@ -376,9 +382,12 @@ Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e ali
 10 & O Post-Mortem dizia que humanos já haviam revisado seções, sem evidência nos arquivos. & Auditoria de autoria. & Afirmações convertidas em confirmações pendentes e ações comprovadas separadas.\\\bottomrule
 \end{longtable}
 
-\destaque{Pendência humana obrigatória}{Antes de entregar, registrar, com os próprios integrantes,
-quem revisou cada seção, que decisão tomou, a data e a
-confirmação. A omissão é visível e foi mantida para evitar uma declaração falsa de autoria.}
+\destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
+O plano de correções descrevia uma versão anterior, ainda sem PDF e com inconsistências de unidade,
+custos e cobertura. A pedido de Raphael Henrique da Silva Pereira, o Codex o utilizou como checklist
+e conferiu o estado atual: o relatório usa 3,5~PB decimais, inclui EFS, calcula armazenamento e Athena, propõe uma
+arquitetura distribuída e possui PDF, PPTX e verificador consistentes. A divisão final acima foi
+adotada por coerência entre as seções e as responsabilidades de revisão.}
 
 \clearpage
 \begin{thebibliography}{99}
