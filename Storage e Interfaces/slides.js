@@ -129,7 +129,7 @@ const P = () => ++pg;
     "Enzo de Carvalho Sampaio — DRE 123386206",
     "Gabriel Schmitz Corrêa Rizawinsk — DRE 123225573",
     "Guilherme En Shih Hu — DRE 123224674",
-    "Raphael Henrique da Silva Pereira — DRE 123311073",
+    "Raphael Henrique da Silva Pereira — DRE 123420783",
     "Vivian Maria da Silva e Souza — DRE 123205793",
   ];
   s.addText(nomes.map((t, i) => ({ text: t, options: { breakLine: i < nomes.length - 1 } })), {
