@@ -12,7 +12,7 @@ Os quatro trabalhos usam a mesma relação de seis integrantes:
 | Enzo de Carvalho Sampaio | 123386206 |
 | Gabriel Schmitz Corrêa Rizawinsk | 123225573 |
 | Guilherme En Shih Hu | 123224674 |
-| Raphael Henrique da Silva Pereira | 123311073 |
+| Raphael Henrique da Silva Pereira | 123420783 |
 | Vivian Maria da Silva e Souza | 123205793 |
 
 Os nomes e DREs foram inseridos nas folhas de rosto dos quatro relatórios e das quatro
