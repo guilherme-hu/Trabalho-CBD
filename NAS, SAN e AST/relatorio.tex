@@ -9,7 +9,9 @@
 \usepackage{booktabs,longtable,array,tabularx,multirow,makecell}
 \usepackage{graphicx,xcolor,microtype,enumitem,ragged2e,float}
 \usepackage{pdflscape,caption,fancyhdr,titlesec}
+\usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
+\setlength{\emergencystretch}{2em}
 \titlespacing*{\section}{0pt}{12pt plus 2pt minus 2pt}{6pt}
 \titlespacing*{\subsection}{0pt}{9pt plus 2pt minus 2pt}{4pt}
 \titlespacing*{\subsubsection}{0pt}{8pt plus 2pt minus 2pt}{3pt}
@@ -1143,13 +1145,12 @@ sobre TCP/IP de ponta a ponta. Não existe \textit{fabric} FC em lugar nenhum.
 
 \smallskip
 \textbf{FCIP preserva o FC.} As duas pontas são \textit{fabrics} FC completas, com HBAs, WWNs e
-zoneamento. O FCIP apenas carrega os quadros FC de uma para a outra através da WAN IP, e as duas
-\textit{fabrics} \textbf{se fundem em uma só} do ponto de vista do FC. Daí o principal risco
-operacional do FCIP: um evento de reconfiguração de \textit{fabric} num sítio se propaga ao outro.
+zoneamento. O FCIP carrega quadros FC através da WAN IP. Sem isolamento por roteamento FC,
+a extensão pode unir as \textit{fabrics} e propagar eventos de reconfiguração entre sítios.
 Por isso os produtos oferecem \textit{FC routing} / \textit{IVR} para isolar as \textit{fabrics}
 mantendo o acesso entre elas.}
 
-\textbf{Caso de uso real, e único.} Replicação síncrona ou assíncrona entre sítios para
+\textbf{Aplicação em recuperação de desastre.} Replicação síncrona ou assíncrona entre sítios para
 recuperação de desastre. Elmasri e Navathe já registram isso entre as vantagens da SAN:
 ``replicação de dados de alta velocidade entre múltiplos sistemas de armazenamento. Tecnologias
 típicas usam replicação síncrona para local e replicação assíncrona para soluções de recuperação de
@@ -1281,16 +1282,10 @@ e não deixada ao critério estatístico do \textit{array} (Seção~\ref{sec:ast
 
 \subsection{Nota de fronteira: NVMe-oF}
 
-Uma observação de honestidade técnica: nenhum dos três livros da disciplina cobre o
-\textbf{NVMe-oF} (\textit{NVMe over Fabrics}), porque ele amadureceu depois das edições adotadas.
-Ele é relevante para a discussão porque \emph{substitui o SCSI}, e não o meio de transporte. O SCSI
-foi projetado nos anos 1980 para discos mecânicos, com uma única fila de comandos; o NVMe foi
-projetado para \textit{flash}, com até 65.535 filas. Rodar NVMe sobre a mesma rede FC
-(\textbf{FC-NVMe}), sobre TCP (\textbf{NVMe/TCP}) ou sobre RDMA (\textbf{NVMe/RoCE}) elimina a
-tradução para comandos SCSI e a serialização que ela impõe. Registramos aqui porque o quadro
-``FC $\times$ iSCSI $\times$ FCoE'' do enunciado descreve corretamente o estado da arte dos livros,
-mas a fronteira de 2026 é ``SCSI $\times$ NVMe'' tanto quanto ``FC $\times$ Ethernet''. O
-aprofundamento está fora do escopo desta entrega.
+\textbf{NVMe-oF} (\textit{NVMe over Fabrics}) transporta comandos NVMe sobre FC
+(\textbf{FC-NVMe}), TCP (\textbf{NVMe/TCP}) ou RDMA (\textbf{NVMe/RoCE}).
+As filas paralelas pertencem ao modelo NVMe; SCSI não deve ser confundido com a fila
+única por porta do AHCI. O transporte e a implementação também influenciam o desempenho.
 
 \subsection{Vantagens e desvantagens da SAN}
 \label{sec:vantsan}
@@ -1389,29 +1384,28 @@ instalado por padrão desde o Windows 10 \textit{Fall Creators Update} \cite{mss
 
 \textbf{NFS} & NAS & IETF: RFC 1094 (v2), RFC 1813 (v3), RFC 7530 (v4.0), \textbf{RFC 8881} (v4.1),
 RFC 7862 (v4.2) & Operações de arquivo (RPC) & TCP porta 2049 (v4); v3 usa portmapper $+$ NLM &
-Sim & v4.1 é a norma vigente; pNFS separa metadados de dados \cite{rfc8881} & \textbf{Suportado}
-com ressalvas: exige \texttt{O\_DIRECT} ou cliente próprio por causa da coerência
+Sim & RFC 8881 especifica a v4.1; pNFS separa metadados de dados \cite{rfc8881} & \textbf{Suportado}
+conforme o SGBD e a configuração homologada; considerar a coerência
 \textit{close-to-open} \cite{nfsman}. Oracle implementa cliente próprio (dNFS) \cite{oracledn} \\
 
 \textbf{AFP} & NAS & Proprietário Apple (\textit{AppleTalk Filing Protocol}, 1985--88) & Operações
-de arquivo & TCP porta 548 & Sim & \textbf{Encerrado}: servidor removido no macOS 11 (2020);
+de arquivo & TCP porta 548 & Sim & \textbf{Legado}: servidor removido no macOS 11 (2020);
 cliente depreciado no macOS 15.5 (mai./2025) \cite{appleafp}; a Apple informa oficialmente que
 destinos AFP do Time Machine deixam de ser suportados no macOS 27 \cite{appleafptm} &
-\textbf{Legado, sem recomendação para novas implantações.} Sem travamento em intervalo de \textit{bytes}
-adequado; nenhum SGBD de porte o suporta. Migrar para SMB~3 \\
+\textbf{Legado, sem recomendação para novas implantações.} Possui travamento por intervalo de bytes, mas não identificamos configuração de SGBD homologada neste estudo \\
 
 \textbf{FCP sobre FC} & SAN & T11/INCITS (FC-FS, FC-PI); FCP $=$ mapeamento FC-4 de SCSI-3 &
 Comandos e dados SCSI em quadros FC & \textit{Fibre Channel} (rede sem perdas por BB\_Credit) &
 Não (rede FC própria, endereço de 24 bits) & Padrão do \textit{data center}; 64GFC corrente,
 128GFC (Gen 8) em implantação \cite{fcia128} & \textbf{Referência.} Bloco cru, rede dedicada,
-latência de rede $<$5\% do acesso NVMe. Base do Oracle ASM e de \textit{clusters} com
+latência dependente dos saltos, carga e controladora. Utilizado por Oracle ASM e \textit{clusters} com
 armazenamento compartilhado \\
 
 \textbf{FC \textit{Switch}} (\textit{switched fabric}, FC-SW) & SAN & T11/INCITS --- é uma
 \textbf{topologia}, não um protocolo & (transporta FCP) & \textit{Fibre Channel} comutado, roteamento
-FSPF & Não & Única topologia FC em uso; ponto-a-ponto residual, FC-AL obsoleto &
-\textbf{Obrigatória} em produção: banda dedicada por porta, zoneamento, e duas \textit{fabrics}
-independentes (SAN A / SAN B) \\
+FSPF & Não & Topologia predominante em SAN FC; FC-AL legado &
+Banda por porta e zoneamento; duas \textit{fabrics}
+independentes (SAN A / SAN B) são recomendadas para alta disponibilidade \\
 
 \textbf{iSCSI} & SAN & IETF \textbf{RFC 7143} (2014), que obsoleta a RFC 3720 \cite{rfc7143} &
 Comandos SCSI em TCP & TCP porta 3260 sobre Ethernet/IP & \textbf{Sim} --- LAN, WAN e Internet
@@ -1420,8 +1414,7 @@ Comandos SCSI em TCP & TCP porta 3260 sobre Ethernet/IP & \textbf{Sim} --- LAN, 
 \textit{fabric} FC \\
 
 \textbf{FCIP} & SAN & IETF \textbf{RFC 3821} (2004) \cite{rfc3821} & \textbf{Quadros FC inteiros}
-em TCP/IP & TCP/IP sobre WAN & Sim & Vivo, com propósito único & \textbf{Não é caminho de dado
-primário.} É túnel entre duas \textit{fabrics} FC para replicação entre sítios. A distância impõe
+em TCP/IP & TCP/IP sobre WAN & Sim & Extensão de FC por IP & Túnel entre sítios, usado em replicação e \textit{backup}. A distância impõe
 latência e normalmente conduz ao modo assíncrono, conforme RPO/RTO (Seção~\ref{sec:fcip}) \\
 
 \textbf{FCoE} & SAN & T11 \textbf{FC-BB-5} $=$ ANSI/INCITS 462-2010; FC-BB-6 (VN2VN)
@@ -1429,12 +1422,11 @@ latência e normalmente conduz ao modo assíncrono, conforme RPO/RTO (Seção~\r
 Ethernet sem perdas obrigatório: DCB (802.1Qbb PFC, 802.1Qaz ETS, DCBX) $+$ \textit{baby jumbo} &
 \textbf{Não} --- ``não é roteável na camada IP e não funcionará através de redes IP roteadas como a
 Internet'' \cite{fcbb5} & Nicho: convergência dentro do rack (\textit{blade}, sistemas
-convergentes) & \textbf{Viável mas raro.} Perdeu para o iSCSI embaixo e para o FC em cima. Não
-atravessa \textit{data centers} \\
+convergentes) & Viável em infraestrutura Ethernet compatível com DCB; não é roteado diretamente por IP \\
 
 \textbf{(fronteira)} \textbf{NVMe-oF} & SAN & NVM Express (FC-NVMe, NVMe/TCP, NVMe/RoCE) & Comandos
 NVMe & FC, TCP ou RDMA & Depende do transporte & Em adoção; substitui o \emph{SCSI}, não o meio &
-Remove a fila única do SCSI. Fora do escopo dos livros da disciplina; registrado por completude \\
+Filas paralelas e conjunto de comandos NVMe; depende do transporte e da implementação \\
 
 \end{longtable}}
 \end{landscape}
@@ -1453,19 +1445,16 @@ Remove a fila única do SCSI. Fora do escopo dos livros da disciplina; registrad
 \midrule
 Unidade de abstração & Arquivo & Bloco (LUN) \\
 Dono do sistema de arquivos & O dispositivo de armazenamento & O servidor \\
-Rede & LAN Ethernet/IP compartilhada & Rede dedicada (FC) ou Ethernet segregada \\
+Rede & Ethernet/IP, compartilhada ou segregada & FC ou Ethernet/IP; isolamento depende do projeto \\
 Protocolos & SMB/CIFS, NFS, AFP & FCP/FC, iSCSI, FCIP, FCoE \\
 Compartilhamento entre servidores & Nativo; o dispositivo arbitra & Exige sistema de arquivos de
 \textit{cluster} ou LVM ciente de \textit{cluster} \\
 Travamento & No protocolo (NLM no NFSv3; integrado a partir do NFSv4; \textit{oplocks}/\textit{leases}
 no SMB) & No servidor; a SAN não sabe o que é um arquivo \\
-Coerência de \textit{cache} & Fraca por padrão (\textit{close-to-open}) \cite{nfsman} & Não se
-aplica: o \textit{cache} é do servidor \\
-Custo relativo & Menor (usa infraestrutura existente) & Maior (HBA, \textit{switch}, cabeamento,
-pessoal) \\
-Distância & Limitada pela LAN & 10 km em fibra \cite{elmasri2018}; ilimitada por FCIP \\
-Caso de uso típico em SBD & \textit{Data warehouse}, arquivos de \textit{backup}, ambientes de
-desenvolvimento/homologação, bancos de médio porte com dNFS & OLTP crítico, \textit{clusters} com
+Coerência de \textit{cache} & Depende do protocolo e do cliente; NFS usa \textit{close-to-open} \cite{nfsman} & Coordenada pelos servidores ao compartilhar blocos \\
+Custo relativo & Depende de capacidade, rede e suporte & Depende de capacidade, rede, HBA e suporte \\
+Distância & Rede IP; latência limita a aplicação & Depende da óptica e do transporte; FCIP não elimina a latência \\
+Caso de uso típico em SBD & Arquivos de \textit{backup}, análise e bancos em configurações NFS/SMB homologadas & OLTP crítico, \textit{clusters} com
 armazenamento compartilhado, cargas com requisito de latência de \textit{commit} \\
 \bottomrule
 \end{tabular}}
@@ -1537,22 +1526,16 @@ O mecanismo é, portanto: (i) contadores de acesso por fatia; (ii) uma métrica 
 ``temperatura''; (iii) uma classificação horária; (iv) e a movimentação física das fatias entre
 \textit{tiers} durante uma janela em que o impacto sobre a carga de produção é aceitável.
 
-\subsection{A tensão que ninguém menciona: AST versus \textit{buffer pool}}
+\subsection{AST e \textit{buffer pool}}
 \label{sec:asttensao}
 
-Aqui está o ponto analítico deste trabalho sobre AST. \textbf{Ressalva de alcance, antes de tudo:}
-não afirmamos originalidade absoluta --- as próprias recomendações de fabricante (fixar a política do
-volume de \textit{redo}, por exemplo) pressupõem essa tensão sem nomeá-la. O que verificamos é mais
-estreito e é o que afirmamos: \textbf{nenhum dos três livros-texto da disciplina faz a ligação entre
-a Seção do \textit{buffer manager} e a Seção do \textit{tiering}}, embora ambas estejam no mesmo
-capítulo do Elmasri. A contribuição é a \emph{articulação}, não a observação isolada.
+A comparação a seguir distingue a migração de dados no array do cache de páginas do SGBD; granularidade e janela de observação podem levar a decisões diferentes.
 
-\destaque{O SGBD já faz \textit{tiering} --- e faz melhor, mais rápido e com mais informação}{%
+\destaque{Buffer pool e AST: mecanismos complementares}{%
 Elmasri e Navathe dedicam a Seção 16.3.1 inteira ao \textbf{\textit{buffer manager}}, que ``responde
 a requisições por dados e decide qual \textit{buffer} usar e quais páginas substituir'', com
 políticas LRU, \textit{clock} e FIFO, além de \textit{pin-count} e \textit{dirty bit}
-\cite{elmasri2018}. Isso \emph{é} \textit{tiering} --- entre a memória principal e o armazenamento
-secundário. E ele opera com três vantagens decisivas sobre o AST do \textit{array}:
+\cite{elmasri2018}. O \textit{buffer pool} mantém cópias de páginas em RAM; AST migra dados entre camadas de armazenamento. As diferenças relevantes são:
 
 \smallskip
 \textbf{(1) Granularidade.} O \textit{buffer manager} decide por \textbf{página de 8 ou 16 KiB}. O
@@ -1596,15 +1579,10 @@ A política \textit{Start High then Auto-Tier}, que a Dell recomenda como padrã
 existe precisamente para mitigar isso: escreve tudo no \textit{tier} mais rápido primeiro e só
 depois esfria o que não for acessado.
 
-\item \textbf{\textit{Caching} é mais adequado que \textit{tiering} para banco de dados.} A
-distinção é importante e frequentemente confundida: no \textit{tiering}, o dado \emph{muda de
-lugar} (só existe uma cópia, num \textit{tier}); no \textit{caching}, o dado é \emph{copiado} para
-a camada rápida e o original permanece. \textit{Caching} reage em segundos e com granularidade
-fina, sem custo de migração; \textit{tiering} reage em horas com granularidade grossa, mas
-converte capacidade cara em capacidade barata de forma permanente. Para OLTP, \textit{caching} é
-quase sempre a resposta certa. Não por acaso, Silberschatz descreve exatamente essa configuração:
-``sistemas SAN e NAS modernos [...] podem ser configurados para usar os SSDs como \textbf{cache}
-para dados que residem em discos magnéticos'' \cite{silberschatz2020}.
+\item \textbf{Cache e AST atendem objetivos diferentes.} Cache mantém uma cópia na camada
+rápida; AST migra a localização dos dados. Ambos têm custo de movimentação, e a reação
+depende da implementação. Silberschatz descreve SSDs como cache de discos magnéticos
+\cite{silberschatz2020}. Não concluímos que um mecanismo sempre substitui o outro em OLTP.
 \end{enumerate}
 
 \subsection{Recomendação sobre AST}
@@ -1785,42 +1763,28 @@ Durante 14 anos, a objeção padrão ao armazenamento por objetos para dados de 
 mudou. Desde \textbf{dezembro de 2020}, a AWS documenta que o S3 fornece ``consistência forte
 \textit{read-after-write} automaticamente'', de modo que, ``após uma escrita ou sobrescrita bem
 sucedida, requisições de leitura subsequentes recebem imediatamente a versão mais recente do
-objeto'', valendo também para operações de listagem \cite{awss3faq}. \textbf{Qualquer texto que
-ainda afirme que o S3 é eventualmente consistente está desatualizado em mais de cinco anos} --- e
+objeto'', valendo também para operações de listagem \cite{awss3faq}. \textbf{Essa garantia refere-se às operações de objetos e listagem, não a transações entre chaves} --- e
 essa era uma das afirmações que a nossa própria primeira versão continha (ver
 Seção~\ref{sec:erros}).}
 
-\subsection{Por que ainda não serve como armazenamento primário de OLTP}
+\subsection{Limites para motores OLTP que exigem acesso a blocos}
 
-Elmasri e Navathe encerram a seção com uma ressalva que continua correta: ``como o armazenamento
-por objetos força o travamento a ocorrer no nível do objeto, não está claro quão adequado ele é
-para processamento concorrente de transações em sistemas orientados a transações de alta vazão.
-Portanto, ainda não é considerado viável para aplicações de banco de dados corporativas de
-\textit{mainstream}'' \cite{elmasri2018}. Detalhando as razões contra os cinco requisitos da
-Seção~\ref{sec:engine}:
+Uma API de objetos não substitui diretamente o dispositivo de blocos ou sistema de arquivos
+esperado por um motor tradicional. A ressalva de Elmasri e Navathe \cite{elmasri2018} deve ser
+lida nesse contexto, não como impossibilidade de construir um SGBD sobre objetos.
+\begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
+\item A publicação por chave não oferece a mesma interface de atualização de páginas.
+\item Latência, localização e tamanho das requisições influenciam o desempenho \cite{silberschatz2020}.
+\item Não há \texttt{fsync} de arquivo nem transação nativa entre chaves: o motor deve implementar
+ordenação do log, concorrência e recuperação. Consistência forte por objeto não resolve isso sozinha.
+\end{itemize}
 
-\begin{enumerate}[leftmargin=0.9cm,itemsep=2pt]
-\item \textbf{Sem atualização in-place no modelo S3.} Alterar uma linha exige publicar novo valor
-para a chave; multipart upload muda o transporte, não a semântica de substituição. Um
-\textit{tablespace} de 100 GB como um objeto é inviável; fatiado em objetos de 8 KiB, perde-se toda
-a vantagem de escala e ganha-se uma requisição HTTP por página.
-\item \textbf{Latência de uma ordem de grandeza acima.} Silberschatz já registrava:
-``armazenamento em nuvem tem latência muito alta, de dezenas a centenas de milissegundos, se os
-dados não estiverem colocalizados com o banco de dados, e portanto não é ideal como armazenamento
-subjacente para bancos de dados'' \cite{silberschatz2020}.
-\item \textbf{Sem \texttt{fsync} nem ordenação de escrita} entre objetos distintos: não há como
-exprimir ``grave o \textit{log} antes da página''.
-\item \textbf{Granularidade de travamento incompatível} com concorrência transacional.
-\end{enumerate}
-
-\subsection{Onde ele venceu, e venceu completamente}
+\subsection{Aplicações adequadas}
 
 \begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
-\item \textbf{Camada de armazenamento de \textit{data warehouses} em nuvem.} A arquitetura de
-separação entre computação e armazenamento (Snowflake, Databricks, BigQuery) coloca os dados em
-objetos imutáveis em formato colunar (Parquet, ORC), com uma camada de metadados transacional por
-cima (Iceberg, Delta Lake). O padrão de acesso --- escrever uma vez, ler muitas, varrer grandes
-extensões --- é exatamente aquele em que o objeto é ótimo e a latência não importa.
+\item \textbf{Camada de armazenamento de \textit{data warehouses} em nuvem.} Objetos podem guardar dados colunares com uma camada de metadados transacional. Varreduras de grandes volumes amortizam o custo das requisições; latência continua relevante.
+
+
 \item \textbf{Destino de \textit{backup} e arquivamento} (Seção~\ref{sec:recterciario}).
 \item \textbf{Repositórios de dados não estruturados.} Elmasri e Navathe citam Facebook, Spotify e
 Dropbox \cite{elmasri2018}; o caso do Dropbox é discutido na Seção~\ref{sec:exemplos}.
@@ -1935,30 +1899,19 @@ A Seção~\ref{sec:hierarquia} estabeleceu que NAS e SAN são, ambos, tecnologia
 terciário. \textbf{Aplica-se, e de três maneiras concretas:}
 
 \smallskip
-\textbf{(1) A biblioteca de fitas é um dispositivo de SAN.} A especificação do LTO-10 declara sua
-taxa comprimida ``usando a interface \textit{Fibre Channel} de 32 Gb'' \cite{lto10}. Os
-\textit{drives} de fita são alvos FC (ou SAS) na mesma \textit{fabric} dos \textit{arrays}. A
-consequência de projeto é direta: \textbf{a janela de \textit{backup} disputa a mesma
-\textit{fabric} que a carga de produção}, e o zoneamento precisa separá-las. Um \textit{backup}
-completo a 400 MB/s por \textit{drive}, com oito \textit{drives} em paralelo, são 3,2 GB/s
-sustentados atravessando a SAN --- comparável à carga OLTP de pico de muitas instalações.
+\textbf{(1) Fita e SAN.} Drives podem ser conectados por FC à SAN ou por SAS
+diretamente a um servidor. Se backup e produção compartilham enlaces, disputam capacidade;
+zoneamento controla acesso, não reserva banda. Dimensionar a rede ou separar os caminhos.
 
 \smallskip
-\textbf{(2) O estágio intermediário é NAS.} A prática dominante não escreve do banco direto para a
-fita: escreve primeiro em disco (\textit{disk-to-disk-to-tape}), e esse estágio é quase sempre um
-compartilhamento NAS --- semântica de arquivo é exatamente a abstração desejada para um conjunto de
-arquivos de \textit{dump} nomeados por data. O NAS é, portanto, a \textbf{porta de entrada} do nível
-terciário.
+\textbf{(2) NAS como estágio em disco.} Um compartilhamento NAS pode receber os arquivos
+de backup antes da cópia para fita (\textit{disk-to-disk-to-tape}); não é obrigatório:
+o repositório também pode usar disco local ou LUN de SAN.
 
 \smallskip
-\textbf{(3) Fazer \textit{backup} de um NAS exige um protocolo próprio: o NDMP.} Um NAS
-corporativo não roda agente de \textit{backup}; o \textbf{NDMP} (\textit{Network Data Management
-Protocol}) separa o canal de \emph{controle} (o servidor de \textit{backup} orquestra) do canal de
-\emph{dados} (o NAS escreve direto no \textit{drive} de fita, sem que os dados atravessem o servidor
-de \textit{backup}). É o análogo, no mundo de arquivo, da separação metadados/dados do pNFS e do
-NASD --- e é o elo que liga NAS, SAN e nível terciário numa única arquitetura.
-\textbf{Declaração de escopo:} não aprofundamos o NDMP porque o enunciado não o lista; registramos
-por ser a resposta correta à pergunta ``como se faz \textit{backup} de um NAS?''.}
+\textbf{(3) NDMP como opção.} O \textit{Network Data Management Protocol} separa controle
+e dados no backup de equipamentos compatíveis. Não é requisito universal de NAS;
+a escolha depende do suporte do equipamento e do software de backup.}
 
 \smallskip
 Estabelecido o papel de cada arquitetura, resta a escolha de mídia. Silberschatz define o nível
@@ -2569,7 +2522,7 @@ quem localizou a distinção cliente $\times$ servidor na depreciação. \\
 Guilherme En Shih Hu &
 Coordenação, integração das seções, condução das \emph{duas} rodadas adversariais, redação deste
 Post-Mortem. &
-Decidiu \textbf{escopo enxuto} ($\approx$25--30 páginas) em vez de repetir o porte da tarefa
+Decidiu priorizar o escopo do enunciado em vez de repetir o porte da tarefa
 anterior. Razão: cobrir a lista do enunciado com profundidade e sobrar tempo real de revisão vale
 mais que volume --- e foi a revisão que encontrou os erros. Decidiu mover os aprofundamentos para documento
 separado. Após a segunda rodada, decidiu \textbf{registrar os três erros gravíssimos no corpo do
@@ -2581,8 +2534,7 @@ Raphael Henrique da Silva Pereira &
 Seções \ref{sec:ast} (AST) e \ref{sec:objeto} (\textit{object storage}); apoio à conferência
 complementar do Post-Mortem em 06/09/2026, executada pelo Codex. &
 Decidiu adotar a \textbf{tensão entre AST e \textit{buffer manager}} como eixo analítico da seção de
-\textit{tiering} (Seção~\ref{sec:asttensao}). Razão: nenhum dos três livros faz essa ligação, e ela
-converte um item meramente descritivo (``comente sobre AST'') em contribuição própria. Decidiu também
+\textit{tiering} (Seção~\ref{sec:asttensao}). Razão: relacionar a migração no array com as decisões de cache do SGBD. Decidiu também
 reverificar se a objeção clássica de consistência eventual do S3 ainda valia --- não valia, e a
 verificação corrigiu um erro da IA. Na conferência complementar, decidiu tratar o plano de correções
 como fotografia de uma versão anterior e verificar cada apontamento contra os artefatos atuais. \\

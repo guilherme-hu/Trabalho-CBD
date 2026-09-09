@@ -16,7 +16,9 @@
 \usepackage{caption}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
+\usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
+\setlength{\emergencystretch}{2em}
 
 \definecolor{azul}{HTML}{2A78D6}
 \definecolor{laranja}{HTML}{EB6834}
@@ -539,8 +541,8 @@ e LTO-10), justificadas na Seção~3.3.
 
 \subsection{Tabela 16.1 atualizada --- consulta em 05/09/2026}
 
-A Tabela~\ref{tab:161} ocupa as duas páginas seguintes, em orientação paisagem. Ela deve ser
-lida junto com as notas N1 a N11 que a seguem, nas quais está registrada a origem de cada
+A Tabela~\ref{tab:161} é apresentada a seguir, em orientação paisagem. Ela deve ser
+lida junto com as notas metodológicas que a seguem, nas quais está registrada a origem de cada
 número: \emph{datasheet} oficial do fabricante, medição publicada por terceiro, derivação
 aritmética nossa (com a conta explicitada) ou estimativa de ordem de grandeza. Onde nenhuma
 das quatro categorias se aplicava, a célula traz ``n/d'' em vez de um valor inventado.
@@ -553,7 +555,7 @@ a assimetria é conhecida e publicada; para meios genuinamente simétricos (DRAM
 magnético, fita) os dois valores coincidem, e isso é em si uma informação. A coluna
 \textbf{preço por KB} é a que torna a hierarquia comparável: ela varre seis ordens de
 grandeza, de $3{,}0\times10^{-3}$ na SRAM a $4{,}9\times10^{-9}$ na fita LTO-9 --- uma razão
-de \textbf{621 mil vezes} entre o topo e a base ($199 \div 65{.}536$ contra
+de \textbf{607 mil vezes} entre o topo e a base ($199 \div 67{.}108{,}864$ contra
 $87{,}99 \div 1{,}8\times10^{10}$).
 
 \newgeometry{landscape,left=1.6cm,right=1.6cm,top=1.8cm,bottom=1.8cm}
@@ -561,12 +563,11 @@ $87{,}99 \div 1{,}8\times10^{10}$).
 \thispagestyle{empty}
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.25}
+\renewcommand{\arraystretch}{1.0}
 \begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{3.4cm}>{\RaggedRight\arraybackslash}p{4.3cm}>{\RaggedRight\arraybackslash}p{2.4cm}>{\RaggedRight\arraybackslash}p{2.3cm}>{\RaggedRight\arraybackslash}p{2.2cm}>{\RaggedRight\arraybackslash}p{2.2cm}>{\RaggedRight\arraybackslash}p{3.1cm}>{\RaggedRight\arraybackslash}p{1.9cm}@{}}
 \caption{\textbf{Tabela 16.1 atualizada.} Tipos de armazenamento com capacidade, tempo de
-acesso, largura de banda segregada em leitura e escrita, preço de mercado e preço por
-kilobyte. Preços de referência consultados em 05/09/2026, durante a escassez de memória e
-NAND induzida pela demanda de IA (ver Seção~3.4). Fontes por linha nas notas que seguem a
+acesso, largura de banda segregada em leitura e escrita, preços de referência e preço por
+kilobyte decimal. Consulta original: 05/09/2026; MSRP é histórico, não cotação atual. Fontes por linha nas notas que seguem a
 tabela.}\label{tab:161}\\
 \toprule
 \textbf{Tipo} & \textbf{Exemplo comercial (2026)} & \textbf{Capacidade} &
@@ -608,7 +609,7 @@ $\approx$75\,ns &
 51,2\,GB/s por módulo \newline (614\,GB/s por soquete, 12 canais) &
 51,2\,GB/s &
 1.000--4.000 por módulo &
-$4{,}2\times10^{-5}$ \\
+$4{,}1\times10^{-5}$ \\
 
 \textbf{Memória CXL 2.0 (Tipo 3)} \emph{[linha nova]} &
 Samsung CMM-D MD220 (E3.S, PCIe Gen5) &
@@ -622,16 +623,16 @@ n/d \\
 \textbf{SSD NVMe PCIe 5.0 (consumidor)} &
 Samsung 9100 PRO 1\,TB (M.2 2280) &
 1--8\,TB (dados: 1\,TB) &
-$\approx$50\,\textmu s (4\,K, QD1) &
+50\,\textmu s (livro) &
 14,7\,GB/s \newline (1,85\,M IOPS) &
 13,3\,GB/s \newline (2,60\,M IOPS) &
-219,99 (1\,TB, MSRP) &
-$2{,}20\times10^{-7}$ \\
+199,99 (1\,TB, MSRP) &
+$2{,}00\times10^{-7}$ \\
 
 \textbf{SSD NVMe \emph{datacenter} QLC} \emph{[linha nova]} &
 Solidigm D5-P5336 (U.2 / E3.S / E1.L) &
 7,68--122,88\,TB &
-8--10\,\textmu s leitura \newline 9\,\textmu s escrita \newline (típica; QoS: 110 / 40\,\textmu s) &
+50\,\textmu s (livro) &
 7,0\,GB/s \newline (900\,K IOPS) &
 3,0\,GB/s &
 16.246--33.249 \newline (61,44\,TB) &
@@ -640,7 +641,7 @@ $2{,}6\times10^{-7}$ \\
 \textbf{SSD NVMe \emph{datacenter} TLC} \emph{[linha nova]} &
 Micron 9550 PRO (E1.S / U.2, PCIe 5.0) &
 7,68--30,72\,TB &
-$\approx$80\,\textmu s &
+50\,\textmu s (livro) &
 14,0\,GB/s \newline (3,3\,M IOPS) &
 10,0\,GB/s &
 33.217 (30,72\,TB, lista) &
@@ -658,7 +659,7 @@ $3{,}4\times10^{-7}$ \\
 \textbf{Pen drive USB} &
 Kingston DataTraveler Max (USB 3.2 Gen 2) &
 256\,GB--1\,TB &
-$\approx$0,1--0,5\,ms &
+100\,\textmu s (livro) &
 1.000\,MB/s &
 900\,MB/s &
 130 (1\,TB) &
@@ -667,7 +668,7 @@ $1{,}3\times10^{-7}$ \\
 \textbf{Disco magnético HAMR} &
 Seagate Exos M 30\,TB (ST30000NM004K) &
 24--36\,TB \newline (44\,TB anunciado) &
-$\approx$12,7\,ms \newline (4,16\,ms rot. $+$ $\approx$8,5\,ms busca) &
+10\,ms (livro) &
 275\,MB/s sustentado &
 275\,MB/s &
 800 (30\,TB) --- 1.280 (32\,TB) &
@@ -676,7 +677,7 @@ $2{,}7\times10^{-8}$ \\
 \textbf{Óptico WORM} &
 Verbatim M-DISC BD-XL 100\,GB $+$ Pioneer BDR-X13U &
 100\,GB por disco &
-$\approx$150--250\,ms &
+180\,ms (livro) &
 não publicada \newline ($\approx$36\,MB/s no leitor, 8$\times$) &
 $\approx$18\,MB/s (4$\times$) &
 12,70 por disco \newline $+$ 230 (leitor) &
@@ -716,17 +717,17 @@ n/d \\
 \subsubsection*{Notas de rodapé da Tabela~\ref{tab:161}}
 
 \begin{enumerate}[label=\textbf{N\arabic*.},leftmargin=*]
-\item \textbf{Preço por KB --- método.} Calculado como (preço do produto) $\div$ (capacidade
-      em KB), usando 1\,KB $=$ 2\textsuperscript{10}\,B para SRAM e DRAM e 1\,KB $=$
-      10\textsuperscript{3}\,B para os demais. Exemplo verificável (SRAM): o Ryzen 9
-      9950X3D2 (192\,MB de L3, US\$\,899) e o 9950X3D (128\,MB, US\$\,700) diferem em
-      US\$\,199 por 64\,MiB adicionais, ou seja, US\$\,199\,/\,65.536\,KiB $=
-      3{,}04\times10^{-3}$ por KB.
+\item \textbf{Preço por KB --- método.} Usamos 1\,KB = 1.000 bytes em todas as linhas.
+      Para memória, convertemos a capacidade binária em bytes antes da divisão.
+      Exemplo: 64\,MiB = 67.108,864\,KB; US\$\,199 / 67.108,864\,KB =
+      $2{,}97\times10^{-3}$ US\$/KB. O preço/KB usa a capacidade e o preço pontuais de
+      \texttt{dados.py}; não combina os extremos das faixas de modelos.
+
 \item \textbf{O preço da SRAM é um \emph{proxy}, não um preço.} Cache SRAM não é vendida
-      como produto; o valor acima é o \emph{delta} de preço entre duas CPUs idênticas com e
+      como produto; o valor acima é o \emph{delta} de preço entre duas CPUs comparadas com e
       sem V-Cache empilhado. Embute margem, custo de empacotamento 3D e segmentação de
       mercado, e deve ser lido apenas como ordem de grandeza --- que é, ainda assim,
-      $\approx$80$\times$ o preço por byte da DRAM de servidor.
+      $\approx$72$\times$ o preço por byte da DRAM de servidor nesta base.
 \item \textbf{Tempo de acesso do \emph{cache} ($\ddagger$) --- derivação, não
       especificação.} Nenhum
       fabricante publica latência de \emph{cache} em nanossegundos; publicam-se ciclos, e
@@ -741,35 +742,20 @@ n/d \\
       $46{,}5/5{,}6 = 8{,}30$\,ns (L3), com $+$4 ciclos ($+0{,}71$\,ns) para o V-Cache
       empilhado, totalizando $\approx 9{,}02$\,ns. \textbf{Nenhum desses valores é
       especificação}; todos são derivações declaradas.
-\item \textbf{Tempo de acesso do SSD --- e uma distinção que se confunde com frequência.}
-      Nenhum fabricante de SSD de \emph{consumo} publica latência em \emph{datasheet}; o
-      valor de $\approx$50\,\textmu s do 9100 PRO é estimativa de ordem de grandeza para a
-      classe TLC PCIe~5.0. Os SSDs de \emph{datacenter}, ao contrário, publicam --- mas
-      publicam \textbf{duas famílias de números que não devem ser trocadas}:
-      \begin{itemize}
-      \item \textbf{Latência típica} (4\,KB, QD$=$1): 8--10\,\textmu s de leitura e
-            $\approx$9\,\textmu s de escrita no D5-P5336. É a latência do caminho de dados
-            em regime normal, e é o número comparável com os 214--271\,ns do CXL e os
-            $\approx$12,7\,ms do HDD.
-      \item \textbf{QoS de percentil} (99,9\% ou 99,99\%): 110\,\textmu s de leitura e
-            40\,\textmu s de escrita no mesmo produto. Descreve a \emph{cauda} --- o efeito
-            do \emph{garbage collection} discutido na Seção~2.4 --- e não a operação típica.
-      \end{itemize}
-      A Tabela~\ref{tab:161} traz a latência típica, com o valor de QoS entre parênteses.
-      Uma versão anterior deste trabalho apresentava os 110\,\textmu s como ``latência de
-      leitura publicada'', confundindo as duas famílias --- erro registrado como E18 na
-      Seção~9.4. A ironia é que o QoS é justamente o número que o texto usa como argumento
-      na Seção~2.4 (``a mediana é excelente; o P99,9 pode ser dez vezes pior''): 110 contra
-      8--10\,\textmu s é exatamente o fator de dez.
+\item \textbf{Tempo de acesso de SSD.} Sem valor confirmado para o modelo e a carga,
+      usamos os 50\,\textmu s da Tabela 16.1 original, conforme o enunciado.
+      Isso vale para o 9100 PRO, D5-P5336 e Micron 9550 nesta comparação;
+      não é medição desses produtos. Foram retirados os números não confirmados
+      de latência típica e percentil do D5-P5336.
+
 \item \textbf{Tempo de acesso do SSD SATA.} Derivado do inverso dos IOPS a QD$=$1
       publicados no \emph{datasheet} do 870 EVO: $1/13.000 \approx 77$\,\textmu s de leitura
       e $1/36.000 \approx 28$\,\textmu s de escrita. A escrita é \emph{mais rápida} que a
       leitura porque é absorvida pelo \emph{cache} SLC (\emph{TurboWrite}).
-\item \textbf{Tempo de acesso do HDD.} A Seagate \textbf{removeu o tempo de busca} do
-      \emph{datasheet} e do manual do Exos~M. Apenas a latência rotacional (4,16\,ms) é
-      publicada. Somamos a ela a busca média típica da classe \emph{nearline} 7.200\,rpm
-      ($\approx$8,5\,ms), obtendo $\approx$12,7\,ms --- valor consistente com os 10\,ms da
-      Tabela~16.1 original, que mantivemos como referência conforme autoriza o enunciado.
+\item \textbf{Tempos de acesso mantidos do livro.} Sem valor confirmado de acesso total,
+      mantemos HDD: 10\,ms; USB: 100\,\textmu s; óptico: 180\,ms.
+      A latência rotacional isolada não equivale ao acesso total do HDD.
+
 \item \textbf{Bandas de leitura e escrita da fita} referem-se a \emph{drives} de altura
       integral (\emph{full-height}). Unidades de meia altura entregam 300\,MB/s nativos no
       LTO-9. As taxas ``comprimidas'' assumem razão 2,5:1, que é a convenção do LTO Program
@@ -785,7 +771,7 @@ n/d \\
       de \emph{marketplace} ou de distribuidor. Onde havia divergência, adotamos a faixa e
       não um ponto.
 \item \textbf{Os números do 9100 PRO são do modelo de 1\,TB}, cuja capacidade e MSRP oficial
-      de lançamento (US\$\,219,99) formam a base de cálculo da coluna de preço/KB. O
+      de lançamento sem dissipador (US\$\,199,99) formam a base de cálculo da coluna de preço/KB. O
       \emph{datasheet} Rev.~1.0 mostra
       que a família não é homogênea: o modelo de 4\,TB atinge \textbf{14.800\,MB/s} de
       leitura e \textbf{2.200\,KIOPS} aleatórios de leitura, contra 14.700\,MB/s e
@@ -808,39 +794,14 @@ n/d \\
       Blu-ray; IOPS e latência do Samsung PM1743.
 \end{enumerate}
 
-\subsection{Duas linhas com informação incompleta --- e por que as mantivemos}
+\subsection{Limitações dos dados comerciais}
 
-O enunciado pede que se escolham ``dispositivos para os quais sejam fornecidas as
-informações listadas nas quatro colunas da tabela''. Duas linhas da
-Tabela~\ref{tab:161} \textbf{não cumprem esse requisito}: a memória CXL e a biblioteca de
-fita, ambas com ``n/d'' na coluna de preço. O grupo considera que a decisão de mantê-las
-precisa ser argumentada no corpo do texto, e não escondida em nota de rodapé.
-
-\textbf{O critério do enunciado é acertado} --- ele evita que a tabela se encha de produtos
-escolhidos por serem interessantes e não por serem documentados, que é exatamente o vício
-que a Seção~3.1 procura evitar. Aplicá-lo estritamente, porém, produziria uma tabela que
-\emph{descreve mal o mercado de 2026} em dois pontos:
-
-\begin{itemize}
-\item \textbf{Memória CXL.} É o único degrau novo da hierarquia desde 2014 e o único
-      candidato a ocupar o vazio deixado pelo Optane --- que é a tese central deste
-      trabalho. Módulos CXL são vendidos exclusivamente por contrato OEM, sem preço público:
-      \emph{nenhum} produto da categoria satisfaria o critério. Excluí-la não seria escolher
-      um dispositivo melhor documentado; seria omitir a categoria inteira, e com ela o
-      argumento.
-\item \textbf{\emph{Tape library}.} Está na Tabela~16.1 original (linha ``Tape jukebox'',
-      com faixa de US\$\,3\,K a mais de US\$\,1\,M). Mantivemos a linha por fidelidade ao
-      original, mas verificamos que nem a IBM nem a Quantum publicam preço --- bibliotecas
-      de fita são vendidas exclusivamente sob cotação. Ou seja: a linha correspondente da
-      tabela de 2014 provavelmente já usava estimativa, e nós preferimos declarar a lacuna a
-      reproduzir um número sem origem.
-\end{itemize}
-
-\textbf{Decisão adotada:} manter as duas linhas com ``n/d'' explícito e origem declarada,
-em vez de (a)~removê-las, empobrecendo a descrição do mercado, ou (b)~preenchê-las com
-estimativa não rastreável, que é precisamente o que o restante deste trabalho critica.
-Registramos que isso constitui um \textbf{desvio consciente} do critério do enunciado, e
-não um descuido. As demais doze linhas cumprem o critério integralmente.
+As linhas de CXL (complementar) e biblioteca de fita não têm preço público confirmado;
+por isso não participam da comparação de custo. A biblioteca foi mantida por corresponder
+ao \textit{tape jukebox} do livro. Não se deve interpretar ``n/d'' como custo zero.
+O MSRP histórico do SSD Samsung não substitui uma cotação atual. As faixas comerciais
+registradas na consulta original precisam de fonte por modelo para auditoria de preços;
+os cálculos verificam a aritmética, não comprovam disponibilidade ou validade da oferta.
 
 \subsection{Justificativa das linhas acrescentadas e removidas}
 
@@ -850,7 +811,7 @@ não um descuido. As demais doze linhas cumprem o critério integralmente.
       Optane. Sem essa linha, o salto de 70\,ns para 50\,\textmu s ficaria inexplicado.
 \item \textbf{Desdobramos ``Flash Memory --- SSD'' em três linhas} (consumidor PCIe~5.0,
       datacenter QLC de alta capacidade e datacenter TLC de alto desempenho) porque a
-      categoria única do livro esconde uma variação de \textbf{quatro ordens de grandeza em
+      categoria única do livro esconde uma variação de \textbf{cerca de duas ordens de grandeza em
       capacidade} (1\,TB a 122,88\,TB) e de mais de 5$\times$ em preço por byte. Para um
       SBD, escolher entre QLC de capacidade e TLC de desempenho é uma decisão de projeto,
       não um detalhe.
@@ -882,12 +843,9 @@ Fita (cartucho)       & 8,5\,TB          & 40\,TB                              &
 \end{tabular}
 \end{center}
 
-Contra isso, o \textbf{tempo de acesso} do disco magnético permaneceu na mesma casa
-(10\,ms $\rightarrow$ 12,7\,ms), e o do SSD melhorou apenas de 50\,\textmu s para
-$\approx$50\,\textmu s no consumidor. A lição, que vale para todo modelo de custo de SGBD, é
-que \textbf{densidade e latência escalam por mecanismos diferentes}: densidade acompanha a
-litografia e a física da mídia; latência acompanha a arquitetura do caminho de dados, que
-mudou muito menos.
+Os tempos de acesso mantidos do livro não permitem medir uma evolução de latência.
+Capacidade e banda publicadas podem ser comparadas; uma conclusão sobre latência exige
+medições equivalentes de carga, fila e percentil.
 
 \subsubsection*{(b) A largura de banda foi o que realmente explodiu}
 
@@ -931,24 +889,12 @@ trabalho citava ``aproximadamente 16$\times$'' sem carimbo de trimestre --- erro
 como E15 na Seção~9.4. A lição vale além deste número: em um mercado que oscilou de
 7$\times$ a 23$\times$ em quatro trimestres, \textbf{razão sem data não é dado}.
 
-\subsubsection*{(d) A anomalia de preços de 2025--2026}
+\subsubsection*{(d) Limite da comparação econômica}
 
-\correcao{Aviso metodológico obrigatório sobre os preços desta tabela}{%
-Os preços da Tabela~\ref{tab:161} foram coletados durante uma \textbf{crise de oferta de
-memória e NAND sem precedente}, causada pela realocação de capacidade fabril para HBM
-(memória de alta banda para aceleradores de IA) e por pedidos antecipados de
-hiperescaladores. Números documentados, cada um com a sua janela: os preços de contrato de
-DRAM subiram \textbf{mais de 100\% apenas no 1\textsuperscript{o} trimestre de 2026} para
-DRAM de PC (cerca de $+$90\% para DRAM de servidor no mesmo trimestre); o NAND \emph{spot}
-subiu cerca de \textbf{5$\times$ entre outubro de 2025 e fevereiro de 2026}, chegando a
-8,5$\times$ em março; e o HDD subiu \textbf{46\% em quatro meses}, entre 15 de setembro de
-2025 e 14 de janeiro de 2026, em levantamento com doze modelos. Um mesmo kit DDR5-6000 de 32\,GB passou de $\approx$US\$\,80 em meados de 2025
-para US\$\,540 na consulta de 05/09/2026 --- alta de $\approx$575\%.\\[4pt]
-\textbf{Implicação para a leitura desta tabela:} as \emph{razões} entre tecnologias
-(quantas ordens de grandeza separam DRAM de fita) são estruturais e estáveis; os
-\emph{valores absolutos} são de um pico anômalo e não devem ser lidos como tendência.
-Registramos ainda uma inversão curiosa e temporária: um pen drive USB de 1\,TB
-(US\$\,130/TB) está mais barato por terabyte que um SSD SATA de 1\,TB (US\$\,345/TB).}
+Preço por capacidade não é custo total de propriedade. A comparação não inclui
+energia, manutenção, redundância nem infraestrutura de rede; em mídia removível,
+o preço do cartucho/disco é separado do leitor. Não inferimos tendências de mercado
+a partir de uma consulta pontual.
 
 \subsubsection*{(e) Síntese das mudanças}
 
@@ -1022,7 +968,7 @@ em FC 64/128GFC, InfiniBand HDR/NDR/XDR, PCIe 6.0/7.0 e Ethernet 400G. O USB4 v2
 \thispagestyle{empty}
 {\scriptsize
 \setlength{\tabcolsep}{3.5pt}
-\renewcommand{\arraystretch}{1.2}
+\renewcommand{\arraystretch}{1.0}
 \begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{2.75cm}>{\RaggedRight\arraybackslash}p{1.1cm}>{\RaggedRight\arraybackslash}p{1.15cm}>{\RaggedRight\arraybackslash}p{2.05cm}>{\RaggedRight\arraybackslash}p{2.15cm}>{\RaggedRight\arraybackslash}p{1.85cm}>{\RaggedRight\arraybackslash}p{1.9cm}>{\RaggedRight\arraybackslash}p{1.1cm}>{\RaggedRight\arraybackslash}p{2.55cm}>{\RaggedRight\arraybackslash}p{2.95cm}@{}}
 \caption{\textbf{Comparativo das interfaces de conexão de armazenamento.} Taxas úteis já
 descontam a codificação de linha. Latências marcadas com ($\ast$) são estimativas de ordem
@@ -1072,12 +1018,12 @@ SAS-3 (12G) & 2013 & Serial & 12\,Gb/s & 1.200\,MB/s & idem & 10\,m & Sim & idem
 SAS-4 (24G) & 2019 & Serial & \textbf{22,5}\,Gb/s (128b/150b) & \textbf{2.400\,MB/s} & idem & 10\,m & Sim & idem & \emph{Backplane} tri-modo \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}PCIe e NVMe}}\\
-PCIe 3.0 $\times$4 / $\times$16 & 2010 & Serial (\emph{lanes}) & 8\,GT/s por \emph{lane} & 3,94 / 15,75\,GB/s & $<$1\,\textmu s & $\approx$0,3\,m (PCB) & Sim & Árvore ponto-a-ponto & SSD de geração anterior \\
-PCIe 4.0 $\times$4 / $\times$16 & 2017 & Serial & 16\,GT/s & 7,88 / 31,51\,GB/s & $<$1\,\textmu s & $\approx$0,3\,m & Sim & idem & SSD de datacenter \\
-PCIe 5.0 $\times$4 / $\times$16 & 2019 & Serial & 32\,GT/s & 15,75 / 63,02\,GB/s & $<$1\,\textmu s & $\approx$0,25\,m & Sim & idem & \textbf{Padrão atual} \\
-PCIe 6.0 $\times$4 / $\times$16 & 2022 & Serial PAM4 & 64\,GT/s & 30,25 / 121\,GB/s & $<$1\,\textmu s ($+$FEC) & curta & Sim & idem & Fronteira (Micron 9650) \\
-PCIe 7.0 $\times$4 / $\times$16 & jun./2025 & Serial PAM4 & 128\,GT/s & 60,5 / 242\,GB/s & $<$1\,\textmu s & curta & Sim & idem & Ainda sem produtos \\
-NVMe (local) & 2011--2026 & Protocolo s/ PCIe & --- & $=$ PCIe & \textbf{20--70\,\textmu s} & --- & Sim & 65.535 filas $\times$ 65.536 cmds & \textbf{OLTP, \emph{redo log}} \\
+PCIe 3.0 $\times$4 / $\times$16 & 2010 & Serial (\emph{lanes}) & 8\,GT/s por \emph{lane} & 3,94 / 15,75\,GB/s & $<$1\,\textmu s & $\approx$0,3\,m (PCB) & Depende & Árvore ponto-a-ponto & SSD de geração anterior \\
+PCIe 4.0 $\times$4 / $\times$16 & 2017 & Serial & 16\,GT/s & 7,88 / 31,51\,GB/s & $<$1\,\textmu s & $\approx$0,3\,m & Depende & idem & SSD de datacenter \\
+PCIe 5.0 $\times$4 / $\times$16 & 2019 & Serial & 32\,GT/s & 15,75 / 63,02\,GB/s & $<$1\,\textmu s & $\approx$0,25\,m & Depende & idem & \textbf{Padrão atual} \\
+PCIe 6.0 $\times$4 / $\times$16 & 2022 & Serial PAM4 & 64\,GT/s & 30,25 / 121\,GB/s & $<$1\,\textmu s ($+$FEC) & curta & Depende & idem & Fronteira (Micron 9650) \\
+PCIe 7.0 $\times$4 / $\times$16 & jun./2025 & Serial PAM4 & 128\,GT/s & 60,5 / 242\,GB/s & $<$1\,\textmu s & curta & Depende & idem & Ainda sem produtos \\
+NVMe (local) & 2011--2026 & Protocolo s/ PCIe & --- & $=$ PCIe & \textbf{20--70\,\textmu s} & --- & Depende & 65.535 filas $\times$ 65.536 cmds & \textbf{OLTP, \emph{redo log}} \\
 \midrule
 \multicolumn{10}{@{}l}{\textbf{\color{azul}\emph{Fabrics} de rede}}\\
 NVMe/RoCE v2 & 2016 & \emph{Fabric} Ethernet & 25--400\,GbE & $\approx$ Ethernet & \textbf{41--163\,\textmu s} (P99,99) & $\le$ km & Sim & \emph{Fabric} Ethernet \emph{lossless} & SAN de baixa latência \\
@@ -1797,6 +1743,7 @@ sala:
 
 % =====================================================================
 \section{Referências}
+\begingroup\small
 
 \subsection*{Livros-texto}
 \begin{enumerate}[label={[\arabic*]},leftmargin=*]
@@ -1880,6 +1827,7 @@ sala:
 \item SCSI TRADE ASSOCIATION (STA) / SNIA. \emph{SAS Technology Roadmap} e declarações
       sobre 24G$+$ e SAS-5.
 \end{enumerate}
+\endgroup
 
 \newpage
 % =====================================================================
@@ -1889,7 +1837,10 @@ Esta seção atende ao item do enunciado que exige (i)~o log dos \emph{prompts}-
 (ii)~a demonstração de autoria dos participantes e (iii)~o registro dos erros gerados pela
 IA e das correções aplicadas. O grupo entende o Post-Mortem não como formalidade
 burocrática, mas como a parte do trabalho que documenta \textbf{o que foi verificado e como}
---- sem a qual nenhum dos números das Seções~3 e~4 seria auditável.
+--- distinguindo dados de fonte, estimativas e lacunas.
+Na revisão editorial solicitada por Raphael em 08/09/2026, a IA padronizou KB,
+corrigiu o MSRP, retirou latências não confirmadas e enxugou slides. Esse registro
+não representa nova confirmação humana das fontes comerciais.
 
 \subsection{Ferramentas utilizadas}
 
@@ -2162,12 +2113,12 @@ fatores de forma e dos HBA (Seção~9.6). Contagem corrigida: um corretor que co
 contra a tabela encontra a inconsistência em segundos.
 & Verificação adversarial (Seção~9.5). \\
 
-E18 & Apresentou os 110\,\textmu s de leitura e 40\,\textmu s de escrita do Solidigm
-D5-P5336 como ``latência publicada em \emph{datasheet}''. &
-São valores de \textbf{QoS de percentil}, não de latência típica --- que é de
-8--10\,\textmu s (leitura) e $\approx$9\,\textmu s (escrita). Tabela e Nota~N4 reescritas
-para trazer as duas famílias de números separadas. Agravante: a Nota~N4 recomendava
-justamente esses valores ``por serem publicados''. & Verificação adversarial (Seção~9.5). \\
+E18 & Confundiu latência típica e QoS do D5-P5336. &
+A revisão editorial retirou os valores não confirmados. Adotados 50\,\textmu s da
+Tabela 16.1 original, explicitamente como referência do livro, não dado do produto.
+& Revisão assistida por IA; sem nova atribuição de confirmação humana. \\
+
+
 
 E19 & Rotulou como ``medido'' e como ``TOTAL observado'' os números de latência da Western
 Digital. &
