@@ -1,0 +1,47 @@
+\contentsline {section}{\numberline {1}Resumo}{4}{section.1}%
+\contentsline {section}{\numberline {2}Introdução}{4}{section.2}%
+\contentsline {section}{\numberline {3}Armazenamento Físico em SBD: DAS, NAS e SAN}{4}{section.3}%
+\contentsline {section}{\numberline {4}Interfaces de Conexão para DAS}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}SATA (Serial ATA) e eSATA}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}SAS (Serial Attached SCSI)}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}FireWire (IEEE 1394)}{6}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}USB (USB 3 e USB4)}{6}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}HBA (Host Bus Adapter)}{6}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Quadro Comparativo das Interfaces DAS}{7}{subsection.4.6}%
+\contentsline {section}{\numberline {5}RAID: Conceito, Paralelismo e Redundância}{7}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Paralelismo (Desempenho)}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Redundância (Disponibilidade e Confiabilidade)}{8}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Organização de Dados em RAID: Striping, Mirroring e Paridade}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Data Striping: Bit-Level, Byte-Level e Block-Level}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Mirroring e Shadowing}{9}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Paridade e o Bloco de Paridade}{9}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Métricas de Confiabilidade: MTTF, MTTR, MTBF e MTTDL}{9}{section.7}%
+\contentsline {subsection}{\numberline {7.1}MTTF (Mean Time To Failure)}{9}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}MTTR (Mean Time To Repair)}{9}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}MTBF (Mean Time Between Failures)}{10}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}MTTDL (Mean Time To Data Loss)}{10}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Níveis Padrão de RAID (0 a 6, 0+1 e 10)}{10}{section.8}%
+\contentsline {subsection}{\numberline {8.1}RAID 0 --- Striping}{10}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}RAID 1 --- Mirroring}{10}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}RAID 2 --- Bit-Level Striping com Código Hamming}{10}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}RAID 3 --- Byte/Bit-Level Striping com Paridade Dedicada}{11}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}RAID 4 --- Block-Level Striping com Paridade Dedicada}{11}{subsection.8.5}%
+\contentsline {subsection}{\numberline {8.6}RAID 5 --- Block-Level Striping com Paridade Distribuída}{11}{subsection.8.6}%
+\contentsline {subsection}{\numberline {8.7}RAID 6 --- Dupla Paridade Distribuída}{11}{subsection.8.7}%
+\contentsline {subsection}{\numberline {8.8}RAID 0+1 e RAID 10 --- Arranjos Aninhados de Striping e Mirroring}{12}{subsection.8.8}%
+\contentsline {subsection}{\numberline {8.9}Quadro Comparativo dos Níveis Padrão de RAID}{12}{subsection.8.9}%
+\contentsline {section}{\numberline {9}Níveis Não Padrão de RAID}{13}{section.9}%
+\contentsline {subsection}{\numberline {9.1}RAID 1.5}{13}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}RAID 7}{13}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}RAID-DP (Double Parity)}{14}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}RAID-S}{14}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}Matrix RAID (Intel)}{14}{subsection.9.5}%
+\contentsline {subsection}{\numberline {9.6}RAID-Z}{14}{subsection.9.6}%
+\contentsline {subsection}{\numberline {9.7}Outros Arranjos Aninhados: RAID 50, RAID 60 e RAID 100}{14}{subsection.9.7}%
+\contentsline {section}{\numberline {10}Recomendações de Uso e Aplicação em SBD}{15}{section.10}%
+\contentsline {section}{\numberline {11}Conclusão}{15}{section.11}%
+\contentsline {section}{\numberline {12}Post-Mortem --- Uso de Assistente de IA Generativa}{16}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Log Cronológico dos Prompts-Chave}{16}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Matriz de Responsabilidades e Declaração de Autoria}{16}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}Erros Identificados e Correções Aplicadas}{17}{subsection.12.3}%
+\contentsline {section}{\numberline {13}Referências Bibliográficas}{17}{section.13}%
