@@ -1,5 +1,7 @@
 # Auditoria e plano de correções
 
+> Registro histórico de uma versão anterior. Não descreve o estado atual da entrega; conferir os arquivos finais e seus verificadores. Não integra o conteúdo a entregar.
+
 ## Resumo executivo
 
 O trabalho tem boa profundidade técnica, fonte editável reproduzível (`relatorio.tex` e `slides.js`), relatório compilado e slides em PPTX/PDF. A cobertura de hierarquia de memória, dispositivos, interfaces e efeitos no SGBD é ampla. A entrega, porém, ainda não está pronta: nomes e DREs são placeholders; a base usada pelos gráficos diverge da tabela do relatório; há erros verificáveis em capacidade/preço e na aritmética da biblioteca de fitas; e várias linhas de preço não têm fonte, data e premissa rastreáveis.

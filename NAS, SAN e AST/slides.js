@@ -70,7 +70,7 @@ function fonteNota(s, y, txt){
 function tabela(s, y, head, rows, colW, fs, rowH){
   const body = [ head.map(h => ({ text:h, options:{ bold:true, color:W2, fill:{color:DARK2}, fontSize:(fs||11) } })) ]
     .concat(rows.map(r => r.map(c => ({ text:c, options:{ color:INK, fontSize:(fs||11) } }))));
-  s.addTable(body, { x:M, y:y, w:CW, colW:colW, rowH: rowH||0.36,
+  s.addTable(body, { x:M, y:y, w:CW, colW:colW.map(v=>v*CW/colW.reduce((a,b)=>a+b,0)), margin:0.05, rowH: rowH||0.36,
     fontFace:BF, border:{ type:"solid", color:LINE, pt:0.6 }, valign:"middle", autoPage:false });
 }
 
@@ -134,9 +134,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   s.addText("SAN move a fronteira de rede ABAIXO do sistema de arquivos: o servidor recebe blocos e continua dono do sistema de arquivos.\nNAS move a fronteira ACIMA: o servidor recebe arquivos, e o sistema de arquivos é do dispositivo de armazenamento.", {
     x:M+0.30, y:1.76, w:CW-0.6, h:1.06, isTextBox:true,
     fontFace:BF, fontSize:15.5, color:W2, lineSpacingMultiple:1.12 });
-  card(s, M, 3.16, 6.35, 1.55, "SAN — semântica de BLOCO",
+  card(s, M, 3.16, 5.795, 1.55, "SAN — semântica de BLOCO",
     "O SGBD controla alocação, ordenação de escrita\ne atomicidade de página. Rede dedicada.\nCompartilhar exige FS de cluster.", BLUE);
-  card(s, M+6.65, 3.16, 6.35, 1.55, "NAS — semântica de ARQUIVO",
+  card(s, M+6.095, 3.16, 5.795, 1.55, "NAS — semântica de ARQUIVO",
     "O dispositivo é dono do FS: aloca, faz journaling\ne arbitra travamento. Compartilhamento nativo.\nCoerência de cache é fraca por padrão.", ACC);
   s.addText("Consequência: a escolha certa é a que o Database Engine precisa controlar — não a que tem o cabo mais rápido.", {
     x:M, y:4.92, w:CW, h:0.40, isTextBox:true, fontFace:BF, fontSize:14, bold:true, color:INK });
@@ -230,9 +230,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 {
   const s = slide("Protocolo NAS III — AFP", "Como funciona, por que existiu, e por que acabou",
     "PERGUNTA PROVÁVEL, e a primeira versão deste deck não sabia responder: 'explique como o AFP FUNCIONA — não o que aconteceu com ele'. O enunciado pede 'como funciona cada uma das soluções', e nós tínhamos só o obituário. Resposta: protocolo de sessão COM ESTADO, sobre TCP/548 via DSI; comandos bifurcados por fork (FPOpenFork, FPRead/FPWrite) porque o arquivo do Mac tem data fork e resource fork; metadados do Finder como atributos de primeira classe; travamento por intervalo de bytes com FPByteRangeLock, mas amarrado à SESSÃO. Segunda armadilha: cliente ≠ servidor. Dizer 'removido no Big Sur' erra por cinco anos — removeu o SERVIDOR.");
-  card(s, M, 1.50, 6.35, 2.42, "Como funciona",
+  card(s, M, 1.50, 5.795, 2.42, "Como funciona",
     "• Sessão COM ESTADO: FPLogin → FPOpenVol →\n   operações sobre identificadores de sessão\n• Sobre TCP porta 548, enquadrado pelo DSI\n• Comandos BIFURCADOS por fork: FPOpenFork,\n   FPRead / FPWrite — o arquivo do Mac tem\n   data fork e resource fork\n• Metadados do Finder como atributos de\n   primeira classe, não emulação\n• FPByteRangeLock, mas com semântica de\n   SESSÃO: o travamento morre com ela", BLUE);
-  card(s, M+6.65, 1.50, 6.35, 2.42, "Por que existiu — e o que nunca teve",
+  card(s, M+6.095, 1.50, 5.795, 2.42, "Por que existiu — e o que nunca teve",
     "EXISTIU porque SMB1 e NFS da época não sabiam\nrepresentar o resource fork sem truques (arquivos\n._nome, AppleDouble), e o resultado era corrupção\nsilenciosa de metadados.\n\nNUNCA TEVE: RDMA, múltiplos canais, disponibilidade\ncontínua com failover transparente, nem travamento\nindependente de sessão. Parou no conjunto de\nrecursos de um protocolo de escritório.", INK2);
   let y = 4.08;
   [["macOS 11 (2020)","Removido o SERVIDOR AFP: um Mac deixa de poder compartilhar pastas por AFP.", LINE],
@@ -269,9 +269,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     "Uma rede dedicada transporta COMANDOS SCSI (ou NVMe) entre iniciador no servidor e alvo no array",
     "O SO vê um dispositivo de bloco cru: /dev/sdb. Formata com o próprio FS, ou entrega cru ao SGBD (é o que o Oracle ASM faz)",
   ], 14);
-  card(s, M, 4.10, 6.35, 1.60, "Controle de acesso em duas camadas",
+  card(s, M, 4.10, 5.795, 1.60, "Controle de acesso em duas camadas",
     "Zoneamento (no switch): quais iniciadores veem quais alvos.\nLUN masking (no array): quais LUNs cada iniciador enxerga.\nJuntos, impedem que o servidor de teste monte o LUN de produção.", BLUE);
-  card(s, M+6.65, 4.10, 6.35, 1.60, "Rede sem perdas por BB_Credit",
+  card(s, M+6.095, 4.10, 5.795, 1.60, "Rede sem perdas por BB_Credit",
     "A porta só transmite se tiver crédito; o crédito volta quando o\nreceptor libera um buffer. Sem descarte por congestionamento —\né isso que permite dispensar o TCP. Brocade G710: 2000 buffers.", ACC);
   fonteNota(s, 5.88, "Fontes: Silberschatz et al. §12.2; Elmasri & Navathe §16.11.1; Broadcom, Brocade G710 Product Brief.");
 }
@@ -304,18 +304,18 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["128GFC  (serial, Gen 8)","24.850","12.425","56,1 PAM-4","2022","2024"],
       ["128GFC  (ISL, 4 vias)","25.600","12.800","4 × 28,05 NRZ","2014","2016"],
     ], [3.05,1.65,2.20,2.55,1.10,1.35], 11, 0.42);
-  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.06, w:6.35, h:2.28, rectRadius:0.06,
+  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.06, w:5.795, h:2.28, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
   s.addText("A prova é de física, não de opinião", {
-    x:M+0.24, y:4.16, w:6.0, h:0.28, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:"FFD9C7" });
+    x:M+0.24, y:4.16, w:5.315, h:0.28, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:"FFD9C7" });
   s.addText("16GFC:  3.200 MB/s = 25,6 Gb/s\nmas a linha sinaliza 14,025 Gb/s.\n\n128GFC:  24.850 MB/s = 198,8 Gb/s\nmas a linha sinaliza 112,2 Gb/s.\n\nUma direção não pode transportar mais bits\ndo que a linha sinaliza → é a SOMA DOS DOIS SENTIDOS.", {
-    x:M+0.24, y:4.48, w:6.0, h:1.76, isTextBox:true, fontFace:BF, fontSize:11.5, color:W2, lineSpacingMultiple:1.02 });
-  s.addShape(pres.ShapeType.roundRect, { x:M+6.65, y:4.06, w:6.35, h:2.28, rectRadius:0.06,
+    x:M+0.24, y:4.48, w:5.315, h:1.76, isTextBox:true, fontFace:BF, fontSize:11.5, color:W2, lineSpacingMultiple:1.02 });
+  s.addShape(pres.ShapeType.roundRect, { x:M+6.095, y:4.06, w:5.795, h:2.28, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
   s.addText("A convenção quebra na Gen 8", {
-    x:M+6.89, y:4.16, w:6.0, h:0.28, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:ACC });
+    x:M+6.335, y:4.16, w:5.315, h:0.28, isTextBox:true, fontFace:BF, fontSize:13, bold:true, color:ACC });
   s.addText("Até o 64GFC:  X GFC = X × 100 MB/s por direção.\n\nNo 128GFC:  24.850 ÷ 2 = 12.425, e não 12.800.\nRazão = 1,94, não 2,00.\n\nPorque a linha ficou em 112,2 Gb/s: a FCIA registra\nque dobrar exigiria 115,6 Gb/s, “inviável para fechar\no link budget”. O nome “128” é arredondamento.", {
-    x:M+6.89, y:4.48, w:6.0, h:1.76, isTextBox:true, fontFace:BF, fontSize:11.5, color:INK, lineSpacingMultiple:1.02 });
+    x:M+6.335, y:4.48, w:5.315, h:1.76, isTextBox:true, fontFace:BF, fontSize:11.5, color:INK, lineSpacingMultiple:1.02 });
   fonteNota(s, 6.44, "Proveniência: FCIA Fibre Channel Roadmap, speedmap v24 (jul./2023), consultado em set./2026. O terceiro “128GFC” é o legado do FC-PI-8 rev. 1.4: 12.800 MB/s, que a T11 decidiu não atualizar.");
 }
 
@@ -329,9 +329,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     "TCP porta 3260 · autenticação CHAP · confidencialidade opcional por IPsec · descoberta por SendTargets ou iSNS",
     "Vantagem citada pelo livro: “não requer o cabeamento especial necessário ao Fibre Channel e pode operar a distâncias maiores usando a infraestrutura de rede existente”",
   ], 13.5);
-  card(s, M, 4.28, 6.35, 1.72, "O custo: a pilha TCP/IP",
+  card(s, M, 4.28, 5.795, 1.72, "O custo: a pilha TCP/IP",
     "Processamento no host, controle de congestionamento\ne perda de quadros sob congestão.", INK2);
-  card(s, M+6.65, 4.28, 6.35, 1.72, "As três mitigações modernas",
+  card(s, M+6.095, 4.28, 5.795, 1.72, "As três mitigações modernas",
     "TOE / HBA iSCSI dedicada (pilha no adaptador)\niSER — iSCSI Extensions for RDMA\nDCB no switch: classe Ethernet sem perdas", BLUE);
   fonteNota(s, 6.16, "Fontes: IETF RFC 7143; Elmasri & Navathe, §16.11.3.");
 }
@@ -340,11 +340,11 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 {
   const s = slide("Protocolo SAN II — FCIP", "Não substitui o FC: é um TÚNEL entre duas fabrics FC distantes",
     "Confusão comum e provável alvo de pergunta: iSCSI SUBSTITUI o FC (não há fabric em lugar nenhum); FCIP PRESERVA o FC (as duas pontas são fabrics completas, e o túnel as FUNDE em uma só). Daí o risco operacional: um evento de reconfiguração num sítio se propaga ao outro — por isso existem FC routing e IVR.");
-  card(s, M, 1.56, 6.35, 1.62, "iSCSI substitui o FC",
+  card(s, M, 1.56, 5.795, 1.62, "iSCSI substitui o FC",
     "O servidor não tem HBA de Fibre Channel.\nFala SCSI sobre TCP/IP de ponta a ponta.\nNão existe fabric FC em lugar nenhum.", BLUE);
-  card(s, M+6.65, 1.56, 6.35, 1.62, "FCIP preserva o FC",
+  card(s, M+6.095, 1.56, 5.795, 1.62, "FCIP preserva o FC",
     "As duas pontas são fabrics FC completas, com HBAs,\nWWNs e zoneamento. O túnel carrega quadros FC pela\nWAN IP e FUNDE as duas fabrics em uma só.", ACC);
-  s.addText("Norma: IETF RFC 3821 (2004). Caso de uso real, e único: replicação entre sítios para recuperação de desastre.", {
+  s.addText("Norma: IETF RFC 3821 (2004). Aplicação típica: replicação entre sítios para recuperação de desastre.", {
     x:M, y:3.36, w:CW, h:0.34, isTextBox:true, fontFace:BF, fontSize:13.5, bold:true, color:INK });
   s.addShape(pres.ShapeType.roundRect, { x:M, y:3.82, w:CW, h:2.14, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
@@ -392,13 +392,13 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     ["Protocolo","Família","Norma / origem","Unidade","Roteável L3?","Aplicabilidade a SGBD"],
     [
       ["SMB/CIFS","NAS","[MS-SMB2]; CIFS = SMB 1","Operações de arquivo","Sim","Suportado (SQL Server 2012+); exige transparent failover"],
-      ["NFS","NAS","RFC 8881 (v4.1)","Operações de arquivo","Sim","Suportado com O_DIRECT ou cliente próprio (Oracle dNFS)"],
-      ["AFP","NAS","Proprietário Apple","Operações de arquivo","Sim","Nenhuma — protocolo encerrado"],
+      ["NFS","NAS","RFC 8881 (v4.1)","Operações de arquivo","Sim","Conforme configuração homologada pelo SGBD"],
+      ["AFP","NAS","Proprietário Apple","Operações de arquivo","Sim","Legado; sem recomendação para novo SGBD"],
       ["FCP sobre FC","SAN","T11 (FC-FS, FC-PI)","Comandos SCSI em quadros FC","Não","Referência para OLTP crítico e cluster compartilhado"],
-      ["FC Switch (FC-SW)","SAN","T11 — é TOPOLOGIA","(transporta FCP)","Não","Obrigatória em produção: 2 fabrics independentes"],
+      ["FC Switch (FC-SW)","SAN","T11 — é TOPOLOGIA","(transporta FCP)","Não","Duas fabrics para alta disponibilidade"],
       ["iSCSI","SAN","RFC 7143 (2014)","Comandos SCSI em TCP","Sim","Muito adequada com rede dedicada ou segregada"],
-      ["FCIP","SAN","RFC 3821 (2004)","Quadros FC em TCP/IP","Sim","Não é caminho primário: túnel para replicação entre sítios"],
-      ["FCoE","SAN","FC-BB-5 = INCITS 462-2010","Quadros FC em Ethernet","Não","Viável mas raro; não atravessa data centers"],
+      ["FCIP","SAN","RFC 3821 (2004)","Quadros FC em TCP/IP","Sim","Extensão FC por IP; replicação e backup"],
+      ["FCoE","SAN","FC-BB-5 = INCITS 462-2010","Quadros FC em Ethernet","Não","Exige Ethernet compatível; sem roteamento IP"],
     ], [1.85,0.80,2.55,2.55,1.05,3.09], 10, 0.545);
   fonteNota(s, 6.48, "Normas verificadas na fonte primária; ver referências do relatório.");
 }
@@ -411,16 +411,16 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     [
       ["Unidade de abstração","Arquivo","Bloco (LUN)"],
       ["Dono do sistema de arquivos","O dispositivo de armazenamento","O servidor"],
-      ["Rede","LAN Ethernet/IP compartilhada","Dedicada (FC) ou Ethernet segregada"],
+      ["Rede","Ethernet/IP, compartilhada ou segregada","FC ou Ethernet/IP, conforme projeto"],
       ["Compartilhamento entre servidores","Nativo; o dispositivo arbitra","Exige FS de cluster ou LVM ciente de cluster"],
       ["Travamento","No protocolo (NLM/NFSv4; oplocks no SMB)","No servidor — a SAN não sabe o que é arquivo"],
-      ["Coerência de cache","Fraca por padrão (close-to-open)","Não se aplica: o cache é do servidor"],
-      ["Custo relativo","Menor (usa infraestrutura existente)","Maior (HBA, switch, cabeamento, pessoal)"],
-      ["Caso de uso típico","DW, backup, dev/homologação, médio porte com dNFS","OLTP crítico, cluster compartilhado, latência de commit"],
+      ["Coerência de cache","Depende do protocolo e do cliente","Servidores coordenam o acesso compartilhado"],
+      ["Custo relativo","Depende de capacidade, rede e suporte","Depende de capacidade, rede, HBA e suporte"],
+      ["Caso de uso típico","Backup, análise e configurações NFS/SMB homologadas","OLTP crítico, cluster compartilhado, latência de commit"],
     ], [3.00,4.39,4.50], 10, 0.475);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:6.00, w:CW, h:0.72, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:BLUE, width:1.2 } });
-  s.addText("Convergência: quase todo array corporativo é unificado. “Comprar NAS ou SAN?” virou “qual protocolo apresentar para cada carga?” — pergunta melhor, porque admite respostas diferentes para o tablespace e para a área de dump.", {
+  s.addText("Convergência: arrays unificados oferecem arquivos e blocos. “Comprar NAS ou SAN?” virou “qual protocolo apresentar para cada carga?” — pergunta melhor, porque admite respostas diferentes para o tablespace e para a área de dump.", {
     x:M+0.26, y:6.10, w:CW-0.52, h:0.54, isTextBox:true, fontFace:BF, fontSize:12, color:INK });
 }
 
@@ -439,20 +439,20 @@ function tabela(s, y, head, rows, colW, fs, rowH){
       ["Frequência de análise","“Uma vez por hora, o FAST VP analisa os dados coletados e classifica cada fatia”"],
       ["Janela de relocação","Agendada; padrão diário, das 17h à 1h"],
       ["Políticas","Highest Available · Auto-Tier · START HIGH THEN AUTO-TIER (padrão) · Lowest Available"],
-    ], [4.60,7.29], 11.5, 0.58);
+    ], [4.60,7.29], 11.5, 0.53);
   fonteNota(s, 6.10, "AST move dados; cache mantém cópia; backup cria versão recuperável; replicação mantém estado corrente. AST não substitui backup. Fonte: Dell H15086.3.");
 }
 
 /* ============================== 20. AST x BUFFER MANAGER ============================== */
 {
-  const s = slide("A tensão que nenhum dos três livros menciona", "O SGBD já faz tiering — e faz melhor, mais rápido e com mais informação",
+  const s = slide("AST e buffer pool", "Migração de dados e cache de páginas são mecanismos distintos",
     "Este é o slide de contribuição própria do grupo, e o mais provável de gerar debate. A consequência contra-intuitiva: o AST pode classificar como FRIO exatamente o dado mais QUENTE do banco, porque esse dado mora permanentemente no buffer pool e quase nunca é relido do disco. O que chega ao array é o RESÍDUO que o cache do SGBD não absorveu.");
   card(s, M, 1.54, 3.764, 1.72, "1. Granularidade",
     "Buffer manager: página de 8–16 KiB.\nFAST VP: fatia de 256 MB.\n\n16.384× maior (256 MiB ÷ 16 KiB).", ACC);
   card(s, M+4.064, 1.54, 3.764, 1.72, "2. Latência de reação",
     "Buffer manager: reage AO ACESSO.\nAST: reage numa janela de HORAS.", ACC);
   card(s, M+8.128, 1.54, 3.765, 1.72, "3. Informação semântica",
-    "Buffer manager sabe que aquela página\né o nó raiz de um índice B+.\nO array vê apenas offsets de LBA.", ACC);
+    "O SGBD pode usar informação semântica\nalém do histórico de acessos.\nO array vê apenas offsets de LBA.", ACC);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:3.48, w:CW, h:1.24, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
   s.addText("Consequência contra-intuitiva: o AST enxerga a carga FILTRADA pelo buffer pool. O que chega ao array é o resíduo que o cache do SGBD não absorveu — então um bloco genuinamente quente pode nunca aparecer como quente para o AST. O AST pode classificar como frio exatamente o dado mais quente do banco.", {
@@ -462,7 +462,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   bullets(s, 5.10, [
     "HABILITAR em data warehouse e em consolidação de muitos bancos: o padrão de acesso é estável na escala de dias, que é a escala do AST",
     "EVITAR (ou fixar em Highest Available Tier) para redo/WAL, tempdb e índices críticos",
-    "Para OLTP, CACHING (o dado é copiado, reage em segundos) é quase sempre melhor que TIERING (o dado muda de lugar, reage em horas)",
+    "Avaliar cache e AST separadamente: cópia em RAM e migração no array atendem objetivos distintos",
   ], 12.5);
 }
 
@@ -490,11 +490,11 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 
 /* ============================== 22. OBJETO: onde serve ============================== */
 {
-  const s = slide("Object storage: onde não serve e onde venceu", "A ressalva do livro continua correta — mas por razões que vale detalhar",
-    "Elmasri & Navathe: 'como o armazenamento por objetos força o travamento a ocorrer no nível do objeto, não está claro quão adequado ele é para processamento concorrente de transações em sistemas de alta vazão'. Continua correto. Mas nos domínios em que a latência não importa, venceu completamente.");
-  card(s, M, 1.54, 6.35, 2.60, "Por que não serve como armazenamento primário de OLTP",
-    "• No modelo S3, PUT publica novo valor para a chave;\n   multipart muda o transporte, não essa semântica\n• Latência depende de colocalização e serviço\n• Sem fsync/ordenação transacional entre chaves\n• Sem locking transacional entre objetos", INK2);
-  card(s, M+6.65, 1.54, 6.35, 2.60, "Onde venceu, e venceu completamente",
+  const s = slide("Object storage: limites e aplicações", "A adequação depende da arquitetura do motor",
+    "Elmasri & Navathe: 'como o armazenamento por objetos força o travamento a ocorrer no nível do objeto, não está claro quão adequado ele é para processamento concorrente de transações em sistemas de alta vazão'. Continua correto. Mas em cargas de grandes leituras, o custo por requisição pode ser amortizado.");
+  card(s, M, 1.54, 5.795, 2.60, "Limites para motores que exigem blocos",
+    "• No modelo S3, PUT publica novo valor para a chave;\n   multipart muda o transporte, não essa semântica\n• Latência depende de colocalização e serviço\n• Motor deve implementar ordenação e recuperação\n• Sem locking transacional entre objetos", INK2);
+  card(s, M+6.095, 1.54, 5.795, 2.60, "Aplicações adequadas",
     "• Camada de armazenamento de data warehouses em nuvem:\n   objetos imutáveis em formato colunar (Parquet, ORC) com\n   metadados transacionais por cima (Iceberg, Delta Lake).\n   Escrever uma vez, ler muitas, varrer grandes extensões\n• Destino de backup e arquivamento\n• Repositórios de dados não estruturados", BLUE);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:4.34, w:CW, h:1.10, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:LINE, width:1.1 } });
@@ -579,24 +579,6 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   fonteNota(s, 6.36, "Todas as fontes primárias listadas nas referências do relatório.");
 }
 
-/* ============================== 27. CORREÇÕES AO MATERIAL-FONTE ============================== */
-{
-  const s = slide("Divergências encontradas nas fontes", "Duas nos livros da disciplina, uma de envelhecimento, duas em fontes de fabricante",
-    "Apresentar com respeito — são livros excelentes e o campo se move rápido. A do SATA-3 se prova sozinha dentro da própria frase: se fossem 6 GB/s, seriam 6.000 MB/s, e não os 600 MB/s que o mesmo período afirma. ATENÇÃO: NÃO listamos mais o FCoE como 'erro do livro' — o parágrafo do Elmasri já qualifica a analogia em dois pontos, e nossa versão anterior citava recortado. O que restou está no slide 15, e é menor e honesto. A do LTO foi achada pelo nosso script de verificação, não pela IA.");
-  tabela(s, 1.46, ["Fonte","Afirmação","Correção","Consequência prática"],
-    [
-      ["Silberschatz §12.2","“SATA-3 nominalmente suporta 6 GIGABYTES por segundo, permitindo até 600 megabytes por segundo”","São 6 GIGABITS/s. A própria frase prova: 6 Gb/s ÷ 8 × (8/10) = 600 MB/s","Erro de bit/byte por fator 8. Verificar UNIDADE antes de valor"],
-      ["Elmasri §16.2.1","“SATA agora é chamado de NL-SAS, de nearline SAS”","NL-SAS = mecânica/mídia SATA 7.200 rpm COM interface e protocolo SAS","Array SAS com discos SATA exige STP/interposer e PERDE multipath"],
-      ["Elmasri §16.11.3 (precisão, não erro)","“…controle de fluxo FIM-A-FIM para evitar pacotes descartados”","O PFC (802.1Qbb) é ENLACE A ENLACE, não fim-a-fim. E o livro não menciona a não-roteabilidade em L3","Explica o congestion spreading; e impede usar FCoE entre data centers"],
-      ["Elmasri §16.2.4 (dado datado)","“LTO-6 […] cartucho de 2,5 TB com taxa de 160 MB/s”","LTO-10: 40 TB e 400 MB/s nativos — 16× a capacidade, 2,5× a taxa","Ler um cartucho cheio passou de 4,3 h para 27,8 h: +6,4×"],
-      ["LTO Program (fabricante)","“400 MB/s nativos e 1.200 MB/s comprimidos A 2,5:1”","Não fecha: 400 × 2,5 = 1.000. Os 1.200 exigiriam 3:1. As capacidades, essas, fecham","Adotamos só a taxa nativa. Achado do nosso script de verificação"],
-    ], [2.10,3.35,3.20,3.24], 8.5, 0.78);
-  s.addShape(pres.ShapeType.roundRect, { x:M, y:5.62, w:CW, h:0.92, rectRadius:0.06,
-    fill:{ color:SOFT }, line:{ color:BLUE, width:1.2 } });
-  s.addText("Achado de nomenclatura: a grafia normativa do T11 é “FIBRE Channel”, com -re, porque o padrão não exige fibra óptica (as primeiras variantes rodavam sobre cobre). Silberschatz escreve “Fiber Channel FC” e Elmasri alterna entre as duas no mesmo capítulo. O enunciado, corretamente, reconhece as duas: “FC (Fibre/Fiber Channel)”.", {
-    x:M+0.26, y:5.72, w:CW-0.52, h:0.72, isTextBox:true, fontFace:BF, fontSize:11, color:INK });
-}
-
 /* ============================== 28. CONCLUSÃO ============================== */
 {
   const s = slide("Conclusão", "Três coisas para levar",
@@ -606,7 +588,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   card(s, M, 3.14, CW, 1.44, "2. O rótulo é tão importante quanto o valor",
     "Num campo inteiramente normatizado, encontramos quatro casos em que dois números CORRETOS descrevem coisas diferentes:\nFCIA full-duplex × T11 por direção (2×) · LTO nativo × comprimido (2,5×) · gigabyte × gigabit (8×) · cliente × servidor do AFP (5 anos).\nNenhum é erro de pesquisa: todos são erros de LEITURA, e passariam por uma revisão que só conferisse se o número está na fonte.", ACC);
   card(s, M, 4.70, CW, 1.44, "3. A pergunta do enunciado está sendo reformulada pela indústria",
-    "O AST tenta resolver no array, com 256 MiB e latência de horas, um problema que o buffer manager já resolve com 8–16 KiB e latência de acesso — 16.384 a 32.768× de diferença.\nO object storage abandonou bloco E arquivo, e venceu onde a latência não importa. E o Aurora mostrou que, quando o motor deixa de escrever\npáginas, a escolha entre bloco e arquivo perde parte do sentido. Continua havendo resposta certa para cada carga — mas a fronteira se moveu.", INK2);
+    "O AST tenta resolver no array, com 256 MiB e latência de horas, um problema que o buffer manager já resolve com 8–16 KiB e latência de acesso — 16.384 a 32.768× de diferença.\nO object storage abandonou bloco E arquivo, e atende cargas que amortizam o custo das requisições. E o Aurora mostrou que, quando o motor deixa de escrever\npáginas, a escolha entre bloco e arquivo perde parte do sentido. Continua havendo resposta certa para cada carga — mas a fronteira se moveu.", INK2);
 }
 
 /* ============================== 29. PERGUNTAS PARA O DEBATE ============================== */
@@ -616,7 +598,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   bullets(s, 1.52, [
     "Se a rede FC é <5% da latência de um acesso NVMe, o que ainda justifica economicamente uma fabric FC dedicada — isolamento operacional, ou inércia de investimento?",
     "O AST pode ser CONTRAPRODUCENTE para OLTP? Deveria existir uma interface que exponha as estatísticas do buffer manager ao array — ou o storage deve permanecer deliberadamente ignorante?",
-    "Qual é a granularidade certa para tiering? 256 MB é 16.384× uma página de 16 KiB. Ou o problema é que tiering e caching são mecanismos diferentes vendidos com o mesmo nome?",
+    "Qual é a granularidade certa para tiering? 256 MiB é 16.384× uma página de 16 KiB. Ou o problema é que tiering e caching são mecanismos diferentes vendidos com o mesmo nome?",
     "Com o S3 fornecendo consistência forte desde 2020, qual é a PRÓXIMA barreira real ao objeto como camada primária de um SGBD: latência, imutabilidade, ou ausência de ordenação entre objetos?",
     "A convergência (FCoE) fracassou, ou só mudou de nome? O NVMe/TCP promete o mesmo com outra pilha. O que mudou tecnicamente — ou é a mesma aposta com sigla nova?",
     "Fita ainda tem futuro, ou o air gap é o último argumento? 40 TB a 400 MB/s = 27,8 h para ler um cartucho cheio. A capacidade cresce e a velocidade não.",
@@ -634,9 +616,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     x:M+0.26, y:1.66, w:CW-0.52, h:0.36, isTextBox:true, fontFace:BF, fontSize:12.5, bold:true, color:INK });
   s.addText("ESCRITA:   FCP_CMND   →   FCP_XFER_RDY  (o alvo diz quantos bytes pode receber)   →   FCP_DATA   →   FCP_RSP", {
     x:M+0.26, y:2.06, w:CW-0.52, h:0.36, isTextBox:true, fontFace:BF, fontSize:12.5, bold:true, color:ACC });
-  card(s, M, 2.76, 6.35, 1.64, "Duas camadas de controle de fluxo",
+  card(s, M, 2.76, 5.795, 1.64, "Duas camadas de controle de fluxo",
     "XFER_RDY → por COMANDO, na camada FC-4.\nBB_Credit → por QUADRO, na camada FC-2,\nentre portas adjacentes.\n\nSão independentes: o congestionamento de\numa não é visível na outra.", BLUE);
-  card(s, M+6.65, 2.76, 6.35, 1.64, "Carga útil por quadro",
+  card(s, M+6.095, 2.76, 5.795, 1.64, "Carga útil por quadro",
     "Máximo de 2.112 bytes por quadro FC.\nUm bloco de 16 KiB do InnoDB ocupa,\nportanto, cerca de 8 quadros.", INK2);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:4.58, w:CW, h:1.86, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
@@ -647,13 +629,13 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 }
 {
   const s = slideBackup("As perguntas de NAS que o corpo do deck não responde", "Backup para “como se faz backup de um NAS?” e “e se o servidor sumir?”",
-    "Backup para duas perguntas prováveis e específicas. NDMP é o elo que liga NAS, SAN e nível terciário — e é a resposta correta para 'como se faz backup de um NAS'. hard vs soft é a resposta concreta ao requisito 5 do slide 4.");
-  card(s, M, 1.56, CW, 1.72, "Como se faz backup de um NAS? — NDMP (Network Data Management Protocol)",
-    "Um NAS corporativo não roda agente de backup. O NDMP separa o canal de CONTROLE (o servidor de backup orquestra) do\ncanal de DADOS (o NAS escreve DIRETO no drive de fita, sem que os dados atravessem o servidor de backup).\nÉ o análogo, no mundo de arquivo, da separação metadados/dados do pNFS e do NASD — e é o elo que liga NAS, SAN e nível terciário.", BLUE);
+    "Backup para duas perguntas prováveis e específicas. NDMP é uma opção em equipamentos compatíveis para 'como se faz backup de um NAS'. hard vs soft é a resposta concreta ao requisito 5 do slide 4.");
+  card(s, M, 1.56, CW, 1.72, "Backup de NAS: NDMP como opção",
+    "O NDMP separa controle e dados no backup de equipamentos compatíveis.\nPode permitir envio direto do NAS à fita. Não é obrigatório para todo NAS: a escolha\ndepende do suporte do equipamento e do software de backup.", BLUE);
   card(s, M, 3.44, CW, 1.52, "E se o servidor NFS sumir por 30 segundos? — a opção de montagem hard vs soft",
     "hard: a E/S BLOQUEIA até o servidor voltar. O processo trava, mas nada é corrompido.  soft: a E/S RETORNA ERRO após os timeouts,\ne o SGBD pode registrar uma escrita como perdida. Para banco de dados, a recomendação dos fornecedores é hard.\nÉ a resposta concreta ao requisito 5 do slide 4 — e o análogo, no lado SAN, é no_path_retry / fast_io_fail_tmo no multipath.", ACC);
   card(s, M, 5.12, CW, 1.42, "Nível terciário: onde NAS e SAN entram",
-    "(1) A biblioteca de fitas é DISPOSITIVO DE SAN — o LTO-10 declara sua taxa “usando a interface Fibre Channel de 32 Gb”. A janela de\nbackup disputa a mesma fabric da produção.   (2) O estágio intermediário é NAS: disk-to-disk-to-tape, e o primeiro disco é um\ncompartilhamento de arquivos.   (3) O NDMP é o protocolo que faz a ponte. A pergunta “NAS ou SAN no terciário?” tem, portanto, resposta: os dois, em papéis distintos.", INK2);
+    "Fita pode usar FC na SAN ou SAS direto. O estágio em disco pode ser NAS, LUN SAN ou disco local.\nSe produção e backup compartilham enlaces, dimensionar a capacidade. Zoneamento controla acesso, não reserva banda.\nNAS e SAN podem atender papéis distintos no caminho até a mídia terciária.", INK2);
 }
 {
   const s = slideBackup("RAID e multipath: o que a SAN pressupõe", "Dois mecanismos fora da discussão de protocolo e dentro da de arquitetura",
@@ -664,9 +646,9 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     x:M+0.28, y:1.66, w:CW-0.56, h:0.28, isTextBox:true, fontFace:BF, fontSize:12.5, bold:true, color:"FFD9C7" });
   s.addText("Custo, em operações físicas, de uma escrita aleatória de um bloco:\n\nRAID 1 → 2          RAID 5 → 4  (2 leituras + 2 escritas)          RAID 6 → 6  (3 + 3)\n\nO log é escrito sequencialmente e sincronizado a CADA COMMIT. Sob RAID 5, toda descarga de log que não preencha uma faixa\ncompleta paga 4× — e é justamente a taxa de commits que ela limita.\n\nSilberschatz §12.5: “o RAID nível 1 é popular para aplicações como o armazenamento de arquivos de log num sistema de banco de\ndados, já que oferece o melhor desempenho de escrita”.   Regra: log em RAID 1/10, dados em RAID 5/6.", {
     x:M+0.28, y:1.98, w:CW-0.56, h:1.48, isTextBox:true, fontFace:BF, fontSize:11, color:W2, lineSpacingMultiple:1.02 });
-  card(s, M, 3.70, 6.35, 1.72, "Multipath e ALUA",
+  card(s, M, 3.70, 5.795, 1.72, "Multipath e ALUA",
     "Duas fabrics só produzem disponibilidade se houver,\nno servidor, uma camada que reconheça que os dois\ncaminhos levam ao MESMO LUN: DM-Multipath (Linux),\nMPIO (Windows). O ALUA deixa o array informar quais\ncaminhos são otimizados.", BLUE);
-  card(s, M+6.65, 3.70, 6.35, 1.72, "O parâmetro que decide tudo",
+  card(s, M+6.095, 3.70, 5.795, 1.72, "O parâmetro que decide tudo",
     "no_path_retry / fast_io_fail_tmo:\n“enfileirar indefinidamente” CONGELA a instância;\n“falhar imediatamente” ABORTA transações.\nÉ decisão de projeto, não padrão a aceitar —\ne é o análogo SAN do hard vs soft do NFS.", ACC);
   s.addText("Por que isto importa para o AST: é a mesma razão pela qual a política do volume de redo deve ser FIXADA, e não deixada ao critério estatístico do array.", {
     x:M, y:5.60, w:CW, h:0.36, isTextBox:true, fontFace:BF, fontSize:12, bold:true, color:INK });
@@ -699,7 +681,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     ["Aurora","27.378.000 ÷ 780.000 = 35,1× (artigo diz 35×, confere). 7,4 ÷ 0,95 = 7,79 → 7,8× (artigo diz 7,7×, divergência de arredondamento)."],
     ["LTO-10 — a fonte NÃO fecha","Capacidades: 30 × 2,5 = 75 ✓ e 40 × 2,5 = 100 ✓. Taxa: 400 × 2,5 = 1.000, mas o LTO publica 1.200 “a 2,5:1” (exigiria 3:1). Adotamos só a taxa nativa."],
   ];
-  tabela(s, 1.56, ["Grandeza","Conta"], linhas, [2.55,9.34], 8.5, 0.545);
+  tabela(s, 1.56, ["Grandeza","Conta"], linhas, [2.55,9.34], 8.5, 0.51);
 }
 {
   const s = slideBackup("Post-Mortem — as 33 correções, por família", "Nenhuma foi “alucinação”; todas foram erros bem mais difíceis de detectar",
@@ -748,5 +730,8 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     ], [3.10,3.70,5.09], 9, 0.72);
 }
 
-pres.writeFile({ fileName: "Slides_NAS_SAN_Armazenamento_SBD.pptx" })
-  .then(f => console.log("OK ->", f, "| slides numerados:", n));
+pres.writeFile({ fileName: process.env.OUTPUT_PPTX || "Slides_NAS_SAN_Armazenamento_SBD.pptx" })
+  .then(async f => {
+    await require('../scripts/normalizar_pptx.cjs')(process.env.OUTPUT_PPTX || 'Slides_NAS_SAN_Armazenamento_SBD.pptx');
+    console.log("OK ->", f, "| slides numerados:", n);
+  });

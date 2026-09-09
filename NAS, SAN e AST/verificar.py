@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Verificacao por script (v2, apos a segunda rodada adversarial):
-(1) refaz TODA conta publicada; (2) confere que os numeros-chave aparecem
-identicos no relatorio (.tex) e nos slides (.pptx); (3) confere a checklist
-do enunciado; (4) confere invariantes internos do proprio Post-Mortem."""
+"""Verifica contas selecionadas, presença de números-chave no TeX/PPTX,
+termos da checklist e invariantes do Post-Mortem. Presença textual não prova
+cobertura completa, equivalência semântica ou validade das fontes."""
 import io, sys, zipfile
 from pathlib import Path
 from xml.etree import ElementTree
@@ -152,7 +151,6 @@ CHAVES = [
   ("porta 548",          ["548"]),
   ("11 noves",           ["99,999999999", "99.999999999", "11 noves"]),
   ("LTO-10 400 MB/s",    ["400 MB/s", "400 MBps"]),
-  ("LTO-6 do livro",     ["2,5 TB"]),
   ("Aurora 27.378.000",  ["27378000", "27.378.000"]),
   ("Aurora 30 minutos",  ["30 minutos", "30 min"]),
   ("Aurora SysBench",    ["SysBench"]),
@@ -172,6 +170,11 @@ for nome, alts in CHAVES:
     status = "  OK  " if (t_ok and p_ok) else "  ERRO"
     if not (t_ok and p_ok): falhas.append("cruzamento: "+nome)
     print("%s  %-22s tex=%s pptx=%s" % (status, nome, t_ok, p_ok))
+
+# A comparação histórica LTO-6 permanece no relatório; o slide de crítica
+# aos livros foi retirado para evitar repetição na apresentação.
+if "2,5 TB" not in tex:
+    falhas.append("comparação histórica LTO-6 ausente do relatório")
 
 # ---------- (3) checklist do enunciado ----------
 print("\n== 3. Checklist do enunciado presente no relatorio ==")
@@ -198,4 +201,4 @@ if faltando: falhas.append("bibitem faltando")
 print("\n== RESUMO ==")
 if falhas:
     print("FALHAS (%d): %s" % (len(falhas), falhas)); sys.exit(1)
-print("Tudo confere.")
+print("Checagens selecionadas passaram; revisão técnica e visual continua necessária.")

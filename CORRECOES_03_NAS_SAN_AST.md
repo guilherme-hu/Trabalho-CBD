@@ -1,5 +1,7 @@
 # Auditoria e plano de correções
 
+> Registro histórico de uma versão anterior. Não descreve o estado atual da entrega; conferir os arquivos finais e seus verificadores. Não integra o conteúdo a entregar.
+
 ## Resumo executivo
 
 Esta é a proposta mais madura das quatro: há fontes editáveis, PDF, PPTX, figuras, referências extensas, exemplos reais e identificação completa. NAS, SAN, protocolos, multipath, armazenamento por objetos e armazenamento terciário são tratados em boa profundidade. As correções são de precisão e síntese, não de reconstrução integral.

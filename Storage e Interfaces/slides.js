@@ -88,6 +88,8 @@ function statBlock(s, x, y, w, big, small, color) {
 }
 // tabela padrão
 function table(s, rows, opts) {
+  opts = Object.assign({}, opts || {});
+  if (opts.colW) { const sum=opts.colW.reduce((a,b)=>a+b,0); opts.colW=opts.colW.map(w=>w*(W-2*M)/sum); }
   s.addTable(rows, Object.assign({
     x: M, y: 1.75, w: W - 2 * M,
     fontFace: FB, fontSize: 11.5, color: INK,
@@ -140,8 +142,8 @@ const P = () => ++pg;
   // painel lateral com os três achados
   card(s, 8.55, 1.35, 4.06, 5.37, DARK2);
   const achados = [
-    ["18,6×", "razão observada em 05/09/2026; o 3T26 ainda estava em curso"],
-    ["0", "memórias persistentes byte-endereçáveis em produção: o Optane morreu"],
+    ["1 KB", "1.000 bytes: unidade comum para a comparação de custo"],
+    ["SCM", "Optane foi descontinuado; CXL de DRAM é volátil"],
     ["<1 µs", "é o custo do barramento PCIe num I/O de 20–70 µs — latência é mídia"],
   ];
   achados.forEach((a, i) => {
@@ -300,7 +302,7 @@ const P = () => ++pg;
     s.addText(o[0], { x: x + 0.28, y: 1.92, w: 3.2, h: 0.3, isTextBox: true, margin: 0, fontFace: FB, fontSize: 12.5, color: INK2 });
     s.addText(o[1], { x: x + 0.28, y: 2.24, w: 3.2, h: 0.55, isTextBox: true, margin: 0, fontFace: FH, fontSize: 24, bold: true, color: o[2] });
   });
-  s.addText("Sobrescrever uma página é impossível: é preciso apagar o bloco inteiro, e cada bloco suporta 10⁵–10⁶ apagamentos. Toda a arquitetura do SSD — FTL, garbage collection, wear leveling — existe por causa dessa única restrição.", {
+  s.addText("Sobrescrever uma página é impossível: é preciso apagar o bloco inteiro, e a endurance depende da tecnologia e do produto. Toda a arquitetura do SSD — FTL, garbage collection, wear leveling — existe por causa dessa única restrição.", {
     x: M, y: 3.2, w: W - 2 * M, h: 0.62, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 14.5, color: INK, lineSpacing: 21,
   });
@@ -382,40 +384,26 @@ const P = () => ++pg;
 }
 
 /* =====================================================================
-   9 — TABELA ATUALIZADA (primário + secundário)
+   9 — TABELA ATUALIZADA: SÍNTESE
    ===================================================================== */
 {
   const s = slideLight(); const n = P();
-  head(s, "Tabela 16.1 atualizada — primário e secundário", "2. Tabela 16.1 · setembro de 2026");
+  head(s, "Tabela 16.1: síntese dos dispositivos", "2. Dados completos e fontes no relatório");
   const rows = [
-    [hdr("Tipo"), hdr("Exemplo comercial"), hdr("Capacidade"), hdr("Acesso"), hdr("Leitura"), hdr("Escrita"), hdr("Preço US$"), hdr("US$/KB")],
-    ["Cache SRAM L3", "Ryzen 9 9950X3D2 / EPYC 9755", "96–512 MB", "≈9,0 ns ‡", "≈1,4 TB/s", "≈1,4 TB/s", "700–14.800", "3,0×10⁻³"],
-    ["DRAM desktop", "Corsair DDR5-6000 CL30", "16–96 GB", "70 ns", "96 GB/s", "96 GB/s", "270–1.100", "1,6×10⁻⁵"],
-    ["DRAM servidor", "RDIMM DDR5-6400 64 GB", "32–256 GB", "≈75 ns", "51,2 GB/s", "51,2 GB/s", "1.000–4.000", "4,2×10⁻⁵"],
-    [{ text: "Memória CXL 2.0", options: { bold: true, color: BLUE } }, "Samsung CMM-D MD220 (E3.S)", "128–256 GB", "214–271 ns †", "≈36 GB/s †", "≈36 GB/s †", "não público", "n/d"],
-    ["SSD NVMe PCIe 5.0", "Samsung 9100 PRO (1 TB)", "1 TB (base)", "≈50 µs *", "14,7 GB/s", "13,3 GB/s", "219,99 MSRP", "2,20×10⁻⁷"],
-    [{ text: "SSD NVMe QLC (DC)", options: { bold: true, color: BLUE } }, "Solidigm D5-P5336", "7,68–122,88 TB", "8–10 µs †", "7,0 GB/s", "3,0 GB/s", "16.246–33.249", "2,6×10⁻⁷"],
-    [{ text: "SSD NVMe TLC (DC)", options: { bold: true, color: BLUE } }, "Micron 9550 PRO", "7,68–30,72 TB", "≈80 µs *", "14,0 GB/s", "10,0 GB/s", "33.217", "1,1×10⁻⁶"],
-    ["SSD SATA", "Samsung 870 EVO", "250 GB–4 TB", "77 µs", "560 MB/s", "530 MB/s", "345 (1 TB)", "3,4×10⁻⁷"],
-    ["Pen drive USB", "Kingston DataTraveler Max", "256 GB–1 TB", "≈0,1–0,5 ms", "1.000 MB/s", "900 MB/s", "130 (1 TB)", "1,3×10⁻⁷"],
-    ["Disco HAMR", "Seagate Exos M 30 TB", "24–36 TB", "≈12,7 ms *", "275 MB/s", "275 MB/s", "800–1.280", "2,7×10⁻⁸"],
+    [hdr("Dispositivo"), hdr("Capacidade-base"), hdr("Acesso"), hdr("Leitura / escrita"), hdr("US$/KB")],
+    ["SRAM L3 (proxy)", "64 MiB adicionais", "≈9 ns (derivado)", "≈1,4 / 1,4 TB/s", "2,97×10⁻³"],
+    ["DDR5 desktop", "32 GiB", "70 ns (referência)", "96 / 96 GB/s", "1,6×10⁻⁵"],
+    ["Samsung 9100 PRO", "1 TB, sem dissipador", "50 µs (livro)", "14,7 / 13,3 GB/s", "2,00×10⁻⁷"],
+    ["Solidigm D5-P5336", "61,44 TB", "50 µs (livro)", "7,0 / 3,0 GB/s", "2,6×10⁻⁷"],
+    ["Samsung 870 EVO", "1 TB", "77 µs (derivado)", "560 / 530 MB/s", "3,4×10⁻⁷"],
+    ["Seagate Exos M", "30 TB", "10 ms (livro)", "275 / 275 MB/s", "2,7×10⁻⁸"],
   ];
-  table(s, rows, { y: 1.72, rowH: 0.35, fontSize: 10.5, colW: [1.85, 2.55, 1.62, 1.15, 1.15, 1.15, 1.62, 0.8] });
-  s.addText([
-    { text: "PROVENIÊNCIA — ", options: { bold: true, color: ACC } },
-    { text: "sem marca: datasheet do fabricante.   ", options: {} },
-    { text: "* ", options: { bold: true } },
-    { text: "estimativa nossa de ordem de grandeza (nenhum fabricante de SSD de consumo publica latência; a Seagate removeu o seek time do manual do Exos M).   ", options: {} },
-    { text: "† ", options: { bold: true } },
-    { text: "latência típica de datasheet — o QoS de percentil do mesmo produto é 110 µs (leitura) e 40 µs (escrita); a Samsung não publica nada do CMM-D, cuja faixa vem de medições revisadas por pares.   ", options: {} },
-    { text: "‡ ", options: { bold: true } },
-    { text: "derivado de 46,5 ciclos + 4 do V-Cache a 5,6 GHz — boost oficial do 9950X3D2; não é especificação de latência.   Em azul: as três linhas novas do grupo.", options: {} },
-  ], {
-    x: M, y: 5.54, w: W - 2 * M, h: 0.95, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 9.5, color: INK2, lineSpacing: 13,
+  table(s, rows, { y:1.85, rowH:0.55, fontSize:14, margin:0.06, colW:[2.65,2.1,2.1,2.8,2.243] });
+  s.addText("1 KB = 1.000 bytes em todas as linhas. Preço/KB do 9100 PRO: US$ 199,99 (MSRP de lançamento). Preços históricos e proxies não são cotações atuais. Tempos marcados como livro seguem a alternativa autorizada pelo enunciado.", {
+    x:M,y:6.0,w:W-2*M,h:0.7,fontFace:FB,fontSize:12,color:INK2,margin:0
   });
-  foot(s, n);
-  s.addNotes("Não ler a tabela linha a linha. Destacar: (a) as linhas novas em azul; (b) a assimetria leitura/escrita do QLC — 7,0 contra 3,0 GB/s.");
+  foot(s,n);
+  s.addNotes("Tabela completa no relatório, incluindo RDIMM, CXL, Micron 9550 e USB. Fonte do MSRP do 9100 PRO sem dissipador: https://news.samsung.com/us/samsung-announces-9100-pro-series-ssds-with-breakthrough-pcie-5-0-performance/ . O preço histórico não atende sozinho ao requisito de preço atual.");
 }
 
 /* =====================================================================
@@ -426,7 +414,7 @@ const P = () => ++pg;
   head(s, "Tabela 16.1 atualizada — terciário, e a coluna de preço por KB", "2. Tabela 16.1 · setembro de 2026");
   const rows = [
     [hdr("Tipo"), hdr("Exemplo comercial"), hdr("Capacidade"), hdr("Acesso"), hdr("Leitura"), hdr("Escrita"), hdr("Preço US$"), hdr("US$/KB")],
-    ["Óptico WORM", "Verbatim M-DISC BD-XL 100 GB", "100 GB/disco", "≈150–250 ms *", "não publicada", "≈18 MB/s (4×)", "12,70 + 230", "1,3×10⁻⁷"],
+    ["Óptico WORM", "Verbatim M-DISC BD-XL 100 GB", "100 GB/disco", "180 ms (livro)", "não publicada", "≈18 MB/s (4×)", "12,70 + 230", "1,3×10⁻⁷"],
     ["Fita LTO-9", "Cartucho Ultrium LTO-9", "18 TB nativo", "25–121 s", "400 MB/s", "400 MB/s", "88 + drive", "4,9×10⁻⁹"],
     [{ text: "Fita LTO-10", options: { bold: true, color: BLUE } }, "Cartucho Ultrium LTO-10 (2026)", "30 → 40 TB", "25–121 s", "400 MB/s", "400 MB/s", "260–300 + drive", "9,3×10⁻⁹"],
     ["Tape library", "IBM TS4500 / Quantum i6000", "926,8 PB; 2,317 EB a 2,5:1", "25–121 s", "≈51,2 GB/s", "≈51,2 GB/s", "sob cotação", "n/d"],
@@ -437,11 +425,11 @@ const P = () => ++pg;
     x: M + 0.35, y: 4.05, w: 5.2, h: 0.3, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 11.5, bold: true, charSpacing: 1.3, color: ACC,
   });
-  s.addText("621.000×", {
+  s.addText("607.000×", {
     x: M + 0.35, y: 4.4, w: 5.2, h: 0.72, isTextBox: true, margin: 0,
     fontFace: FH, fontSize: 40, bold: true, color: LIGHT,
   });
-  s.addText("separam o preço por KB da SRAM do da fita LTO-9:  (US$ 199 ÷ 65.536 KiB) ÷ (US$ 87,99 ÷ 1,8×10¹⁰ KB) = 3,04×10⁻³ ÷ 4,89×10⁻⁹.  Não é o desempenho que sustenta o tiering: é essa razão de custo.", {
+  s.addText("separam o preço por KB da SRAM do da fita LTO-9:  (US$ 199 ÷ 67.108,864 KB) ÷ (US$ 87,99 ÷ 1,8×10¹⁰ KB) = 2,97×10⁻³ ÷ 4,89×10⁻⁹.  Não é o desempenho que sustenta o tiering: é essa razão de custo.", {
     x: M + 0.35, y: 5.16, w: 5.2, h: 1.05, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 12.5, color: "C3CAD4", lineSpacing: 18,
   });
@@ -451,7 +439,7 @@ const P = () => ++pg;
     fontFace: FB, fontSize: 11.5, bold: true, charSpacing: 1.3, color: ACC,
   });
   const fita = [
-    "Único meio em que drive e mídia são precificados à parte: cada TB adicional custa US$ 5–10.",
+    "Drive e mídia são precificados à parte, assim como no armazenamento óptico.",
     "Roadmap (revisado em nov/2025) até 365 TB nativos no LTO-14 — a maior vitalidade da hierarquia.",
     "Consumo zero na estante, air gap físico contra ransomware, retenção declarada de 30 anos.",
   ];
@@ -470,8 +458,8 @@ const P = () => ++pg;
   const s = slideLight(); const n = P();
   head(s, "A largura de banda foi o que realmente explodiu", "2. Tabela 16.1 · análise");
   const cats = ["Óptico M-DISC", "HDD HAMR 30 TB", "Fita LTO-10", "SSD SATA", "Pen drive USB", "SSD NVMe DC", "SSD NVMe PCIe 5.0", "DRAM DDR5"];
-  const leitura = [27, 275, 400, 560, 1000, 7000, 14700, 96000];
-  const escrita = [27, 275, 400, 530, 900, 3000, 13300, 96000];
+  const leitura = [36, 275, 400, 560, 1000, 7000, 14700, 96000];
+  const escrita = [18, 275, 400, 530, 900, 3000, 13300, 96000];
   s.addChart(pres.ChartType.bar, [
     { name: "Leitura máx. (MB/s)", labels: cats, values: leitura },
     { name: "Escrita máx. (MB/s)", labels: cats, values: escrita },
@@ -480,8 +468,8 @@ const P = () => ++pg;
     barDir: "bar", barGrouping: "clustered", barGapWidthPct: 45,
     chartColors: [BLUE, ACC],
     showTitle: false,
-    valAxisLogScaleBase: 10,
-    valAxisTitle: "MB/s (escala logarítmica)", showValAxisTitle: true,
+    valAxisMinVal: 0, valAxisMaxVal: 100000,
+    valAxisTitle: "MB/s (escala linear)", showValAxisTitle: true,
     valAxisLabelColor: INK2, catAxisLabelColor: INK2,
     valAxisLabelFontFace: FB, catAxisLabelFontFace: FB,
     valAxisLabelFontSize: 10, catAxisLabelFontSize: 10.5,
@@ -493,7 +481,7 @@ const P = () => ++pg;
   s.addText("O que o gráfico mostra", { x: 9.3, y: 1.9, w: 3.0, h: 0.3, isTextBox: true, margin: 0, fontFace: FB, fontSize: 11, bold: true, charSpacing: 1.3, color: ACC });
   const pontos = [
     ["20×", "de banda a mais no SSD, contra a Tabela 16.1 original: de 750 MB/s para 14,7 GB/s."],
-    ["1,4×", "foi o avanço do disco magnético no mesmo período: de 200 para 285 MB/s."],
+    ["1,4×", "foi o avanço do disco magnético no mesmo período: de 200 para 275 MB/s."],
     ["LTO > HDD", "a fita supera o disco em taxa sequencial — não precisa posicionar braço entre blocos."],
   ];
   pontos.forEach((p, i) => {
@@ -529,41 +517,6 @@ const P = () => ++pg;
 }
 
 /* =====================================================================
-   13 — ANOMALIA DE PREÇOS
-   ===================================================================== */
-{
-  const s = slideDark(); const n = P();
-  head(s, "Aviso metodológico: os preços de 2026 são de um pico anômalo", "2. Tabela 16.1 · honestidade", true);
-  s.addText("A coleta ocorreu durante uma crise de oferta de memória e NAND causada pela realocação de capacidade fabril para HBM (aceleradores de IA) e por pedidos antecipados de hiperescaladores.", {
-    x: M, y: 1.85, w: 11.9, h: 0.62, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 15, color: "C3CAD4", lineSpacing: 21,
-  });
-  const st = [
-    ["+575%", "no mesmo kit DDR5-6000 de 32 GB, de meados de 2025 a set/2026"],
-    ["5×", "no preço spot do NAND, de out/2025 a fev/2026 — e 8,5× até março"],
-    ["+46%", "no preço do HDD em apenas quatro meses (15/set/2025 a 14/jan/2026, 12 modelos)"],
-    ["18,6×", "prêmio observado em 05/09/2026; não é fechamento do 3T26"],
-  ];
-  st.forEach((a, i) => {
-    const x = M + i * 3.03;
-    card(s, x, 2.75, 2.83, 2.0, DARK2);
-    s.addText(a[0], { x: x + 0.24, y: 2.95, w: 2.4, h: 0.6, isTextBox: true, margin: 0, fontFace: FH, fontSize: 30, bold: true, color: ACC });
-    s.addText(a[1], { x: x + 0.24, y: 3.6, w: 2.4, h: 1.05, isTextBox: true, margin: 0, fontFace: FB, fontSize: 12, color: "C3CAD4", lineSpacing: 16 });
-  });
-  card(s, M, 5.05, W - 2 * M, 1.45, DARK2);
-  s.addText("Como o leitor deve usar a tabela", {
-    x: M + 0.4, y: 5.22, w: 11, h: 0.3, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 11.5, bold: true, charSpacing: 1.3, color: ACC,
-  });
-  s.addText("As razões entre tecnologias — quantas ordens de grandeza separam DRAM de fita — são estruturais e estáveis. Os valores absolutos, não. Registramos ainda uma inversão temporária: um pen drive de 1 TB (US$ 130/TB) está mais barato por terabyte que um SSD SATA de 1 TB (US$ 345/TB).", {
-    x: M + 0.4, y: 5.56, w: 11.6, h: 0.85, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 13.5, color: LIGHT, lineSpacing: 19,
-  });
-  foot(s, n);
-  s.addNotes("Este slide é a nossa defesa metodológica. Se alguém questionar os preços, a resposta está aqui.");
-}
-
-/* =====================================================================
    14 — AS TRÊS REDUÇÕES
    ===================================================================== */
 {
@@ -596,80 +549,25 @@ const P = () => ++pg;
    ===================================================================== */
 {
   const s = slideLight(); const n = P();
-  head(s, "Comparativo das interfaces — extrato de 56 variantes estudadas", "3. Interfaces");
+  head(s, "Interfaces: síntese comparativa", "3. Interfaces");
   const rows = [
-    [hdr("Interface"), hdr("Ano"), hdr("Ser./Par."), hdr("Taxa útil"), hdr("Latência"), hdr("Distância"), hdr("Topologia / nº disp."), hdr("Uso em SBD")],
-    ["USB 3.2 Gen 2×2", "2017", "Serial ×2", "2.424 MB/s", "≈100 µs", "1 m", "Estrela hierárq., 127", "Backup externo"],
-    ["USB4 v2.0", "2022", "Serial PAM3", "≈9,6 GB/s nominal", "≈50 µs*", "cabo certificado", "80 Gb/s; 120 opcional/assim.", "SSD NVMe compatível"],
-    ["Ultra-320 SCSI", "2002", { text: "Paralela", options: { bold: true, color: ACC } }, "320 MB/s", "ms", "12 m LVD", "Barramento, 16", "Obsoleto"],
-    ["SATA 3.0", "2009", "Serial", "600 MB/s", "100–200 µs", "1 m", "Ponto-a-ponto", "Capacidade, backup"],
-    ["SATA Express", "2013", "Serial (PCIe ×2)", "1,97 GB/s", "<1 µs", "≈0,3 m", "Ponto-a-ponto", "Fracassou"],
-    ["SAS-4 (24G)", "2019", "Serial", "2.400 MB/s", "100–200 µs", "10 m", "Fabric, 65.535", "HDD, backplane"],
-    ["PCIe 5.0 ×4 + NVMe", "2019", "Serial", "15,75 GB/s", "20–70 µs", "≈0,25 m", "65.535 filas", "OLTP, redo log"],
-    ["Fibre Channel 64GFC", "2020", "Serial PAM4", "6.400 MB/s", "460 ns/switch", "10 km SMF", "Fabric, 2²⁴", "SAN corporativa"],
-    ["NVMe/TCP", "2018", "Fabric IP", "= Ethernet", "122–177 µs P99,99", "roteável", "Rede IP", "Alternativa ao iSCSI"],
-    ["iSCSI", "2004", "Protocolo IP", "= Ethernet", "500–800 µs", "ilimitada", "Rede IP", "PME, virtualização"],
-    ["InfiniBand XDR 4×", "2023", "Serial PAM4", "800 Gb/s", "sub-µs", "10 km", "Fabric comutado", "Clusters de IA/LLM"],
-    [{ text: "M.2 2280 / U.2 / EDSFF", options: { italic: true } }, "2013–20", { text: "fator de forma", options: { italic: true, color: INK2 } }, "= PCIe ×4", "= NVMe", "backplane", "M.2 sem hot-swap, 8–11 W; EDSFF 12 V, até 70 W", "Boot / servidor"],
-    [{ text: "HBA (tri-modo, FC, CNA)", options: { italic: true } }, "—", { text: "adaptador PCIe", options: { italic: true, color: INK2 } }, "= do meio", "= do meio", "host", "Modo IT expõe discos crus ao SO", "ZFS/Ceph, SAN"],
+    [hdr("Interface"),hdr("Tipo"),hdr("Taxa útil máxima"),hdr("Alcance / meio"),hdr("Uso / limite")],
+    ["USB 3.2 Gen 2×2","Serial","2.424 MB/s","Cabo certificado","Backup externo"],
+    ["Ultra-320 SCSI","Paralelo","320 MB/s","12 m LVD","Legado"],
+    ["SATA 3.0","Serial","600 MB/s","1 m","Disco e SSD SATA"],
+    ["SAS-4 (24G)","Serial","2.400 MB/s","10 m","Backplane e discos SAS"],
+    ["PCIe 5.0 ×4 / NVMe","Serial / protocolo","15,75 GB/s","Placa/backplane","SSD local"],
+    ["FC 64GFC","Serial","6.400 MB/s por direção","Óptica adequada","SAN FC"],
+    ["iSCSI","Protocolo IP","Depende da rede","IP roteável","Blocos sobre TCP"],
+    ["NVMe/TCP","Protocolo IP","Depende da rede","IP roteável","Comandos NVMe"],
+    ["InfiniBand XDR 4×","Serial","800 Gb/s nominal","Depende do cabo/óptica","HPC e IA"],
   ];
-  table(s, rows, { y: 1.72, rowH: 0.335, fontSize: 10.5, colW: [1.95, 0.72, 1.42, 1.42, 1.35, 1.22, 2.15, 1.66] });
-  s.addText("Em itálico: as duas últimas linhas NÃO são protocolos — fator de forma e adaptador não têm taxa própria; expõem as lanes PCIe da linha correspondente. Estão na tabela porque constam da lista do enunciado. A tabela completa tem 56 linhas, com taxa bruta, hot-plug e alimentação pelo cabo.", {
-    x: M, y: 5.85, w: W - 2 * M, h: 0.4, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 12, color: INK2, italic: true,
+  table(s, rows, {y:1.85,rowH:0.43,fontSize:12,margin:0.05,colW:[2.6,2.05,2.5,2.3,2.443]});
+  s.addText("Extrato. O relatório contém todas as interfaces exigidas, suas variantes e as condições de latência. M.2/U.2/EDSFF são fatores de forma; HBA é adaptador. Hot-plug depende da plataforma.", {
+    x:M,y:6.3,w:W-2*M,h:0.55,fontFace:FB,fontSize:12,color:INK2,margin:0
   });
   foot(s, n);
   s.addNotes("Extrato. Chamar atenção para a única linha 'Paralela' — o SCSI — e para a coluna de latência, que é onde a história está.");
-}
-
-/* =====================================================================
-   16 — EVOLUÇÃO (gráfico nativo de linhas)
-   ===================================================================== */
-{
-  const s = slideLight(); const n = P();
-  head(s, "Uma família manteve a inclinação — e por isso todas as outras se mudaram para ela", "3. Interfaces");
-  const anos = ["1997", "2000", "2003", "2005", "2009", "2013", "2017", "2019", "2022", "2025"];
-  s.addChart(pres.ChartType.line, [
-    { name: "PCIe ×4 (NVMe)", labels: anos, values: [null, 1000, 1000, 2000, 3938, 3938, 7877, 15754, 30250, 60500] },
-    { name: "Fibre Channel",  labels: anos, values: [100, 200, 400, 800, 800, 3200, 3200, 6400, 12425, 12425] },
-    { name: "SAS",            labels: anos, values: [null, null, 300, 300, 600, 1200, 1200, 2400, 2400, 2400] },
-    { name: "USB",            labels: anos, values: [null, 60, 60, 60, 500, 1212, 2424, 4850, 9600, 9600] },
-    { name: "SATA",           labels: anos, values: [null, null, 150, 300, 600, 600, 600, 600, 600, 600] },
-  ], {
-    x: M, y: 1.72, w: 8.2, h: 4.6,
-    chartColors: [BLUE, "EDA100", ACC, "4A3AA7", AQUA],
-    lineSize: 2.5, lineSmooth: false, lineDataSymbolSize: 6,
-    showTitle: false,
-    valAxisLogScaleBase: 10,
-    valAxisTitle: "Taxa útil máxima (MB/s) — log", showValAxisTitle: true,
-    valAxisTitleFontSize: 10, valAxisTitleColor: INK2, valAxisTitleFontFace: FB,
-    valAxisLabelColor: INK2, catAxisLabelColor: INK2,
-    valAxisLabelFontFace: FB, catAxisLabelFontFace: FB,
-    valAxisLabelFontSize: 10, catAxisLabelFontSize: 10,
-    valGridLine: { color: LINE, size: 0.6 }, catGridLine: { style: "none" },
-    showLegend: true, legendPos: "b", legendColor: INK2, legendFontFace: FB, legendFontSize: 11,
-  });
-  card(s, 9.15, 1.72, 3.46, 4.6);
-  s.addText("Por que o SATA parou", {
-    x: 9.45, y: 1.94, w: 2.9, h: 0.3, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 11, bold: true, charSpacing: 1.3, color: ACC,
-  });
-  const razoes = [
-    "Requalificar conector, cabo e PHY custaria caro sem retorno.",
-    "O overhead de 25% do 8b/10b; trocá-lo quebraria compatibilidade.",
-    "O gargalo real é o AHCI — 1 fila de 32 comandos — e não o fio.",
-    "O PCIe já existia, já era mais rápido e mais barato por GB/s.",
-  ];
-  s.addText(razoes.map((t, i) => ({ text: t, options: { bullet: true, breakLine: i < razoes.length - 1 } })), {
-    x: 9.45, y: 2.32, w: 2.88, h: 3.0, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 12, color: INK, lineSpacing: 16, paraSpaceAfter: 9,
-  });
-  s.addText("17 anos sem mudança de velocidade — e ninguém se importou.", {
-    x: 9.45, y: 5.45, w: 2.88, h: 0.7, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 12.5, bold: true, color: ACC, lineSpacing: 17,
-  });
-  foot(s, n);
-  s.addNotes("A linha reta do SATA a partir de 2009 é o argumento visual do slide seguinte sobre o NVMe.");
 }
 
 /* =====================================================================
@@ -734,7 +632,7 @@ const P = () => ++pg;
     x: M + 0.4, y: 4.92, w: 11, h: 0.3, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 11.5, bold: true, charSpacing: 1.3, color: ACC,
   });
-  s.addText("Para um SGBD com alta concorrência, o gargalo do AHCI nunca foram os 600 MB/s: era o lock na fila única, disputado por todos os núcleos que querem emitir I/O. O NVMe elimina essa disputa por construção — dando a cada núcleo a sua própria fila.", {
+  s.addText("AHCI oferece uma fila por porta. NVMe permite filas paralelas, reduzindo contenção entre núcleos. O ganho real depende do driver, do dispositivo e da carga.", {
     x: M + 0.4, y: 5.26, w: 11.6, h: 1.1, isTextBox: true, margin: 0,
     fontFace: FH, fontSize: 18, color: LIGHT, lineSpacing: 25,
   });
@@ -940,42 +838,6 @@ const P = () => ++pg;
 }
 
 /* =====================================================================
-   24 — POST-MORTEM: erros
-   ===================================================================== */
-{
-  const s = slideLight(); const n = P();
-  head(s, "Post-Mortem — os 21 erros e as correções aplicadas", "5. Post-Mortem");
-  const rows = [
-    [hdr("#"), hdr("Erro gerado"), hdr("Correção aplicada")],
-    ["E5", "Reportou 64GFC como 12.800 MB/s sem qualificar", "Identificada a convenção full-duplex da FCIA; adotada a taxa por direção (6.400 MB/s)"],
-    ["E7", "Ecoou a afirmação do enunciado de que SATA = NL-SAS", "Verificação dirigida; erro documentado com tabela comparativa e consequência prática"],
-    ["E8", "Apresentou o seek time do Exos M como dado de datasheet", "A Seagate removeu o dado; remarcado como estimativa somada à latência rotacional publicada"],
-    ["E10", "Apresentou throughput de tape library como spec de fabricante", "Nem IBM nem Quantum publicam; reclassificado como derivação nossa e teto teórico"],
-    [{ text: "E13", options: { bold: true, color: ACC } },
-     { text: "“Roadmap do LTO até 913 TB nativos no LTO-14”", options: { bold: true, color: ACC } },
-     { text: "FALSO em dobro: 913 TB é comprimido (365 × 2,5); o nativo é 365 TB, e o roadmap mudou em nov/2025", options: { bold: true, color: ACC } }],
-    [{ text: "E14", options: { bold: true, color: ACC } },
-     { text: "Atribuiu ≈140 ns de latência ao módulo CXL Samsung", options: { bold: true, color: ACC } },
-     { text: "Sem fonte: a Samsung não publica. Medições revisadas por pares dão 214–271 ns — reforça nossa tese", options: { bold: true, color: ACC } }],
-    [{ text: "E15", options: { bold: true, color: ACC } },
-     { text: "Razão SSD/HDD como “≈16× em 2026”, sem trimestre", options: { bold: true, color: ACC } },
-     { text: "Volátil: 7× no 3T25, 23× no 1T26, 16× no 2T26 e 18,6× em 05/09/2026. Razão sem data não é dado", options: { bold: true, color: ACC } }],
-    ["E16", "Janelas erradas na alta do HDD e do NAND", "HDD: 46% em quatro meses (não seis). NAND: 5× a partir de out/2025 (não ago)"],
-    ["E17", "O resumo dizia “39 variantes” de interface", "A tabela tinha 49 linhas e passou a 56 com os fatores de forma e os HBA"],
-    [{ text: "E18–E21", options: { bold: true, color: ACC } },
-     { text: "Quatro erros de RÓTULO: o número certo descrevendo outra coisa", options: { bold: true, color: ACC } },
-     { text: "QoS do Solidigm como latência típica · P99,99 da WD como média · capacidades misturadas do 9100 PRO · ciclos do Zen 5 como dado, sendo derivação", options: { bold: true, color: ACC } }],
-  ];
-  table(s, rows, { y: 1.62, rowH: 0.42, fontSize: 9.5, colW: [0.72, 4.2, 6.97] });
-  s.addText("Em laranja: os achados da rodada de verificação adversarial (Seção 9.5) — uma segunda IA instruída a derrubar o trabalho. Os 21 erros e quem detectou cada um estão na Seção 9.4, e o quadro completo no backup B4. Também documentamos uma imprecisão do próprio Silberschatz (§12.2: “6 gigabytes per second” para o SATA-3).", {
-    x: M, y: 6.34, w: W - 2 * M, h: 0.52, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 10, color: INK2, italic: true, lineSpacing: 13,
-  });
-  foot(s, n);
-  s.addNotes("Enfatizar E7: a IA não questiona espontaneamente uma premissa dada no enunciado. Foi preciso desconfiar e perguntar.");
-}
-
-/* =====================================================================
    25 — PERGUNTAS PARA O DEBATE
    ===================================================================== */
 {
@@ -1025,7 +887,7 @@ function footB(s) {
     x: M, y: 2.9, w: W - 2 * M, h: 1.0, isTextBox: true, margin: 0,
     fontFace: FH, fontSize: 54, bold: true, color: LIGHT, align: "center",
   });
-  s.addText("Proveniência dos dados · derivações aritméticas · fatores de forma e HBA · registro completo de erros", {
+  s.addText("Proveniência dos dados · derivações aritméticas · fatores de forma e HBA", {
     x: M, y: 3.95, w: W - 2 * M, h: 0.5, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 15, color: "8B95A3", align: "center",
   });
@@ -1041,11 +903,11 @@ function footB(s) {
     [{ text: "Datasheet do fabricante", options: { bold: true, color: BLUE } }, "Sem marcação", "Capacidades e taxas do 9100 PRO, 870 EVO, D5-P5336, 9550 PRO, DT Max, Exos M; latência rotacional de 4,16 ms; taxas nativas do LTO-9 e LTO-10"],
     [{ text: "Medição publicada por terceiro", options: { bold: true, color: BLUE } }, "Citada no texto", "1,4 TB/s de L3 do Zen 5 (Chips and Cheese); 214–271 ns do CXL 2.0 (ASPLOS); 41–177 µs do NVMe-oF (Western Digital)"],
     [{ text: "Derivação nossa", options: { bold: true, color: ACC } }, "Conta explicitada na nota", "Preço/KB; 51,2 GB/s por módulo DDR5-6400; 51,2 GB/s da library; 926,8 PB (23.170 × 40 TB); 2,317 EB só no cenário 2,5:1"],
-    [{ text: "Estimativa de ordem de grandeza", options: { bold: true, color: ACC } }, "Marcada com *", "≈50 µs do SSD de consumo; ≈8,5 ms de busca do HDD; ≈0,1–0,5 ms do pen drive; ≈150–250 ms do leitor óptico"],
+    [{ text: "Referência mantida do livro", options: { bold: true, color: ACC } }, "Marcada como livro", "Referências da Tabela 16.1: SSD 50 µs, HDD 10 ms, USB 100 µs, óptico 180 ms"],
     [{ text: "Não encontrado", options: { bold: true } }, "n/d", "Preço de módulo CXL e de tape library (só sob cotação); banda agregada do MD220; velocidade de leitura do M-DISC"],
   ];
   table(s, rows, { y: 1.74, rowH: 0.70, fontSize: 10, colW: [2.75, 2.15, 6.99] });
-  s.addText("Regra que adotamos: nenhuma célula fica sem origem declarada, e “não encontramos” é resposta aceitável — preencher com estimativa não rastreável é o que este trabalho critica. As dez lacunas estão na Nota N10 do documento.", {
+  s.addText("Limites: MSRP histórico não é cotação atual. CXL e biblioteca de fita não têm preço confirmado e não entram na comparação de custo. Ver notas metodológicas do relatório.", {
     x: M, y: 6.06, w: W - 2 * M, h: 0.6, isTextBox: true, margin: 0,
     fontFace: FB, fontSize: 11.5, color: INK2, italic: true, lineSpacing: 15,
   });
@@ -1058,8 +920,8 @@ function footB(s) {
   const s = slideLight();
   head(s, "As contas, por extenso", "Backup · derivações");
   const contas = [
-    ["Preço por KB (SRAM)", "US$ 199 ÷ 65.536 KiB = 3,04×10⁻³ /KB", "Delta entre 9950X3D2 (192 MB L3, US$ 899) e 9950X3D (128 MB, US$ 700)"],
-    ["Razão topo/base", "3,04×10⁻³ ÷ 4,89×10⁻⁹ = 621.000×", "SRAM contra cartucho LTO-9 (US$ 87,99 ÷ 1,8×10¹⁰ KB)"],
+    ["Preço por KB (SRAM)", "US$ 199 ÷ 67.108,864 KB = 2,97×10⁻³ /KB", "Delta entre 9950X3D2 (192 MB L3, US$ 899) e 9950X3D (128 MB, US$ 700)"],
+    ["Razão topo/base", "2,97×10⁻³ ÷ 4,89×10⁻⁹ = 607.000×", "SRAM contra cartucho LTO-9 (US$ 87,99 ÷ 1,8×10¹⁰ KB)"],
     ["Latência rotacional", "60 ÷ 7.200 ÷ 2 = 4,16 ms", "Meia rotação a 7.200 rpm — publicado pela Seagate"],
     ["Varredura de disco", "32 TB ÷ 285 MB/s = 31,2 h", "Contra 8 TB ÷ 200 MB/s = 11,1 h em 2014"],
     ["SATA 3.0 útil", "6,0 Gb/s × 8/10 ÷ 8 = 600 MB/s", "Codificação 8b/10b, 80% de eficiência"],
@@ -1114,37 +976,7 @@ function footB(s) {
   s.addNotes("O enunciado lista HBA, M.2 e U.2 entre as interfaces. Nenhum é protocolo — este slide explica a diferença de categoria sem fugir da lista.");
 }
 
-/* --- B4: registro completo de erros --- */
-{
-  const s = slideLight();
-  head(s, "Post-Mortem — os 21 erros, em uma página", "Backup · registro completo");
-  const blocos = [
-    ["Revisão do grupo", "E1 a E12", INK2,
-     "E1 proxy de preço da SRAM · E2 convenção binária/decimal · E3 Optane mantido na tabela · E4 cronologia do LTO-10 · E5 64GFC em full-duplex · E6 SAS-4 como “24 Gb/s” · E7 SATA = NL-SAS · E8 seek time do Exos M · E9 preço de DRAM contraditório · E10 throughput de tape library · E11 leitura = escrita sem verificar · E12 estimativa com cara de dado",
-     "Detectados ao reproduzir contas, cruzar seções e conferir datasheets. Predominam erros de atribuição de origem."],
-    ["Verificação adversarial — conteúdo", "E13 a E17", ACC,
-     "E13 LTO-14 com 913 TB “nativos” (são 365; 913 é comprimido, e o roadmap mudou em nov/2025) · E14 latência de 140 ns do CXL sem fonte (medido: 214–271 ns) · E15 razão SSD/HDD sem trimestre · E16 janelas erradas de HDD e NAND · E17 contagem de interfaces",
-     "Sobreviveram à revisão da IA autora e caíram na 1ª passagem de um verificador instruído a atacar o texto."],
-    ["Verificação adversarial — rótulo", "E18 a E21", ACC,
-     "E18 QoS de percentil do Solidigm citado como latência típica · E19 números da Western Digital como média, sendo P99,99 · E20 capacidades misturadas do Samsung 9100 PRO · E21 ciclos de cache do Zen 5 como dado publicado, sendo derivação",
-     "Os mais insidiosos: o número existe e resiste a uma busca — apenas não significa o que o texto dizia."],
-  ];
-  blocos.forEach((b, i) => {
-    const y = 1.76 + i * 1.55;
-    card(s, M, y, W - 2 * M, 1.42);
-    s.addText(b[0], { x: M + 0.3, y: y + 0.14, w: 3.1, h: 0.32, isTextBox: true, margin: 0, fontFace: FB, fontSize: 13, bold: true, color: b[2] });
-    s.addText(b[1], { x: M + 0.3, y: y + 0.46, w: 3.1, h: 0.28, isTextBox: true, margin: 0, fontFace: "Courier New", fontSize: 11, color: b[2] });
-    s.addText(b[4], { x: M + 0.3, y: y + 0.78, w: 3.1, h: 0.56, isTextBox: true, margin: 0, fontFace: FB, fontSize: 9.5, color: INK2, lineSpacing: 12 });
-    s.addText(b[3], { x: M + 3.62, y: y + 0.16, w: 8.2, h: 1.14, isTextBox: true, margin: 0, fontFace: FB, fontSize: 11, color: INK, lineSpacing: 15 });
-  });
-  s.addText("Também documentamos um erro que não foi da IA: o próprio Silberschatz (§12.2) escreve “6 gigabytes per second” para o SATA-3 — são 6 gigabits. A verificação contra fonte primária é necessária independentemente de quem escreveu o texto.", {
-    x: M, y: 6.46, w: W - 2 * M, h: 0.5, isTextBox: true, margin: 0,
-    fontFace: FB, fontSize: 11, color: INK2, italic: true, lineSpacing: 14,
-  });
-  footB(s);
-  s.addNotes("Se perguntarem sobre o processo de verificação, este slide dá o quadro completo. Os 21 erros estão detalhados na Seção 9.4 do documento.");
-}
-
-pres.writeFile({ fileName: "Slides_Armazenamento_SBD.pptx" }).then(() => {
+pres.writeFile({ fileName: process.env.OUTPUT_PPTX || "Slides_Armazenamento_SBD.pptx" }).then(async () => {
+  await require('../scripts/normalizar_pptx.cjs')(process.env.OUTPUT_PPTX || 'Slides_Armazenamento_SBD.pptx');
   console.log("gerado: Slides_Armazenamento_SBD.pptx  —  " + pg + " slides numerados + capa");
 });
