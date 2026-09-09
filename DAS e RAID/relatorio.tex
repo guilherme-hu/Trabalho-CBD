@@ -45,9 +45,9 @@
 {\normalsize Disciplina: Construção de Banco de Dados}\\[2pt]
 {\normalsize Professor: Milton Ramirez}\\[17mm]
 {\color{azul}\rule{\textwidth}{1.2pt}}\\[6mm]
-{\LARGE\bfseries Cloud Computing e Cloud Storage}\\[4mm]
-{\Large Estudo de caso: Amazon Web Services (AWS)}\\[4mm]
-{\large Arquitetura, serviços, segurança e análise de 3,5 PB}\\[6mm]
+{\LARGE\bfseries Arquiteturas de armazenamento físico para SBD:}\\[4mm]
+{\Large Direct attached storage (DAS) e arquiteturas RAID}\\[4mm]
+{\large Interfaces DAS e Níveis de RAID Padrão e Não Padrão}\\[6mm]
 {\color{azul}\rule{\textwidth}{1.2pt}}\\[8mm]
 {\large\bfseries Grupo \numerogrupo}\\[6mm]
 \begin{tabular}{@{}ll@{}}\toprule
@@ -262,89 +262,44 @@ Os conceitos de paralelismo e redundância mostraram-se, ao longo do trabalho, d
 Para um profissional de Banco de Dados, compreender essas arquiteturas --- desde o cabo físico até a métrica estatística de confiabilidade --- é essencial para dimensionar corretamente a infraestrutura de armazenamento de um sistema, equilibrando custo, desempenho e, acima de tudo, a segurança dos dados armazenados.
 
 \section{Post-Mortem --- Uso de Assistente de IA Generativa}
-Conforme autorizado e exigido pelo enunciado da tarefa, esta seção documenta de forma auditável o uso de assistente de IA generativa (Claude, da Anthropic) na elaboração deste trabalho: a metodologia de uso, o log cronológico dos prompts-chave, a matriz de responsabilidades e autoria dos integrantes do grupo, a declaração individual de autoria, os erros e riscos identificados no conteúdo gerado pela IA (com a respectiva correção) e um checklist final de conformidade com cada exigência do enunciado.
+Conforme exigido pelo enunciado da tarefa, esta seção documenta o uso de IA generativa (Claude, Anthropic) pelo grupo. Adotamos um fluxo "humano no comando", onde a IA gerou a estrutura base e pesquisou dados atualizados, enquanto os integrantes revisaram criticamente suas respectivas seções e aplicaram correções textuais e estruturais.
 
-\subsection{Metodologia de Uso da IA}
-O grupo adotou um fluxo de trabalho "humano no comando" (human-in-the-loop), em quatro etapas:
-\begin{enumerate}
-    \item Delimitação do escopo e do formulário --- o grupo forneceu à IA o enunciado completo da tarefa sobre DAS e RAID, além dos arquivos de um trabalho anterior da mesma disciplina, para que a IA seguisse a mesma estrutura, formatação e nível de profundidade já validados anteriormente com o professor.
-    \item Geração assistida com pesquisa ativa --- para dados técnicos sujeitos a mudança --- como as velocidades atuais de SAS-4/24G e da especificação USB4 Versão 2.0 ---, a IA foi instruída a buscar informações atualizadas na web em vez de responder apenas com base em conhecimento de treinamento, reduzindo o risco de valores desatualizados sobre gerações/velocidades de interfaces que evoluem com frequência.
-    \item Revisão crítica humana --- cada integrante deve revisar as seções sob sua responsabilidade (ver Seção 12.3), verificando a coerência técnica frente ao material da disciplina e frente à documentação técnica dos fabricantes citados.
-    \item Registro e rastreabilidade --- todas as decisões, prompts e eventuais correções foram/devem ser documentados nas subseções seguintes, permitindo que o professor e os colegas auditem exatamente o que foi gerado pela IA e o que foi validado/corrigido pelo grupo.
-\end{enumerate}
-
-\subsection{Log Cronológico dos Prompts-Chave Utilizados}
-O quadro abaixo relaciona, em ordem cronológica, os prompts principais utilizados na conversa com a IA para a produção deste documento e dos slides. O grupo deve complementar este log com quaisquer prompts adicionais usados na revisão final, no preenchimento da folha de rosto e na preparação da apresentação.
+\subsection{Log Cronológico dos Prompts-Chave}
+O quadro abaixo relaciona os prompts principais utilizados.
 
 \begin{longtable}{@{}p{.7cm}p{7.3cm}p{6.4cm}@{}}\toprule
 \textbf{Nº} & \textbf{Prompt (resumo)} & \textbf{Objetivo}\\\midrule\endhead
-1 & Envio do enunciado da tarefa sobre armazenamento físico DAS e RAID. & Estabelecer o escopo técnico completo exigido: interfaces DAS e níveis de RAID padrão/não padrão.\\
-2 & Envio dos arquivos de um trabalho anterior da disciplina como referência de formatação. & Garantir consistência de estrutura, folha de rosto, seções e Post-Mortem com um padrão já validado pelo professor.\\
-3 & Pedido para gerar um novo relatório (Word) e uma nova apresentação (PowerPoint) sobre DAS/RAID. & Produzir os dois artefatos finais exigidos pela tarefa em formato editável, mantendo o padrão visual da disciplina.\\
-4 & Pesquisa na web sobre a velocidade atual do SAS-4 (24G) e da especificação USB4 Versão 2.0. & Fundamentar a Seção 4 com dados técnicos verificáveis e atuais, em vez de estimativas de memória do modelo.\\
-5 & Geração do relatório completo (Word/PDF) e dos slides (PowerPoint), com folha de rosto, seções técnicas, tabelas comparativas e Post-Mortem inicial. & Entregar os dois produtos obrigatórios da tarefa já estruturados conforme o enunciado.\\\bottomrule
+1 & Envio do enunciado da tarefa sobre armazenamento físico DAS e RAID. & Estabelecer o escopo técnico completo exigido.\\
+2 & Pedido para gerar a estrutura base do relatório sobre DAS/RAID. & Produzir o artefato mantendo a formatação padrão.\\
+3 & Pesquisa na web sobre a velocidade atual do SAS-4 e USB4 v2.0. & Fundamentar a Seção 4 com dados técnicos atuais.\\
+4 & Discussão iterativa para reestruturação das métricas de confiabilidade e revisão das diferenças de workload no RAID 4. & Adequar o fluxo didático e corrigir a falta de nuances técnicas de performance geradas inicialmente.\\\bottomrule
 \end{longtable}
-Tabela 3 --- Log de prompts-chave (a ser complementado pelo grupo com os prompts de sua própria revisão).
+Tabela 3 --- Log de prompts-chave.
 
-\subsection{Matriz de Responsabilidades e Autoria}
-A tabela a seguir é um template de matriz de responsabilidades a ser preenchido pelo grupo, atribuindo a cada integrante a responsabilidade principal por seções específicas do trabalho.
+\subsection{Matriz de Responsabilidades e Declaração de Autoria}
+A tabela abaixo evidencia a divisão do trabalho. Cada integrante confirma ter revisado criticamente o conteúdo sob sua responsabilidade (as seções de Conclusão e Post-Mortem foram revisadas em conjunto por todo o grupo).
 
-\begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
-\textbf{Integrante} & \textbf{Seções sob sua responsabilidade} & \textbf{Decisão a justificar}\\\midrule\endhead
-[Nome 1] --- DRE [....] & Seções 1, 2 e 3 (Resumo, Introdução, DAS/NAS/SAN) & Por que o DAS foi contextualizado frente a NAS e SAN antes de detalhar as interfaces.\\
-[Nome 2] --- DRE [....] & Seção 4 (Interfaces DAS) e Tabela 1 & Por que cada interface foi classificada como indicada, ou não, para SBD de produção.\\
-[Nome 3] --- DRE [....] & Seções 5, 6 e 7 (Paralelismo/Redundância; Striping/Mirroring/Paridade; Métricas) & Por que a fórmula de MTTDL apresentada foi escolhida e validada frente à bibliografia.\\
-[Nome 4] --- DRE [....] & Seções 8 e 9 (Níveis Padrão e Não Padrão de RAID) e Tabela 2 & Por que cada nível não padrão foi classificado como proprietário/não aberto.\\
-[Nome 5] --- DRE [....] & Seções 10, 11 e 12 (Recomendações; Conclusão; Post-Mortem) & Por que cada recomendação de uso foi associada ao componente de SBD correspondente.\\\bottomrule
+\begin{longtable}{@{}p{6cm}p{9.5cm}@{}}\toprule
+\textbf{Integrante} & \textbf{Seções sob sua responsabilidade}\\\midrule\endhead
+Vivian Maria da Silva e Souza\newline DRE 123205793 & Seções 1 a 4 (Introdução, Interfaces DAS e HBA)\\
+Bernardo Brandão Pozzato C. Costa\newline DRE 123289593 & Seções 5 e 6.2 (Performance, Redundância e Mirroring)\\
+Guilherme En Shih Hu\newline DRE 123224674 & Seções 6.1 e 7 (Striping e Métricas de Confiabilidade)\\
+Gabriel Schmitz Corrêa Rizawinsk\newline DRE 123225573 & Seções 6.3 e 8.1 a 8.5 (Paridade e Níveis Padrão de RAID 0 a 4)\\
+Enzo de Carvalho Sampaio\newline DRE 123386206 & Seções 8.6 a 8.9 e 10 (RAID Avançado, Aninhados e Recomendações)\\
+Raphael Henrique da Silva Pereira\newline DRE 123420783 & Seção 9 (Arquiteturas Não Padrão)\\\bottomrule
 \end{longtable}
-Tabela 4 --- Matriz de responsabilidades e autoria (template a ser preenchido).
+Tabela 4 --- Matriz de responsabilidades e autoria.
 
-\subsection{Declaração Individual de Autoria}
-Cada integrante deve preencher e confirmar a declaração abaixo, confirmando que revisou o conteúdo pelo qual é responsável.
+\subsection{Erros Identificados e Correções Aplicadas}
+A IA apresentou falhas estruturais, como redundância e má progressão didática, otimizadas pelo grupo a seguir.
 
-\begin{longtable}{@{}p{5cm}p{4cm}p{5cm}@{}}\toprule
-\textbf{Integrante} & \textbf{Declaro que revisei minha(s) seção(ões)} & \textbf{Data}\\\midrule\endhead
-[Nome 1] & [ ] Sim & [__/__/2026]\\
-[Nome 2] & [ ] Sim & [__/__/2026]\\
-[Nome 3] & [ ] Sim & [__/__/2026]\\
-[Nome 4] & [ ] Sim & [__/__/2026]\\
-[Nome 5] & [ ] Sim & [__/__/2026]\\\bottomrule
-\end{longtable}
-Tabela 5 --- Declaração individual de autoria e ciência do conteúdo entregue.
-
-\subsection{Erros e Riscos Identificados no Conteúdo Gerado pela IA e Correções Aplicadas}
 \begin{longtable}{@{}p{.7cm}p{4.5cm}p{4.5cm}p{4.8cm}@{}}\toprule
-\textbf{Nº} & \textbf{Risco / erro identificado} & \textbf{Como foi identificado} & \textbf{Correção aplicada}\\\midrule\endhead
-1 & Velocidades de interfaces geradas "de memória" tendem a ficar desatualizadas. & Verificação ativa: a IA foi instruída a pesquisar fontes atuais. & Seção 4 fundamentada com valores de fontes técnicas recentes.\\
-2 & Risco de confundir MTTF e MTBF como sinônimos absolutos. & Revisão crítica da Seção 7.1 frente à definição formal. & Texto explicita a diferença formal antes de mencionar uso de mercado.\\
-3 & Níveis não padrão de RAID apresentados como se fossem abertos/uniformes. & Revisão comparando descrições com múltiplas fontes independentes. & Subseções explicitam fabricante/proprietário e ressalta que não é padrão aberto.\\
-4 & Referências às seções exatas dos livros-texto não podem ser verificadas literalmente pela IA. & Reconhecimento explícito da limitação sobre direitos autorais. & Grupo deve confirmar correspondência exata na edição física/PDF.\\
-5 & [Espaço para o grupo] & [Como o grupo identificou] & [Correção efetivamente aplicada]\\\bottomrule
+\textbf{Nº} & \textbf{Risco / erro estrutural identificado} & \textbf{Como foi identificado} & \textbf{Correção aplicada}\\\midrule\endhead
+1 & Progressão ilógica de métricas e cálculo precoce de MTTDL para RAID 5. & Análise da fluidez e coerência acadêmica da Seção 7. & Tópicos reordenados (MTTF $\rightarrow$ MTTR $\rightarrow$ MTBF $\rightarrow$ MTTDL) e substituição por exemplo com \textit{mirroring}.\\
+2 & Explicações redundantes sobre operações de I/O e \textit{lockstep}. & Revisão cruzada entre as seções 6 e 8. & Conceitos enxugados na Seção 6.1 para evitar repetição textual antecipada.\\
+3 & Falta de nuances técnicas sobre cargas de trabalho e performance. & Revisão da literatura sobre o gargalo do RAID 4. & Adicionada distinção explícita entre escritas sequenciais e o ciclo \textit{read-modify-write} (Seção 8.5).\\\bottomrule
 \end{longtable}
-Tabela 6 --- Riscos e limitações identificados no conteúdo gerado pela IA e correções aplicadas.
-
-\subsection{Checklist de Conformidade com o Enunciado}
-\begin{longtable}{@{}p{6.5cm}p{5cm}p{3cm}@{}}\toprule
-\textbf{Exigência do enunciado} & \textbf{Onde é atendida} & \textbf{Status}\\\midrule\endhead
-Interfaces DAS: SATA, eSATA, SAS, FireWire, USB (3 e 4), HBA & Seção 4 (4.1 a 4.6) e Tabela 1 & Atendido\\
-Paralelismo (performance) e redundância (disponibilidade/confiabilidade) & Seção 5 (5.1 e 5.2) & Atendido\\
-Data striping: bit-level e block-level striping & Seção 6.1 & Atendido\\
-Mirroring e shadowing & Seção 6.2 & Atendido\\
-MTTR, MTTDL, MTTF e MTBF & Seção 7 (7.1 a 7.3) & Atendido\\
-Níveis de RAID padrão, bloco de paridade etc. & Seção 8 e Tabela 2; paridade em 6.3 & Atendido\\
-RAID não padrão (1.5, 7, DP, S, Matrix etc.) & Seção 9 (9.1 a 9.6) & Atendido\\
-Comparação de vantagens/desvantagens/recomendações & Seções 8, 9 e 10 & Atendido\\
-Folha de rosto com nomes completos e DRE & Capa do documento & Pendente --- preencher\\
-Log dos prompts-chave utilizados & Seção 12.2 e Tabela 3 & Atendido\\
-Demonstração de autoria: quem fez o quê, quem decidiu o quê & Seções 12.3 e 12.4 & Pendente --- preencher\\
-Identificação de erros da IA e correções aplicadas & Seção 12.5 e Tabela 6 & Atendido\\
-Seção intitulada "Post-Mortem" & Seção 12 & Atendido\\
-PDF postado na tarefa & Este documento, exportado em .pdf & Ação do grupo no AVA\\
-Slides da apresentação postados & Arquivo .pptx elaborado em paralelo & Ação do grupo no AVA\\\bottomrule
-\end{longtable}
-Tabela 7 --- Checklist final de conformidade com o enunciado.
-
-Este relatório Post-Mortem evidencia que o uso de IA generativa foi tratado de forma crítica e rastreável pelo grupo --- como ferramenta de produtividade e de primeira pesquisa, sempre sujeita à verificação humana e à divisão explícita de responsabilidades entre os integrantes.
+Tabela 5 --- Correções aplicadas sobre o conteúdo da IA.
 
 \section{Referências Bibliográficas}
 \begin{thebibliography}{99}
@@ -356,7 +311,6 @@ Este relatório Post-Mortem evidencia que o uso de IA generativa foi tratado de 
 \bibitem{scsi} SCSI Trade Association (STA). \textit{24G SAS Technology --- SAS-4 Overview}.
 \bibitem{usbif} USB Implementers Forum (USB-IF). \textit{USB4® Version 2.0 Specification Announcement}. Disponível em: \url{https://www.usb.org/}. Acesso em: set. 2026.
 \bibitem{netapp} NetApp, Inc. \textit{RAID-DP: NetApp Implementation of Double-Parity RAID for Data Protection}. Technical Report.
-\bibitem{grupo} [Grupo]: incluir aqui quaisquer outras fontes efetivamente consultadas.
 \end{thebibliography}
 
 \end{document}
