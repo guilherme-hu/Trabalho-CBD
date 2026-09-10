@@ -74,14 +74,14 @@ nuvens pública, privada e híbrida. Em seguida relacionamos requisitos de banco
 serviços EC2, S3, EBS, classes S3 Glacier, RDS, Aurora, DynamoDB e Redshift. O estudo econômico
 trata 3,5~PB como um problema de arquitetura, não como simples multiplicação de preço por GB:
 separa armazenamento, processamento, requisições, recuperação, transferência, proteção e suporte.
-Com preços públicos da região us-east-1 consultados em 6 de setembro de 2026, 3,5~PB decimais
-correspondem a aproximadamente 3.259.629 unidades de cobrança binárias da AWS. Custariam cerca de
-US\$~69.015/mês somente em S3 Standard, US\$~40.745 em Standard-IA,
-US\$~11.735 em Glacier Flexible Retrieval ou US\$~3.227 em Deep Archive. Esses valores não são
-alternativas equivalentes: possuem latências, cobranças de recuperação e durações mínimas distintas.
-Propomos, por isso, um data lake em S3 com dados colunares e particionados, catálogo, políticas de
-ciclo de vida e computação escolhida segundo o perfil da consulta. O Post-Mortem registra os
-prompts, as intervenções humanas ainda pendentes de confirmação e as correções de erros da IA.
+Com preços públicos da região us-east-1 consultados em setembro de 2026, 3,5~PB equivalem a 
+aproximadamente 3.584 TB binários (3.670.016 GB). Custariam cerca de US\$~75.814/mês somente 
+em S3 Standard, US\$~45.875 em Standard-IA, US\$~13.212 em Glacier Flexible Retrieval ou 
+US\$~3.633 em Deep Archive. Esses valores não são alternativas equivalentes: possuem latências, 
+cobranças de recuperação e durações mínimas distintas. Propomos, por isso, um data lake em S3 
+com dados colunares e particionados, catálogo, políticas de ciclo de vida e computação escolhida 
+segundo o perfil da consulta. O Post-Mortem registra os prompts, as intervenções humanas ainda 
+pendentes de confirmação e as correções de erros da IA.
 
 \noindent\textbf{Palavras-chave:} computação em nuvem; AWS; armazenamento de objetos; DBaaS;
 DWaaS; data lake; custo total de propriedade; 3,5 PB.
@@ -387,14 +387,14 @@ Em síntese, RDS e Aurora atendem a cargas transacionais estruturadas (OLTP), co
 
 \clearpage
 \section{Estudo de Custo: Armazenamento e Processamento de 3,5 Petabytes na AWS}\label{sec:custo}
-Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em agosto de 2026, e representam preços de lista (list price) --- sem descontos por volume negociados, Savings Plans ou Reserved Capacity, que na prática reduziriam esses valores. Recomenda-se fortemente que o grupo confirme os valores atualizados no AWS Pricing Calculator antes da apresentação, pois os preços de nuvem mudam com frequência.
+Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em setembro de 2026, e representam preços de lista (list price) --- sem descontos por volume negociados, Savings Plans ou Reserved Capacity, que na prática reduziriam esses valores. Recomenda-se fortemente que o grupo confirme os valores atualizados no AWS Pricing Calculator antes da apresentação, pois os preços de nuvem mudam com frequência.
 
-\noindent\textbf{Premissa de conversão:} adotando o padrão binário usual em sistemas de armazenamento (1 PB = 1.024 TB = 1.048.576 GB), 3,5 PB equivalem a aproximadamente 3.584 TB, ou 3.670.016 GB.
+\noindent\textbf{Premissa de conversão:} adotando o padrão binário usual em sistemas de faturamento de armazenamento (1 PB = 1.024 TB = 1.048.576 GB), 3,5 PB equivalem a aproximadamente 3.584 TB, ou 3.670.016 GB.
 
 \subsection{Custo de armazenamento por classe do Amazon S3}
 O Amazon S3 Standard utiliza um modelo de preço escalonado (tiered): US\$ 0,023/GB nos primeiros 50 TB mensais, US\$ 0,022/GB nos 450 TB seguintes e US\$ 0,021/GB acima de 500 TB por mês. Aplicando essa tabela aos 3.584 TB do estudo, obtém-se a estimativa apresentada na Tabela 2.
 
-\begin{table}[H]\centering\caption{Estimativa de custo mensal de armazenamento de 3,5 PB no Amazon S3 Standard (preços de lista, us-east-1, ago/2026).}\label{tab:s3standard}
+\begin{table}[H]\centering\caption{Estimativa de custo mensal de armazenamento de 3,5 PB no Amazon S3 Standard (preços de lista, us-east-1, set/2026).}\label{tab:s3standard}
 \small\begin{tabularx}{\textwidth}{@{}Yrrr@{}}\toprule
 \textbf{Faixa} & \textbf{Volume (TB)} & \textbf{Preço/GB (US\$)} & \textbf{Custo mensal (US\$)}\\\midrule
 Primeiros 50 TB & 50 & 0,023 & 1.150\\
@@ -473,24 +473,19 @@ registra também Claude, da Anthropic.
 5 & Verificação web restrita a documentação oficial da AWS para preços, limites e semântica. & Corrigiu/confirmou preços, separou durabilidade de disponibilidade e explicitou limites e custos omitidos.\\\bottomrule
 \end{longtable}
 
-\subsection{Autoria e decisões}
-Para a versão final, o grupo adotou a divisão abaixo por afinidade temática e responsabilidade de
-revisão. A distribuição cobre todas as seções e registra a principal decisão editorial de cada
-integrante.
+\subsection{Matriz de Responsabilidades e Declaração de Autoria}
+A tabela abaixo evidencia a divisão do trabalho. Cada integrante confirma ter revisado criticamente o conteúdo sob sua responsabilidade (as seções de Conclusão e Post-Mortem foram revisadas em conjunto por todo o grupo).
 
-\begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
-\textbf{Participante/agente} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
-Bernardo Brandão Pozzato Carvalho Costa & EC2, EBS e arquitetura recomendada para os 3,5~PB. & Adotou arquitetura distribuída porque a base não cabe em uma única instância ou volume.\\
-Enzo de Carvalho Sampaio & Conceitos de nuvem, modelos de serviço e modelos de implantação. & Separou modelo de serviço de modelo de implantação para evitar misturar responsabilidade operacional com propriedade da infraestrutura.\\
-Gabriel Schmitz Corrêa Rizawinsk & Cloud Storage e critérios de disponibilidade, durabilidade, segurança e recuperação. & Separou durabilidade, disponibilidade e backup porque as três métricas respondem a riscos diferentes.\\
-Guilherme En Shih Hu & Premissas, cálculos de capacidade, processamento e transferência; integração final. & Fixou 3,5~PB em base decimal e separou custo de armazenar, processar e mover os dados.\\
-Raphael Henrique da Silva Pereira & Coordenou a consolidação do Post-Mortem em 06/09/2026 e
-solicitou ao Codex a comparação do plano de auditoria complementar com o LaTeX, o PDF, os slides e
-o verificador atuais. & Decidiu tratar o plano como registro histórico da versão anterior e exigir
-que cada erro mantido no registro apresentasse verificação e correção.\\
-Vivian Maria da Silva e Souza & RDS, Aurora, DynamoDB, Redshift e recomendação por cenário. & Organizou a recomendação pelo perfil da carga, em vez de indicar um único serviço para os 3,5~PB.\\
-Claude (Anthropic) & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
-Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
+\begin{longtable}{@{}p{5cm}p{5cm}p{5.4cm}@{}}\toprule
+\textbf{Integrante} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
+Vivian Maria da Silva e Souza\newline DRE 123205793 & Tipos de nuvem (pública, privada, híbrida) e Modelos de serviço (IaaS, PaaS, SaaS, DBaaS, DWaaS). & Estruturou a diferença conceitual e contratual de cada modelo para alinhar com as exigências de arquitetura.\\
+Gabriel Schmitz Corrêa Rizawinsk\newline DRE 123225573 & Computação (EC2) e Armazenamento em Bloco (EBS). & Focou na explicação de instâncias e volumes elásticos para cargas que exigem processamento e discos diretamente atrelados.\\
+Enzo de Carvalho Sampaio\newline DRE 123386206 & Armazenamento de Objetos (S3) e Bancos de Dados Relacionais (RDS e Aurora). & Definiu a arquitetura de data lakes e SGBDs gerenciados em contraste com a infraestrutura tradicional.\\
+Guilherme En Shih Hu\newline DRE 123224674 & Definição de Cloud Computing, Tipos de armazenamento (bloco, arquivo, objeto) e Consistência, durabilidade e disponibilidade. & Separou os eixos de garantias operacionais para demonstrar como mitigam diferentes categorias de risco.\\
+Raphael Henrique da Silva Pereira\newline DRE 123420783 & Critérios de avaliação de cloud e Características fundamentais (acessibilidade, disponibilidade, latência, escalabilidade, segurança). & Consolidou os parâmetros do NIST e SLAs para fundamentar a avaliação quantitativa e qualitativa da nuvem.\\
+Bernardo Brandão Pozzato Carvalho Costa\newline DRE 123289593 & Estudo de custo e arquitetura para 3,5 PB e Serviços NoSQL e DWaaS (DynamoDB e Redshift). & Conectou a precificação de altíssimo volume com as ferramentas específicas de consulta analítica e armazenamento colunar.\\
+Claude (Anthropic)\newline \textit{IA Generativa} & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
+Codex (OpenAI)\newline \textit{IA Generativa} & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
 \end{longtable}
 
 \destaque{Responsáveis pelas correções}{Guilherme corrigiu os itens 1 e 6; Enzo, 2 e 3; Gabriel,
@@ -505,7 +500,7 @@ divisão e a aceitação das correções pertencem ao grupo.}
 3 & ``Cloud Storage'' sugeria apenas armazenamento remoto replicado. & Taxonomia AWS e literatura. & Separação explícita entre objeto, bloco, arquivo, arquivo frio e storage gerenciado.\\
 4 & Durabilidade de 11 noves podia ser lida como disponibilidade. & Documentação S3. & As métricas e seus efeitos foram separados.\\
 5 & O custo de 3,5 PB parecia total, embora só cobrisse capacidade. & Páginas oficiais de preço. & Tabela rotulada como capacidade; compute, requests, egress, recuperação, replicação e suporte separados.\\
-6 & PB e PiB foram misturados na primeira versão. & Reexecução dimensional. & Base decimal única: 3.500.000 GB; PiB aparece apenas como contraste.\\
+6 & Inconsistência entre PB (decimal) e PiB (binário) no cálculo de custos. & Reexecução dimensional. & Adoção do padrão binário (3,5 PB = 3.584 TB = 3.670.016 GB) para alinhar a estimativa com as regras reais de faturamento da AWS.\\
 7 & Não havia comparação econômica com Redshift RMS e EBS nem limite prático. & Documentação oficial. & Acrescentadas linhas de contraste, limites e advertência de não equivalência.\\
 8 & ``S3 ilimitado'' escondia quotas dos consumidores e impossibilidade de um único volume/cluster. & Documentação EBS/RDS/Aurora. & Arquitetura distribuída e limites por recurso explicitados.\\
 9 & ``Gerenciado'' sugeria que backup e failover existiam em toda configuração RDS. & Documentação RDS Multi-AZ. & Responsabilidade e modalidade Multi-AZ explicitadas.\\
@@ -515,7 +510,7 @@ divisão e a aceitação das correções pertencem ao grupo.}
 \destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
 O plano de correções descrevia uma versão anterior, ainda sem PDF e com inconsistências de unidade,
 custos e cobertura. A pedido de Raphael Henrique da Silva Pereira, o Codex o utilizou como checklist
-e conferiu o estado atual: o relatório usa 3,5~PB decimais, inclui EFS, calcula armazenamento e Athena, propõe uma
+e conferiu o estado atual: o relatório usa o padrão binário para alinhar com o faturamento da AWS, inclui EFS, calcula armazenamento e Athena, propõe uma
 arquitetura distribuída e possui PDF, PPTX e verificador consistentes. A divisão final acima foi
 adotada por coerência entre as seções e as responsabilidades de revisão.}
 
