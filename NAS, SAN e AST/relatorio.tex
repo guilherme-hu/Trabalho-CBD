@@ -129,33 +129,43 @@ armazenamento terciário.
 
 %=====================================================================
 \section{Introdução}
-%=====================================================================
+\label{sec:metodologia}
 
-\subsection{Motivação}
+O presente relatório documenta um estudo comparativo das duas arquiteturas de armazenamento em
+rede que sustentam a maior parte das instalações corporativas de Sistemas de Banco de Dados. A
+primeira é o \textbf{NAS} (\textit{Network Attached Storage}), em que o equipamento de armazenamento
+mantém um sistema de arquivos próprio e entrega \emph{arquivos} ao servidor pela mesma rede IP que a
+empresa já usa. A segunda é a \textbf{SAN} (\textit{Storage Area Network}), em que o equipamento
+entrega \emph{blocos} de disco por uma rede dedicada, e o servidor continua sendo o dono do sistema
+de arquivos. A distância entre entregar arquivos e entregar blocos parece pequena, mas é dela que
+decorrem todas as demais diferenças entre as duas soluções, e demonstrar isso é o que organiza o
+trabalho.
 
-Silberschatz, Korth e Sudarshan abrem o Capítulo 12 lembrando que o modelo lógico é o nível
-correto para o \emph{usuário} do banco pensar, mas que o projetista do SGBD não tem esse luxo:
-``o objetivo de um sistema de banco de dados é simplificar e facilitar o acesso aos dados'', e
-simplificar para o usuário significa \emph{complicar} deliberadamente para quem implementa
-\cite{silberschatz2020}. A escolha da arquitetura de armazenamento é o exemplo mais direto disso.
-Uma consulta SQL não muda de sintaxe quando o \textit{tablespace} sai de um disco local e vai para
-um \textit{array} conectado por \textit{Fibre Channel}; mas o custo de cada acesso, a semântica de
-travamento, o comportamento sob falha e o próprio conjunto de configurações suportadas pelo
-fabricante do SGBD mudam completamente.
+Silberschatz, Korth e Sudarshan abrem o Capítulo 12 observando que o modelo lógico é o nível
+correto para o usuário do banco pensar, já que ``o objetivo de um sistema de banco de dados é
+simplificar e facilitar o acesso aos dados'' \cite{silberschatz2020}. Para quem implementa o
+sistema, porém, essa simplificação se paga em complexidade: uma consulta SQL não muda de sintaxe
+quando os arquivos de dados do banco saem de um disco local e passam a ser acessados pela rede, mas
+o custo de cada acesso, a semântica de travamento, o comportamento sob falha e o próprio conjunto de
+configurações suportadas pelo fabricante do SGBD mudam completamente. A escolha da arquitetura de
+armazenamento é um dos pontos em que essa distância entre o nível lógico e o nível físico fica mais
+visível.
 
-Elmasri e Navathe registram a causa econômica da migração para armazenamento em rede: ``o custo
+Elmasri e Navathe registram a causa econômica que levou o armazenamento para a rede: ``o custo
 total de gerenciar todos os dados está crescendo tão rapidamente que, em muitos casos, o custo de
 gerenciar o armazenamento conectado ao servidor excede o custo do próprio servidor'', e o custo de
-\emph{aquisição} do armazenamento é ``apenas uma pequena fração --- tipicamente apenas 10 a 15\%
---- do custo geral de gerenciamento de armazenamento'' \cite{elmasri2018}. Ou seja: a discussão
-NAS $\times$ SAN nunca foi só sobre velocidade. Foi, desde o início, sobre desacoplar a capacidade
-do servidor que a consome.
+aquisição do armazenamento é ``apenas uma pequena fração, tipicamente apenas 10 a 15\%, do custo
+geral de gerenciamento de armazenamento'' \cite{elmasri2018}. A migração para NAS e SAN respondeu,
+portanto, a uma pressão de custo de operação antes de responder a uma pressão de desempenho, e o
+objetivo desde o início foi desacoplar a capacidade de armazenamento do servidor específico que a
+consome.
 
-\subsection{Objetivos}
-
-O enunciado da tarefa fixa uma lista de tópicos obrigatórios. Adotamos essa lista como
-\emph{checklist literal} e a reproduzimos na Tabela~\ref{tab:checklist}, indicando onde cada item
-é tratado. Um avaliador que confira item a item deve conseguir localizar cada exigência sem ler o
+Além da comparação entre as duas arquiteturas, o trabalho cobre os protocolos de cada família com
+suas normas de origem, discute as técnicas de \textit{Automated Storage Tiering} e de armazenamento
+por objetos, e fecha com uma recomendação de uso organizada por nível da hierarquia de
+armazenamento. O enunciado da tarefa fixa uma lista de tópicos obrigatórios, que adotamos como
+\textit{checklist} literal e reproduzimos na Tabela~\ref{tab:checklist} junto com a localização de
+cada item, de modo que um avaliador consiga conferir exigência por exigência sem precisar ler o
 texto corrido.
 
 \begin{table}[H]
@@ -192,160 +202,121 @@ Folha de rosto com nome completo e DRE & p.\ 1 \\
 \end{tabular}}
 \end{table}
 
-\subsection{Metodologia e critérios de proveniência}
-\label{sec:metodologia}
+Quanto ao método, adotamos uma regra única: todo número publicado declara sua origem, em uma de
+cinco categorias. Uma especificação normativa é o valor fixado por uma norma, como uma RFC do IETF ou
+um padrão T11/INCITS, e é o grau mais forte de proveniência porque não varia com o produto; um
+\textit{datasheet} de fabricante vale para o modelo identificado, e não para a categoria; uma medição
+de terceiro é o número obtido em publicação que descreva sua metodologia; uma derivação nossa é a
+conta feita a partir das três anteriores, e nesse caso ela aparece explicitamente no texto. A quinta
+categoria é a lacuna: quando não encontramos fonte, declaramos isso em vez de preencher a célula com
+uma estimativa disfarçada de dado.
 
-Adotamos uma regra única e rígida: \textbf{todo número publicado neste relatório declara sua
-origem}, em uma de cinco categorias.
+Verificamos também o rótulo de cada valor, porque o erro mais difícil de detectar é um número correto
+que descreve outra coisa. Quatro armadilhas desse tipo apareceram na tarefa: taxa \textit{full-duplex}
+contra taxa por direção, que diferem por um fator de dois e que a FCIA e a norma T11 publicam de
+formas distintas (Seção~\ref{sec:fc}); bit contra byte, que produziu um erro no próprio Silberschatz
+(Seção~\ref{sec:correcoes}); cliente contra servidor de um protocolo, distinção que altera em cinco
+anos a data de descontinuação do AFP (Seção~\ref{sec:afp}); e taxa bruta de linha contra taxa útil.
+Números voláteis, como preços e prazos de recuperação, recebem carimbo de data, já que um preço sem
+data não informa nada.
 
-\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=1.1cm,itemsep=2pt]
-\item \textbf{Especificação normativa} --- valor fixado por uma norma (RFC do IETF, padrão T11/INCITS,
-      documento aberto da Microsoft). É o grau mais forte: não muda com o produto.
-\item \textbf{\textit{Datasheet} de fabricante} --- valor publicado pelo fabricante para um modelo
-      identificado. Vale para \emph{aquele} modelo, não para a categoria.
-\item \textbf{Medição publicada por terceiro} --- número obtido em artigo revisado por pares ou
-      publicação técnica que descreve a metodologia.
-\item \textbf{Derivação nossa} --- conta feita por nós a partir de (a), (b) ou (c). A conta aparece
-      explicitamente no texto.
-\item \textbf{Não encontrado} --- declaramos a lacuna. Não preenchemos com estimativa disfarçada de
-      dado.
-\end{enumerate}
-
-Além da origem, verificamos sistematicamente o \emph{rótulo}, porque o erro mais difícil de
-detectar é um número certo descrevendo outra coisa. As armadilhas que efetivamente encontramos
-nesta tarefa foram: (i) taxa \textbf{full-duplex} versus taxa \textbf{por direção} --- diferença de
-exatamente $2\times$ que a FCIA e a norma T11 publicam de formas diferentes (Seção~\ref{sec:fc});
-(ii) \textbf{bit versus byte}, que produziu um erro no próprio livro do Silberschatz
-(Seção~\ref{sec:correcoes}); (iii) \textbf{cliente versus servidor} de um protocolo, que muda a data
-de descontinuação do AFP em cinco anos (Seção~\ref{sec:afp}); e (iv) \textbf{taxa bruta de linha
-versus taxa útil}, que depende da codificação de linha (8b/10b ou 64b/66b).
-
-Números voláteis (preços, prazos de recuperação, participação de mercado) recebem carimbo de
-data. Um preço sem data não é dado.
-
-\subsection{Papel de cada fonte}
-
-Seguindo a orientação de não citar por citar, atribuímos papéis distintos às três fontes
-bibliográficas da disciplina:
-
-\begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
-\item \textbf{Elmasri \& Navathe, Cap.\ 16} \cite{elmasri2018} --- é a fonte \emph{primária} desta
-      tarefa. A Seção 16.11 (``\textit{Modern Storage Architectures}'') é o único trecho dos três
-      livros que trata explicitamente de SAN, NAS, iSCSI, FCIP, FCoE, AST e armazenamento por
-      objetos. Dela extraímos a taxonomia e o vocabulário.
-\item \textbf{Silberschatz, Korth \& Sudarshan, Cap.\ 12} \cite{silberschatz2020} --- fornece a
-      \emph{física do meio} e a definição canônica dos níveis secundário e terciário
-      (Seção~\ref{sec:hierarquia}), que é o eixo pedido pelo enunciado na recomendação final. A
-      Seção 12.2 trata SAN e NAS em dois parágrafos; a definição de \emph{interface orientada a
-      bloco} está uma seção antes, na 12.1, no verbete sobre memória \textit{flash}.
-\item \textbf{Garcia-Molina, Ullman \& Widom, Cap.\ 13} \cite{garciamolina2008} --- fornece a
-      \emph{formalização do modelo de custo} de E/S: a ideia de que o custo de uma consulta se mede
-      em número de acessos a bloco, e que a latência do acesso domina o cálculo. É esse arcabouço
-      que usamos na Seção~\ref{sec:engine} para explicar por que a diferença entre NAS e SAN se
-      manifesta em transações curtas e praticamente desaparece em varreduras longas.
-\end{itemize}
+As três fontes bibliográficas da disciplina cumprem papéis distintos no trabalho. Elmasri e Navathe
+\cite{elmasri2018} são a fonte primária, porque a Seção 16.11 do Capítulo 16 é o único trecho dos
+três livros que trata explicitamente de SAN, NAS, iSCSI, FCIP, FCoE, AST e armazenamento por
+objetos, e dela extraímos a taxonomia e o vocabulário. Silberschatz, Korth e Sudarshan
+\cite{silberschatz2020} fornecem a física do meio e a definição canônica dos níveis secundário e
+terciário (Seção~\ref{sec:hierarquia}), que é o eixo pedido pelo enunciado na recomendação final;
+vale registrar que a Seção 12.2 trata SAN e NAS em apenas dois parágrafos, e que a definição de
+interface orientada a bloco está uma seção antes, na 12.1, no verbete sobre memória \textit{flash}.
+Garcia-Molina, Ullman e Widom \cite{garciamolina2008} fornecem a formalização do modelo de custo de
+E/S, isto é, a ideia de que o custo de uma consulta se mede em número de acessos a bloco e que a
+latência do acesso domina o cálculo; é esse arcabouço que usamos na Seção~\ref{sec:engine} para
+explicar por que a diferença entre NAS e SAN se manifesta em transações curtas e praticamente
+desaparece em varreduras longas.
 
 %=====================================================================
 \section{Fundamentos: o que o SGBD exige do armazenamento}
-%=====================================================================
 
 \subsection{A hierarquia de armazenamento e os níveis secundário e terciário}
 \label{sec:hierarquia}
 
-O enunciado pede explicitamente a recomendação ``tanto em nível secundário (\textit{storage
-online}) como em nível terciário (\textit{storage offline})''. Essa terminologia é a de
-Silberschatz \textit{et al.}, e vale reproduzi-la com exatidão, porque ela organiza toda a
-Seção~\ref{sec:recomendacao}:
+O enunciado pede a recomendação ``tanto em nível secundário (\textit{storage online}) como em nível
+terciário (\textit{storage offline})''. Essa terminologia é a de Silberschatz \textit{et al.}, que a
+define assim na Seção 12.1: ``as mídias de armazenamento mais rápidas, por exemplo \textit{cache} e
+memória principal, são chamadas de armazenamento primário. As mídias no próximo nível da hierarquia,
+por exemplo memória \textit{flash} e discos magnéticos, são chamadas de armazenamento secundário, ou
+\textit{online storage}. As mídias no nível mais baixo da hierarquia, por exemplo fita magnética e
+\textit{jukeboxes} de disco óptico, são chamadas de armazenamento terciário, ou \textit{offline
+storage}'' \cite{silberschatz2020}.
 
-\destaque{Definição normativa dos níveis (Silberschatz \textit{et al.}, §12.1)}{%
-``As mídias de armazenamento mais rápidas --- por exemplo, \textit{cache} e memória principal ---
-são chamadas de \textbf{armazenamento primário}. As mídias no próximo nível da hierarquia --- por
-exemplo, memória \textit{flash} e discos magnéticos --- são chamadas de \textbf{armazenamento
-secundário}, ou \textit{online storage}. As mídias no nível mais baixo da hierarquia --- por
-exemplo, fita magnética e \textit{jukeboxes} de disco óptico --- são chamadas de
-\textbf{armazenamento terciário}, ou \textit{offline storage}.'' \cite{silberschatz2020}}
-
-Elmasri e Navathe usam a mesma divisão em três níveis e acrescentam o critério operacional que
-mais importa aqui: ``dados em armazenamento secundário ou terciário não podem ser processados
-diretamente pela CPU; primeiro precisam ser copiados para o armazenamento primário''
-\cite{elmasri2018}. A consequência prática é que \textbf{NAS e SAN são, ambos, tecnologias de
-nível secundário} --- os dois entregam armazenamento \textit{online}, endereçável, disponível sem
-intervenção do operador. O armazenamento por objetos, por sua vez, atravessa a fronteira: em suas
-classes de acesso imediato ele é secundário; em suas classes de arquivamento profundo, com prazos
-de recuperação medidos em horas, ele funciona como terciário sem fita.
+Elmasri e Navathe usam a mesma divisão em três níveis e acrescentam o critério operacional que mais
+importa aqui: ``dados em armazenamento secundário ou terciário não podem ser processados diretamente
+pela CPU; primeiro precisam ser copiados para o armazenamento primário'' \cite{elmasri2018}. Disso
+decorre que NAS e SAN são, ambos, tecnologias de nível secundário, já que os dois entregam
+armazenamento \textit{online}, endereçável e disponível sem intervenção do operador. O armazenamento
+por objetos, por sua vez, atravessa a fronteira: em suas classes de acesso imediato ele é
+secundário, e em suas classes de arquivamento profundo, com prazos de recuperação medidos em horas,
+ele funciona como terciário sem fita.
 
 \subsection{O que o \textit{Database Engine} realmente pede ao armazenamento}
 \label{sec:engine}
 
-Antes de comparar arquiteturas, é preciso ser explícito sobre o que o núcleo de um SGBD exige.
-Cinco requisitos, em ordem de rigidez:
+Antes de comparar arquiteturas, convém ser explícito sobre o que o núcleo de um SGBD exige do meio
+em que grava. São cinco requisitos, aqui em ordem de rigidez.
 
-\begin{enumerate}[leftmargin=0.9cm,itemsep=3pt]
+O primeiro é o \textbf{acesso em unidades de bloco}. Silberschatz define que um SSD ``usa memória
+\textit{flash} internamente para armazenar dados, mas provê uma interface similar à de um disco
+magnético, permitindo que dados sejam armazenados ou recuperados em unidades de um bloco; tal
+interface é chamada de interface orientada a bloco'' \cite{silberschatz2020}, e todo o modelo de
+custo de Garcia-Molina \textit{et al.} \cite{garciamolina2008} é construído sobre essa unidade. Os
+tamanhos típicos de bloco de banco de dados são 8~KiB no PostgreSQL e no Oracle, por padrão, e
+16~KiB no InnoDB do MySQL.
 
-\item \textbf{Acesso em unidades de bloco/página.} Silberschatz define: ``um \textit{drive} de
-estado sólido (SSD) usa memória \textit{flash} internamente para armazenar dados, mas provê uma
-interface similar à de um disco magnético, permitindo que dados sejam armazenados ou recuperados
-em unidades de um bloco; tal interface é chamada de \textbf{interface orientada a bloco}''
-\cite{silberschatz2020}. Todo o modelo de custo de Garcia-Molina \textit{et al.}
-\cite{garciamolina2008} é construído sobre essa unidade. Tamanhos típicos de bloco de banco de
-dados: 8~KiB no PostgreSQL e no Oracle (\textit{default}), 16~KiB no InnoDB do MySQL.
+O segundo é a \textbf{durabilidade sob comando explícito}. O \textit{commit} de uma transação só pode
+retornar depois que o registro de \textit{log} correspondente estiver em mídia não volátil, o que se
+implementa por uma chamada de sincronização como \texttt{fsync}, \texttt{fdatasync} ou uma escrita
+com \texttt{O\_DSYNC}. É a latência dessa chamada que limita a taxa de \textit{commits} de uma carga
+OLTP, e não a banda do canal.
 
-\item \textbf{Durabilidade sob comando explícito.} O \textit{commit} de uma transação só pode
-retornar depois que o registro de \textit{log} correspondente estiver em mídia não volátil. Isso é
-implementado por uma chamada de sincronização (\texttt{fsync}, \texttt{fdatasync}, ou escrita com
-\texttt{O\_DSYNC}). A \textbf{latência dessa chamada}, e não a banda do canal, é o que limita a
-taxa de \textit{commits} de uma carga OLTP.
+O terceiro é a \textbf{atomicidade da escrita de página}. Se a energia cai no meio da gravação de
+uma página de 16~KiB, o SGBD precisa detectar e reparar a página parcialmente escrita (\textit{torn
+page}). O InnoDB resolve isso com o \textit{doublewrite buffer}, ``uma área de armazenamento onde o
+InnoDB escreve as páginas descarregadas do \textit{buffer pool} antes de escrevê-las em suas posições
+próprias nos arquivos de dados'', da qual consegue recuperar uma cópia boa se o sistema operacional,
+o subsistema de armazenamento ou o processo \texttt{mysqld} saírem inesperadamente no meio da escrita
+\cite{mysqldw}; o PostgreSQL resolve o mesmo problema com \texttt{full\_page\_writes} no WAL. Ambos
+custam banda de escrita e podem ser desligados quando o dispositivo garante escrita atômica, mas
+convém registrar o alcance real dessa concessão: o manual do MySQL não a estende a dispositivos com
+\textit{atomic writes} em geral, e sim a um caso nomeado, o de dispositivos Fusion-io, e apenas sobre
+NVMFS em Linux \cite{mysqldw}.
 
-\item \textbf{Atomicidade da escrita de página.} Se a energia cai no meio da gravação de uma
-página de 16~KiB, o SGBD precisa poder detectar e reparar a página parcialmente escrita
-(\textit{torn page}). O manual do MySQL descreve o mecanismo: ``o \textit{doublewrite buffer} é uma
-área de armazenamento onde o InnoDB escreve as páginas descarregadas do \textit{buffer pool} antes
-de escrevê-las em suas posições próprias nos arquivos de dados'', de modo que ``se houver uma
-saída inesperada do sistema operacional, do subsistema de armazenamento ou do processo
-\texttt{mysqld} no meio da escrita de uma página, o InnoDB pode encontrar uma cópia boa da página
-no \textit{doublewrite buffer} durante a recuperação'' \cite{mysqldw}. O PostgreSQL resolve o
-mesmo problema por outro caminho, com \texttt{full\_page\_writes} no WAL. Ambos os mecanismos
-custam banda de escrita --- e ambos podem ser desligados quando o dispositivo garante escrita
-atômica. \textbf{Precisão de alcance:} o manual do MySQL não faz essa concessão a ``dispositivos com
-\textit{atomic writes}'' em geral; ele a restringe a um caso nomeado --- o \textit{doublewrite} é
-desabilitado automaticamente quando reside em dispositivo Fusion-io com suporte a escrita atômica,
-e apenas sobre NVMFS em Linux \cite{mysqldw}.
+O quarto é a \textbf{semântica de travamento previsível}. Em configurações de \textit{cluster} com
+armazenamento compartilhado, como o Oracle RAC, vários nós escrevem no mesmo conjunto de blocos, e o
+travamento tem de permanecer correto sob falha de nó e sob partição de rede.
 
-\item \textbf{Semântica de travamento previsível.} Em configurações de \textit{cluster} com
-armazenamento compartilhado (Oracle RAC, por exemplo), vários nós escrevem no mesmo conjunto de
-blocos. O travamento tem de ser correto sob falha de nó e sob partição de rede.
-
-\item \textbf{Comportamento determinado sob indisponibilidade transitória.} Se o caminho até o
-armazenamento some por 30 segundos, o SGBD precisa saber se a operação de E/S vai bloquear,
-retornar erro, ou retornar sucesso falso. A diferença entre bloquear e errar decide se a
-instância sobrevive ou aborta.
-
-\end{enumerate}
-
-É contra esses cinco requisitos --- e não contra um \textit{benchmark} genérico --- que NAS e SAN
-devem ser avaliados.
+O quinto é o \textbf{comportamento determinado sob indisponibilidade transitória}. Se o caminho até o
+armazenamento some por trinta segundos, o SGBD precisa saber se a operação de E/S vai bloquear,
+retornar erro ou retornar sucesso falso, porque a diferença entre bloquear e errar decide se a
+instância sobrevive ou aborta. É contra esses cinco requisitos que avaliamos NAS e SAN ao longo do
+trabalho.
 
 \subsection{Por que a rede entrou no caminho do dado}
 
-O caminho histórico é DAS $\rightarrow$ NAS/SAN. No modelo \textbf{DAS} (\textit{Direct Attached
-Storage}), os discos são cabeados ao servidor pelas interfaces SATA, SAS ou NVMe descritas por
-Silberschatz na Seção 12.2 \cite{silberschatz2020}. É simples, é o de menor latência, e tem dois
-defeitos estruturais que Elmasri e Navathe apontam: a capacidade fica presa a um servidor
-específico --- ``muitos usuários de sistemas RAID não conseguem usar a capacidade efetivamente
-porque ela precisa estar ligada de maneira fixa a um ou mais servidores'' --- e o custo de
-gerenciamento explode com o número de ilhas \cite{elmasri2018}.
+O caminho histórico é DAS $\rightarrow$ NAS/SAN. No modelo DAS (\textit{Direct Attached Storage}), os
+discos são cabeados ao servidor pelas interfaces SATA, SAS ou NVMe descritas por Silberschatz
+\cite{silberschatz2020}. É a arranjo mais simples e de menor latência, mas tem dois defeitos
+estruturais que Elmasri e Navathe apontam: a capacidade fica presa a um servidor específico, já que
+``muitos usuários de sistemas RAID não conseguem usar a capacidade efetivamente porque ela precisa
+estar ligada de maneira fixa a um ou mais servidores'', e o custo de gerenciamento cresce com o
+número de ilhas \cite{elmasri2018}.
 
-A resposta da indústria foi mover a fronteira de rede para dentro do caminho de E/S, e há
-exatamente duas maneiras de fazer isso, que geram as duas arquiteturas deste trabalho.
-
-\destaque{A distinção fundamental, em uma frase}{%
-\textbf{SAN} move a fronteira de rede \emph{abaixo} do sistema de arquivos: o servidor recebe
-blocos e continua sendo o dono do sistema de arquivos. \textbf{NAS} move a fronteira \emph{acima}
-do sistema de arquivos: o servidor recebe arquivos, e o sistema de arquivos é do dispositivo de
-armazenamento. Tudo o mais --- protocolo, cabo, latência, custo, modelo de falha --- é
-consequência dessa escolha.}
-
-A Figura~\ref{fig:pilhas} mostra onde essa fronteira cai em cada arquitetura.
+A resposta da indústria foi mover a fronteira de rede para dentro do caminho de E/S, e há duas
+maneiras de fazer isso, que geram justamente as duas arquiteturas deste trabalho. A SAN move essa
+fronteira \emph{abaixo} do sistema de arquivos: o servidor recebe blocos e continua sendo o dono do
+sistema de arquivos. O NAS a move \emph{acima}: o servidor recebe arquivos, e o sistema de arquivos
+passa a ser do dispositivo de armazenamento. Protocolo, cabo, latência, custo e modelo de falha são
+todos consequência dessa escolha, e a Figura~\ref{fig:pilhas} mostra onde a fronteira cai em cada
+caso.
 
 \begin{figure}[H]
 \centering
@@ -360,84 +331,75 @@ armazenamento, e não mais do servidor de banco de dados.}
 %=====================================================================
 \section{NAS --- \textit{Network Attached Storage}}
 \label{sec:nas}
-%=====================================================================
 
 \subsection{Como funciona}
 
-Elmasri e Navathe descrevem o NAS de maneira quase provocativa: os dispositivos NAS ``são, de
-fato, servidores que não fornecem nenhum dos serviços comuns de servidor, mas simplesmente
+Elmasri e Navathe definem o NAS a partir daquilo que ele deixa de fazer: os dispositivos NAS ``são,
+de fato, servidores que não fornecem nenhum dos serviços comuns de servidor, mas simplesmente
 permitem a adição de armazenamento para compartilhamento de arquivos''. Um único dispositivo de
 \textit{hardware}, ``frequentemente chamado de \textit{NAS box} ou \textit{NAS head}, atua como a
 interface entre o sistema NAS e os clientes de rede'', e ``os clientes se conectam ao \textit{NAS
 head} em vez de aos dispositivos de armazenamento individuais'' \cite{elmasri2018}.
 
-Operacionalmente, a sequência é a seguinte:
+Operacionalmente, o \textit{NAS head} possui discos ou SSDs organizados internamente, tipicamente em
+RAID, e Elmasri e Navathe registram que ``tais dispositivos tipicamente suportam RAID níveis 0, 1 e
+5'' \cite{elmasri2018}. Sobre esse armazenamento ele monta e opera um sistema de arquivos próprio,
+que pode ser o WAFL da NetApp, o ZFS de muitos produtos ou ext4 e XFS em soluções abertas, e exporta
+esse sistema de arquivos pela LAN por meio de um protocolo de compartilhamento, seja SMB/CIFS, NFS ou
+AFP. O cliente, que aqui é o servidor de banco de dados, monta o compartilhamento e enxerga arquivos
+e diretórios, emitindo operações de arquivo como \textsc{open}, \textsc{read}, \textsc{write},
+\textsc{close} e \textsc{lock}, e não comandos de bloco.
 
-\begin{enumerate}[leftmargin=0.9cm,itemsep=2pt]
-\item O \textit{NAS head} possui discos (ou SSDs) organizados internamente, tipicamente em RAID.
-      Elmasri e Navathe registram que ``tais dispositivos tipicamente suportam RAID níveis 0, 1 e
-      5'' \cite{elmasri2018}.
-\item Sobre esse armazenamento, o \textit{NAS head} \textbf{monta e opera um sistema de arquivos
-      próprio} (WAFL na NetApp, ZFS em muitos produtos, ext4/XFS em soluções abertas).
-\item Esse sistema de arquivos é exportado pela LAN por meio de um protocolo de compartilhamento
-      de arquivos --- SMB/CIFS, NFS ou AFP.
-\item O cliente (o servidor de banco de dados) monta o compartilhamento e enxerga \emph{arquivos e
-      diretórios}. Ele emite operações de arquivo (\textsc{open}, \textsc{read}, \textsc{write},
-      \textsc{close}, \textsc{lock}), não comandos de bloco.
-\end{enumerate}
-
-O ponto que decide tudo está no item 2: \textbf{quem executa a alocação de blocos, o
-\textit{journaling} de metadados e o controle de concorrência de arquivo é o dispositivo NAS,
-não o servidor}. O servidor delega. Silberschatz resume: ``NAS é muito parecido com SAN, exceto
-que, em vez de o armazenamento em rede aparecer como um disco grande, ele provê uma interface de
-sistema de arquivos usando protocolos de sistema de arquivos em rede como NFS ou CIFS''
-\cite{silberschatz2020}.
+O ponto decisivo está no sistema de arquivos próprio: quem executa a alocação de blocos, o
+\textit{journaling} de metadados e o controle de concorrência de arquivo é o dispositivo NAS, ao
+qual o servidor delega essas funções. Silberschatz resume a arquitetura em uma frase: ``NAS é muito
+parecido com SAN, exceto que, em vez de o armazenamento em rede aparecer como um disco grande, ele
+provê uma interface de sistema de arquivos usando protocolos de sistema de arquivos em rede como NFS
+ou CIFS'' \cite{silberschatz2020}.
 
 \subsection{Consequências diretas da semântica de arquivo}
 
-\begin{itemize}[leftmargin=0.7cm,itemsep=3pt]
-\item \textbf{Compartilhamento entre clientes é nativo.} Como o dispositivo é o dono do sistema de
-      arquivos, ele arbitra o acesso concorrente. Vários servidores podem montar o mesmo
-      compartilhamento sem \textit{software} adicional. Em SAN, dois servidores que montam o mesmo
-      LUN com um sistema de arquivos comum destroem os dados, a menos que se use um sistema de
-      arquivos de \textit{cluster} (GFS2, OCFS2, VMFS) ou um gerenciador de volume ciente de
-      \textit{cluster}.
-\item \textbf{Independência de sistema operacional do cliente.} Elmasri e Navathe: ``sistemas NAS
-      alegam maior independência de sistema operacional dos clientes'' \cite{elmasri2018}.
-\item \textbf{Coerência de \textit{cache} é o problema difícil.} O NFS não oferece coerência forte
-      por padrão. O manual do Linux é explícito: ``o protocolo NFS não foi projetado para suportar
-      coerência de \textit{cache} verdadeira de sistema de arquivos de \textit{cluster} sem algum
-      tipo de serialização pela aplicação. Se coerência absoluta de \textit{cache} entre clientes
-      for necessária, as aplicações devem usar travamento de arquivo'', e ``alternativamente, as
-      aplicações podem abrir seus arquivos com a \textit{flag} \texttt{O\_DIRECT} para desabilitar
-      completamente o \textit{cache} de dados'' \cite{nfsman}. Esta é exatamente a razão pela qual
-      SGBDs suportados sobre NFS usam \texttt{O\_DIRECT} ou um cliente NFS próprio (ver
-      Seção~\ref{sec:dnfs}).
-\end{itemize}
+Dessa delegação decorrem três consequências práticas. A primeira é que o compartilhamento entre
+clientes é nativo: como o dispositivo é o dono do sistema de arquivos, é ele quem arbitra o acesso
+concorrente, e vários servidores podem montar o mesmo compartilhamento sem \textit{software}
+adicional. Em SAN, ao contrário, dois servidores que montem o mesmo LUN (\textit{Logical Unit Number}, o
+volume de blocos que o equipamento de armazenamento apresenta ao servidor) com um sistema de
+arquivos comum destroem os dados, a menos que se use um sistema de arquivos de \textit{cluster} como
+GFS2, OCFS2 ou VMFS, ou um gerenciador de volume ciente de \textit{cluster}. A segunda é a independência
+de sistema operacional do cliente, que Elmasri e Navathe registram ao afirmar que ``sistemas NAS
+alegam maior independência de sistema operacional dos clientes'' \cite{elmasri2018}.
+
+A terceira consequência é a mais problemática para banco de dados: a coerência de \textit{cache}. O
+NFS não oferece coerência forte por padrão, e o manual do Linux é explícito ao dizer que ``o
+protocolo NFS não foi projetado para suportar coerência de \textit{cache} verdadeira de sistema de
+arquivos de \textit{cluster} sem algum tipo de serialização pela aplicação'', de modo que ``se
+coerência absoluta de \textit{cache} entre clientes for necessária, as aplicações devem usar
+travamento de arquivo'', e que ``alternativamente, as aplicações podem abrir seus arquivos com a
+\textit{flag} \texttt{O\_DIRECT} para desabilitar completamente o \textit{cache} de dados''
+\cite{nfsman}. É por essa razão que os SGBDs suportados sobre NFS usam \texttt{O\_DIRECT} ou
+substituem o cliente NFS do sistema operacional por um próprio, como se discute na
+Seção~\ref{sec:dnfs}.
 
 %---------------------------------------------------------------------
 \subsection{Protocolo NAS I --- SMB/CIFS}
 \label{sec:smb}
 %---------------------------------------------------------------------
 
-\textbf{O que é.} SMB (\textit{Server Message Block}) é o protocolo de compartilhamento de
-arquivos nativo do mundo Windows. CIFS (\textit{Common Internet File System}) \textbf{não é um
-protocolo diferente}: é o nome que a Microsoft deu, em 1996, à família de dialetos hoje chamada
-SMB~1. A própria Microsoft posiciona assim: a especificação aberta [MS-SMB2] define o SMB~2/3 como
-``uma extensão do protocolo \textit{Server Message Block} (SMB) original (conforme especificado em
-[MS-SMB] e [MS-CIFS])'' \cite{mssmb2ovw} --- isto é, [MS-CIFS] documenta o SMB original, não um
-protocolo à parte. Tratar ``SMB'' e ``CIFS'' como dois protocolos distintos é um erro comum; a
-leitura correta é que \textbf{CIFS é SMB~1}, e que tudo posterior a isso se chama SMB~2 ou SMB~3.
-O enunciado da tarefa usa a grafia composta ``SMB/CIFS'', que é a convenção da indústria e a
-adotada aqui.
+O SMB (\textit{Server Message Block}) é o protocolo de compartilhamento de arquivos nativo do mundo
+Windows, e o CIFS (\textit{Common Internet File System}) não é um protocolo diferente: é o nome que a
+Microsoft deu, em 1996, à família de dialetos hoje chamada SMB~1. A própria Microsoft posiciona a
+relação dessa forma, já que a especificação aberta [MS-SMB2] define o SMB~2/3 como ``uma extensão do
+protocolo \textit{Server Message Block} (SMB) original (conforme especificado em [MS-SMB] e
+[MS-CIFS])'' \cite{mssmb2ovw}, isto é, o [MS-CIFS] documenta o SMB original e não um protocolo à
+parte. Tratar ``SMB'' e ``CIFS'' como dois protocolos distintos é um erro comum, e a leitura correta
+é que CIFS é SMB~1 e que tudo posterior a isso se chama SMB~2 ou SMB~3. O enunciado da tarefa usa a
+grafia composta ``SMB/CIFS'', que é a convenção da indústria e a adotada aqui.
 
-\textbf{Modelo.} É um protocolo de requisição-resposta orientado a sessão, historicamente sobre
-NetBIOS (porta 139) e, desde o Windows 2000, diretamente sobre TCP na \textbf{porta 445}. As
-operações são de alto nível: abrir arquivo, ler intervalo de \textit{bytes}, travar intervalo de
-\textit{bytes}, enumerar diretório, consultar atributos.
-
-\textbf{Evolução dos dialetos.} A Microsoft documenta as versões na especificação aberta
-[MS-SMB2]. Os marcos relevantes:
+Trata-se de um protocolo de requisição-resposta orientado a sessão, transportado historicamente sobre
+NetBIOS na porta 139 e, desde o Windows 2000, diretamente sobre TCP na porta 445. Suas operações são
+de alto nível: abrir arquivo, ler ou travar um intervalo de \textit{bytes}, enumerar diretório e
+consultar atributos. A Microsoft documenta a evolução dos dialetos na especificação aberta [MS-SMB2],
+e a Tabela~\ref{tab:smb} reúne os marcos relevantes.
 
 \begin{table}[H]
 \centering
@@ -465,44 +427,37 @@ criptografia \textbf{AES-128-GCM} (AES-256-GCM só a partir do Windows 11 / Serv
 \end{tabular}}
 \end{table}
 
-\textbf{Estado do SMB 1.} A Microsoft documenta que ``a partir do \textit{Windows 10 Fall Creators
+Quanto ao estado do SMB~1, a Microsoft documenta que ``a partir do \textit{Windows 10 Fall Creators
 Update} e do Windows Server 2019, o SMBv1 não é mais instalado por padrão'', e que ``o SMBv1 não é
 instalado por padrão em nenhuma edição do Windows 11 ou do Windows Server 2019 e versões
-posteriores'' \cite{mssmb1}. \textbf{Precisão de rótulo:} o primeiro \emph{Windows Server} sem SMBv1
-por padrão foi a versão 1709 do canal semianual; o Server 2019 é o primeiro do canal de suporte
-prolongado (LTSC). \textbf{Consequência prática para NAS:} equipamentos antigos que só
-falam CIFS/SMB1 deixam de ser montáveis por clientes modernos sem reabilitação manual de um
-protocolo com vulnerabilidades conhecidas. Ao citar ``SMB/CIFS'' num projeto novo em 2026, o que
-se está de fato especificando é SMB~3.
+posteriores'' \cite{mssmb1}. Convém precisar o rótulo: o primeiro \textit{Windows Server} sem SMBv1
+por padrão foi a versão 1709 do canal semianual, sendo o Server 2019 o primeiro do canal de suporte
+prolongado. A consequência prática para NAS é que equipamentos antigos que só falam CIFS/SMB1 deixam
+de ser montáveis por clientes modernos sem a reabilitação manual de um protocolo com
+vulnerabilidades conhecidas, de modo que citar ``SMB/CIFS'' num projeto novo em 2026 significa, na
+prática, especificar SMB~3.
 
-\textbf{Uso com SGBD.} A Microsoft suporta oficialmente colocar arquivos de banco de dados do SQL
-Server em compartilhamento SMB: ``o SQL Server 2012 (11.x) e versões posteriores'' suportam
-armazenar bancos de dados de sistema (\texttt{master}, \texttt{model}, \texttt{msdb},
-\texttt{tempdb}) e de usuário em \textit{fileshare} SMB, tanto em instalação isolada quanto em
-\textit{failover cluster} \cite{mssqlsmb}. As condições que a documentação impõe são instrutivas
-porque expõem exatamente os pontos frágeis do NAS para banco de dados:
-
-\begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
-\item para cargas críticas, ``o compartilhamento de arquivos deve suportar \textit{SMB 3.0
-      transparent failover} (disponibilidade contínua)'' \cite{mssqlsmb} --- isto é: o protocolo
-      precisa sobreviver à troca de nó do servidor de arquivos sem devolver erro ao SGBD;
-\item a conta de serviço precisa de \texttt{FULL CONTROL} no compartilhamento e no NTFS;
-\item \textbf{FILESTREAM não é suportado} em compartilhamento SMB;
-\item caminhos de \textit{loopback}, compartilhamentos administrativos (\texttt{\textbackslash\textbackslash
-      servidor\textbackslash x\$}) e unidades mapeadas não são suportados --- só caminhos UNC.
-\end{itemize}
+A Microsoft suporta oficialmente colocar arquivos de banco de dados do SQL Server em compartilhamento
+SMB: ``o SQL Server 2012 (11.x) e versões posteriores'' suportam armazenar bancos de dados de sistema
+(\texttt{master}, \texttt{model}, \texttt{msdb}, \texttt{tempdb}) e de usuário em \textit{fileshare}
+SMB, tanto em instalação isolada quanto em \textit{failover cluster} \cite{mssqlsmb}. As condições
+que a documentação impõe expõem os pontos frágeis do NAS para banco de dados. Para cargas críticas,
+``o compartilhamento de arquivos deve suportar \textit{SMB 3.0 transparent failover} (disponibilidade
+contínua)'' \cite{mssqlsmb}, ou seja, o protocolo precisa sobreviver à troca de nó do servidor de
+arquivos sem devolver erro ao SGBD. Além disso, a conta de serviço precisa de \texttt{FULL CONTROL}
+no compartilhamento e no NTFS, o FILESTREAM não é suportado sobre SMB, e caminhos de
+\textit{loopback}, compartilhamentos administrativos e unidades mapeadas também não são suportados,
+restando apenas caminhos UNC.
 
 %---------------------------------------------------------------------
 \subsection{Protocolo NAS II --- NFS}
 \label{sec:nfs}
 %---------------------------------------------------------------------
 
-\textbf{O que é.} O NFS (\textit{Network File System}) é o padrão aberto de compartilhamento de
-arquivos do mundo UNIX/Linux, originalmente da Sun Microsystems (1984) e hoje mantido pelo IETF.
-É o protocolo NAS que efetivamente aparece em instalações sérias de banco de dados.
-
-\textbf{Versões e o que muda em cada uma.} A Tabela~\ref{tab:nfs} traz a linha do tempo com as
-normas. Proveniência: RFCs do IETF (especificação normativa).
+O NFS (\textit{Network File System}) é o padrão aberto de compartilhamento de arquivos do mundo
+UNIX/Linux, originalmente da Sun Microsystems em 1984 e hoje mantido pelo IETF. É o protocolo NAS que
+efetivamente aparece em instalações de banco de dados, e a Tabela~\ref{tab:nfs} traz sua linha do
+tempo com as normas correspondentes.
 
 \begin{table}[H]
 \centering
@@ -533,9 +488,8 @@ execução \textbf{exatamente uma vez} (\textit{exactly-once semantics}): vale p
 \textsc{cb\_sequence} --- não é incondicional, mas a RFC é explícita em que a exigência ``vale
 independentemente de a requisição ser enviada com \textit{reply caching} especificado''
 \cite{rfc8881}: o \textit{reply cache} é mecanismo de implementação, não condição da garantia.
-E \textbf{pNFS}
-(\textit{parallel NFS}), que separa o caminho de metadados do caminho de dados, permitindo que o
-cliente leia dados diretamente de vários servidores em paralelo \cite{rfc8881}.\strut} \\
+E \textbf{pNFS} (\textit{parallel NFS}), que separa o caminho de metadados do caminho de dados,
+permitindo que o cliente leia dados diretamente de vários servidores em paralelo \cite{rfc8881}.\strut} \\
 \addlinespace
 NFSv4.2 & 2016 & RFC 7862 & \parbox[t]{7.3cm}{\raggedright Cópia no lado do servidor, arquivos esparsos,
 \textit{hole punching}.\strut} \\
@@ -543,99 +497,81 @@ NFSv4.2 & 2016 & RFC 7862 & \parbox[t]{7.3cm}{\raggedright Cópia no lado do ser
 \end{tabular}}
 \end{table}
 
-\correcao{Correção de rótulo: RFC 8881 obsoleta a RFC 5661}{%
-Boa parte da literatura ainda cita a RFC 5661 (2010) como a especificação do NFSv4.1. Ela foi
-\textbf{obsoletada pela RFC 8881, de 2020} \cite{rfc8881}. Citar a RFC 5661 hoje aponta para um
-documento superado --- ainda que o conteúdo técnico seja em grande parte o mesmo, a referência
-correta é a RFC 8881.}
+Vale uma correção de rótulo sobre essa tabela: boa parte da literatura ainda cita a RFC 5661, de
+2010, como a especificação do NFSv4.1, mas ela foi obsoletada pela RFC 8881, de 2020
+\cite{rfc8881}. Ainda que o conteúdo técnico seja em grande parte o mesmo, citar a RFC 5661 hoje
+aponta para um documento superado.
 
-\textbf{O calcanhar de Aquiles: coerência de \textit{cache}.} O NFS implementa
-\textit{close-to-open consistency}: o cliente verifica a validade do \textit{cache} ao abrir o
-arquivo e descarrega as alterações pendentes ao fechá-lo \cite{nfsman}. Isso é adequado para
-arquivos de escritório e desastroso para um arquivo de dados de banco aberto por semanas sem nunca
-ser fechado. É por isso que todo SGBD suportado sobre NFS ou usa \texttt{O\_DIRECT}, ou substitui o
-cliente NFS do sistema operacional pelo seu próprio.
+A maior limitação do NFS para banco de dados continua sendo a coerência de \textit{cache}. O
+protocolo implementa a chamada \textit{close-to-open consistency}, em que o cliente verifica a
+validade do \textit{cache} ao abrir o arquivo e descarrega as alterações pendentes ao fechá-lo
+\cite{nfsman}, o que é adequado para arquivos de escritório e desastroso para um arquivo de dados de
+banco que fica aberto por semanas sem nunca ser fechado. É por isso que todo SGBD suportado sobre NFS
+ou usa \texttt{O\_DIRECT}, ou substitui o cliente NFS do sistema operacional pelo seu próprio.
 
-\textbf{Oracle Direct NFS (dNFS).}
 \label{sec:dnfs}
-A Oracle escolheu o caminho radical: ``o cliente Direct NFS (dNFS) integra a funcionalidade de
-cliente NFS diretamente no \textit{software} Oracle para otimizar o caminho de E/S entre a Oracle e
-o servidor NFS'' \cite{oracledn}. Ou seja, o SGBD implementa NFS \emph{dentro de si mesmo}, falando
-diretamente com o servidor NFS por \textit{sockets} próprios e ignorando o cliente NFS do
-\textit{kernel}. Isso lhe dá controle sobre profundidade de fila, número de conexões TCP e
+A Oracle escolheu o segundo caminho. Segundo sua documentação, ``o cliente Direct NFS (dNFS) integra
+a funcionalidade de cliente NFS diretamente no \textit{software} Oracle para otimizar o caminho de
+E/S entre a Oracle e o servidor NFS'' \cite{oracledn}, ou seja, o SGBD implementa NFS dentro de si
+mesmo, falando diretamente com o servidor NFS por \textit{sockets} próprios e ignorando o cliente
+NFS do \textit{kernel}, o que lhe dá controle sobre profundidade de fila, número de conexões TCP e
 semântica de \textit{cache}. A Oracle documenta que ``o cliente Direct NFS suporta os protocolos
-NFSv3, NFSv4, NFSv4.1 e pNFS'', e que ``se o Oracle Database não conseguir se conectar a um
-servidor NFS usando o cliente Direct NFS, então ele se conecta usando o cliente NFS do
-\textit{kernel} do sistema operacional'' \cite{oracledn}.
+NFSv3, NFSv4, NFSv4.1 e pNFS'', e que ``se o Oracle Database não conseguir se conectar a um servidor
+NFS usando o cliente Direct NFS, então ele se conecta usando o cliente NFS do \textit{kernel} do
+sistema operacional'' \cite{oracledn}.
 
-\destaque{Por que o dNFS importa para o argumento deste trabalho}{%
-A existência do dNFS é a melhor evidência empírica da tese central: NAS entrega uma abstração
-\emph{alta demais} para um SGBD. O maior fornecedor de bancos de dados relacionais do mercado
-achou necessário reimplementar o protocolo NAS dentro do próprio motor para poder usá-lo. Isso não
-significa que NAS não sirva para banco --- significa que serve \emph{quando o motor participa da
-decisão}, não quando ele é tratado como uma aplicação qualquer.}
+A existência do dNFS é a evidência empírica mais direta da tese central deste trabalho, porque o
+maior fornecedor de bancos de dados relacionais do mercado achou necessário reimplementar o protocolo
+NAS dentro do próprio motor para poder usá-lo. Isso não desqualifica o NAS para banco de dados, mas
+delimita a condição em que ele funciona: quando o motor participa da decisão, e não quando é tratado
+como uma aplicação qualquer.
 
 %---------------------------------------------------------------------
 \subsection{Protocolo NAS III --- AFP (\textit{Apple Filing Protocol})}
 \label{sec:afp}
 %---------------------------------------------------------------------
 
-\textbf{O que é.} O AFP é o protocolo proprietário de compartilhamento de arquivos da Apple,
-originado no \textit{AppleTalk Filing Protocol} de 1985--1988. Sua característica distintiva era
-preservar corretamente as particularidades do sistema de arquivos do Macintosh --- \textit{resource
-forks}, tipo e criador de arquivo, nomes longos com acentuação, e metadados que o SMB1 da época
-mutilava. Por muitos anos foi o único jeito de fazer um NAS servir Macs sem corromper arquivos, e
-era o protocolo obrigatório para \textit{backups} do Time Machine em rede.
+O AFP é o protocolo proprietário de compartilhamento de arquivos da Apple, originado no
+\textit{AppleTalk Filing Protocol} de meados dos anos 1980. Sua característica distintiva era
+preservar corretamente as particularidades do sistema de arquivos do Macintosh, isto é,
+\textit{resource forks}, tipo e criador de arquivo, nomes longos com acentuação e metadados que o
+SMB1 da época mutilava. Por muitos anos foi o único jeito de fazer um NAS servir Macs sem corromper
+arquivos, e era o protocolo obrigatório para \textit{backups} do Time Machine em rede.
 
-\textbf{Como funciona.} O AFP é um protocolo de sessão, com estado, historicamente transportado
-sobre AppleTalk (ASP/ATP) e, \textbf{desde o AFP 2.1}, também sobre TCP na \textbf{porta 548} por
-meio do \textbf{DSI} (\textit{Data Stream Interface}), a camada que enquadra requisições e respostas
-e multiplexa comandos numa conexão TCP. A documentação da Apple é literal: ``\textit{TCP can be used
-as the transport protocol for AFP version 2.1 and later}'' \cite{appleafptcp}. O que o \textbf{AFP
-3.0} (Mac OS X Server 10.0.3, 2001) muda não é a \emph{existência} do transporte TCP, e sim sua
-\emph{exclusividade}: a partir dele o AppleTalk deixa de transportar dados e fica restrito à
-descoberta de serviço. Suas características determinantes, e o que elas explicam:
+Trata-se de um protocolo de sessão, com estado, transportado historicamente sobre AppleTalk
+(ASP/ATP) e, desde o AFP 2.1, também sobre TCP na porta 548 por meio do DSI (\textit{Data Stream
+Interface}). A documentação da Apple é literal quanto a isso: ``\textit{TCP can be used as the
+transport protocol for AFP version 2.1 and later}'' \cite{appleafptcp}. O que o AFP 3.0, de 2001,
+muda não é a existência do transporte TCP, e sim sua exclusividade, já que a partir dele o AppleTalk
+fica restrito à descoberta de serviço.
 
-\begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
-\item \textbf{Modelo de sessão com estado.} O cliente faz \textsc{FPLogin}, abre um \textit{volume}
-      com \textsc{FPOpenVol}, e daí em diante opera sobre identificadores de sessão. Falha de rede
-      derruba a sessão; o AFP 3.x acrescentou reconexão para mitigar isso.
-\item \textbf{Bifurcação de arquivo (\textit{forks}).} O AFP foi desenhado em torno do sistema de
-      arquivos do Macintosh, em que um arquivo tem um \textit{data fork} e um \textit{resource
-      fork} --- e os comandos são explicitamente bifurcados: \textsc{FPOpenFork},
-      \textsc{FPRead}/\textsc{FPWrite} sobre um \textit{fork} identificado. Era esta a razão
-      técnica de existir: SMB1 e NFS não tinham como representar o \textit{resource fork} sem
-      truques (arquivos \texttt{.\_nome}, \textit{AppleDouble}), e o resultado era corrupção
-      silenciosa de metadados.
-\item \textbf{Metadados nativos do Mac} --- tipo e criador de arquivo, \textit{Finder info},
-      posição de ícone --- transportados como atributos de primeira classe, não como emulação.
-\item \textbf{Travamento por intervalo de \textit{bytes}} via \textsc{FPByteRangeLock}, mas com
-      semântica de sessão: o travamento morre com a sessão, e não há o equivalente às
-      \textit{leases} com prazo do NFSv4 ou aos \textit{oplocks}/\textit{leases} do SMB~2/3.
-\item \textbf{Nomes e codificação:} suporte nativo a nomes longos em UTF-8 com decomposição
-      canônica (a forma NFD que o macOS usa), outro ponto em que os protocolos concorrentes da época
-      falhavam.
-\end{itemize}
+Três características determinam seu comportamento. A sessão é com estado: o cliente executa
+\textsc{FPLogin}, abre um \textit{volume} com \textsc{FPOpenVol} e daí em diante opera sobre
+identificadores de sessão, de modo que uma falha de rede a derruba, problema que o AFP 3.x mitigou
+com reconexão. Os comandos são bifurcados por \textit{fork}, com \textsc{FPOpenFork} e
+\textsc{FPRead}/\textsc{FPWrite} operando sobre o \textit{data fork} ou o \textit{resource fork} de
+um arquivo do Macintosh, e essa é a razão técnica original de o protocolo existir, já que SMB1 e NFS
+só emulavam isso com truques como arquivos \texttt{.\_nome} e \textit{AppleDouble}, ao custo de
+corrupção silenciosa de metadados; pela mesma lógica, os metadados do Finder e os nomes longos em
+UTF-8 com decomposição canônica trafegam como atributos de primeira classe. Por fim, o travamento por
+intervalo de \textit{bytes} existe, via \textsc{FPByteRangeLock}, mas com semântica de sessão: morre
+com ela, e não há equivalente às \textit{leases} com prazo do NFSv4 nem aos \textit{oplocks} do
+SMB~2/3.
 
-\textbf{O que ele nunca teve} --- e que é a razão de não servir a banco de dados: nenhum caminho de
-dados com RDMA, nenhum equivalente a \textit{multichannel}, nenhuma noção de disponibilidade
-contínua com \textit{failover} transparente, e um travamento amarrado à sessão. Comparado ao SMB~3
-(Seção~\ref{sec:smb}) e ao NFSv4.1 (Seção~\ref{sec:nfs}), o AFP parou no conjunto de recursos de um
-protocolo de compartilhamento de arquivos de escritório.
+O que o AFP nunca teve é a razão de não servir a banco de dados: nenhum caminho de dados com RDMA,
+nenhum equivalente a \textit{multichannel}, nenhuma disponibilidade contínua com \textit{failover}
+transparente, e um travamento amarrado à sessão. Comparado ao SMB~3 (Seção~\ref{sec:smb}) e ao
+NFSv4.1 (Seção~\ref{sec:nfs}), ele parou no conjunto de recursos de um protocolo de compartilhamento
+de arquivos de escritório.
 
-\textbf{Estado atual --- e é aqui que a maior parte do material disponível erra.} O AFP está em
-processo de remoção do macOS, em duas etapas separadas por cerca de cinco anos:
-
-\begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
-\item o \textbf{servidor} AFP (a capacidade de um Mac \emph{compartilhar} pastas por AFP) foi
-      removido no macOS 11 Big Sur (2020);
-\item o \textbf{cliente} AFP (a capacidade de um Mac \emph{montar} um compartilhamento AFP de um
-      NAS) foi \textbf{depreciado no macOS 15.5 Sequoia}, em maio de 2025. O texto da Apple é
-      direto: ``o cliente do \textit{Apple Filing Protocol} (AFP) está depreciado e será removido em
-      uma versão futura do macOS'' \cite{appleafp};
-\item para o \textbf{macOS 27}, a Apple informa oficialmente que o Time Machine deixa de
-      suportar destinos AFP, incluindo Time Capsules e AirPort Disks \cite{appleafptm}.
-\end{itemize}
+Quanto ao estado atual, e é aqui que a maior parte do material disponível erra, o AFP está sendo
+removido do macOS em duas etapas separadas por cerca de cinco anos: o servidor, isto é, a capacidade
+de um Mac compartilhar pastas por AFP, saiu no macOS 11 Big Sur, em 2020; o cliente, a capacidade de
+montar um compartilhamento AFP de um NAS, foi depreciado no macOS 15.5 Sequoia, em maio de 2025, com
+a Apple registrando que ``o cliente do \textit{Apple Filing Protocol} (AFP) está depreciado e será
+removido em uma versão futura do macOS'' \cite{appleafp}. Para o macOS 27, a Apple informa
+oficialmente que o Time Machine deixa de suportar destinos AFP, incluindo Time Capsules e AirPort
+Disks \cite{appleafptm}.
 
 \correcao{Armadilha de rótulo: cliente $\neq$ servidor --- e correção da nossa própria primeira versão}{%
 Dizer ``a Apple removeu o AFP no Big Sur'' é meia-verdade que erra por cinco anos: removeu o
@@ -653,42 +589,38 @@ destinos AFP do Time Machine no macOS~27 \cite{appleafptm}.
 destinos AFP; não usamos isso para afirmar além do que a Apple documenta sobre todo cliente AFP.
 A depreciação do cliente permanece documentada separadamente \cite{appleafp}.}
 
-\textbf{Relevância para SBD: nenhuma, e isso é o achado.} \textbf{Alcance da afirmação:} pesquisamos
-as matrizes de suporte publicadas por Oracle, Microsoft, PostgreSQL e MySQL e não localizamos AFP em
-nenhuma delas; o que afirmamos, portanto, é que \emph{nenhum dos quatro SGBDs de maior participação
-o lista como configuração suportada}, e não um negativo universal sobre todo o mercado. O motivo
-técnico está na Seção anterior: sem travamento independente de sessão, sem RDMA e sem
-disponibilidade contínua, o AFP não atende aos requisitos 4 e 5 da Seção~\ref{sec:engine}. O protocolo nunca teve travamento em intervalo de \textit{bytes} adequado a
-cargas transacionais, nunca teve RDMA nem múltiplos canais, e agora chegou ao fim da vida. A
-recomendação técnica correta, em 2026, é: \textbf{para um NAS que precise servir clientes Apple,
-use SMB~3}, que é o protocolo primário do macOS desde o OS~X 10.9 Mavericks (2013) --- a transição
-já tinha treze anos quando o AFP foi finalmente retirado. Se o AFP aparece na lista do enunciado, é
-como item de completude histórica; é mais honesto dizer isso do que fabricar uma aplicação de banco
-de dados para ele.
+A relevância do AFP para SBD é nenhuma, e esse é justamente o achado. Pesquisamos as matrizes de
+suporte publicadas por Oracle, Microsoft, PostgreSQL e MySQL e não localizamos AFP em nenhuma delas,
+de modo que o que afirmamos é que nenhum dos quatro SGBDs de maior participação o lista como
+configuração suportada, e não um negativo universal sobre todo o mercado. O motivo técnico está nas
+características acima: sem travamento independente de sessão, sem RDMA e sem disponibilidade
+contínua, o AFP não atende aos requisitos quatro e cinco da Seção~\ref{sec:engine}. Para um NAS que
+precise servir clientes Apple, a recomendação em 2026 é SMB~3, protocolo primário do macOS desde o
+OS~X 10.9 Mavericks, de 2013. Se o AFP aparece na lista do enunciado, é como item de completude
+histórica, e é mais honesto dizer isso do que fabricar uma aplicação de banco de dados para ele.
 
 \subsection{Vantagens e desvantagens do NAS}
 \label{sec:vantnas}
 
 \correcao{Declaração de lacuna: os itens de custo desta tabela não têm número}{%
-As linhas de custo da Tabela~\ref{tab:vantnas} e das tabelas comparativas seguintes --- ``menor
-custo por TB útil'', ``custo relativo menor/maior'' --- são \textbf{afirmações estruturais, não
-medições}. Elas se sustentam em um fato verificável (o NAS dispensa HBA, \textit{switch} FC,
-transceptores e cabeamento dedicados, que a SAN exige) e em outro que \emph{não} conseguimos
+As linhas de custo da Tabela~\ref{tab:vantnas} e das tabelas comparativas seguintes ---
+``menor custo por TB útil'', ``custo relativo menor/maior'' --- são \textbf{afirmações estruturais,
+não medições}. Elas se sustentam em um fato verificável (o NAS dispensa a HBA, que é a placa adaptadora de
+barramento instalada no servidor para falar com a rede de armazenamento, e dispensa também o
+\textit{switch} FC, os transceptores e o cabeamento dedicados que a SAN exige) e em outro que \emph{não} conseguimos
 sustentar com fonte: \emph{quanto} isso representa em US\$/TB útil.
 
 \smallskip
 Aplicando a regra da Seção~\ref{sec:metodologia}, a categoria correta é \textbf{não encontrado}.
 Não localizamos, para nenhum fornecedor, tabela pública de preço de porta FC ou de \textit{array}
-unificado que permitisse uma comparação honesta e datada --- preço de canal depende de volume e de
-contrato, e reproduzi-lo sem data seria violar a regra de que ``número volátil sem data não é
-dado''.
+unificado que permitisse uma comparação honesta e datada, porque preço de canal depende de volume e
+de contrato, e reproduzi-lo sem data violaria a regra de que número volátil sem data não é dado.
 
 \smallskip
 \textbf{O que se pode afirmar com rigor, e é o que afirmamos:} a SAN acrescenta \emph{categorias} de
 componente que o NAS não tem, e cada categoria acrescenta custo de aquisição, de manutenção e de
 competência da equipe. A \emph{direção} da comparação é estrutural e certa; a \emph{magnitude} não
-está neste trabalho. O Apêndice de aprofundamentos registra o levantamento de TCO como o item que
-fecharia essa lacuna.}
+está neste trabalho.}
 
 \begin{table}[H]
 \centering
@@ -1191,93 +1123,76 @@ assíncrono implica RPO (\textit{Recovery Point Objective}) maior que zero.
 \subsection{Protocolo SAN IV --- FCoE}
 \label{sec:fcoe}
 
-\textbf{O que é.} O FCoE (\textit{Fibre Channel over Ethernet}) encapsula quadros FC \emph{inteiros}
-diretamente em quadros Ethernet, \textbf{sem TCP e sem IP}. Foi padronizado pelo T11 em
-\textbf{FC-BB-5}, publicado como \textbf{ANSI/INCITS 462-2010} \cite{fcbb5}. A versão seguinte,
-FC-BB-6, acrescentou o modo VN2VN (comunicação direta entre nós sem \textit{switch} FCF).
+O FCoE (\textit{Fibre Channel over Ethernet}) encapsula quadros FC inteiros diretamente em quadros
+Ethernet, sem TCP e sem IP. Foi padronizado pelo T11 em FC-BB-5, publicado como ANSI/INCITS 462-2010
+\cite{fcbb5}, e a versão seguinte, FC-BB-6, acrescentou o modo VN2VN, com comunicação direta entre
+nós sem \textit{switch} FCF.
 
-\correcao{Precisando o Elmasri \& Navathe sobre FCoE --- com o parágrafo inteiro à vista}{%
-\textbf{Primeiro, a citação completa}, porque recortá-la mudaria o julgamento. O livro escreve:
-``a ideia mais recente a entrar na corrida do armazenamento IP corporativo é o \textit{Fibre Channel
-over Ethernet} (FCoE), \emph{que pode ser pensado como iSCSI sem o IP}. Ele usa muitos elementos de
-SCSI e FC (assim como o iSCSI), mas não inclui componentes TCP/IP. [\ldots] Ele tira proveito de
-uma tecnologia Ethernet confiável que usa \textit{buffering} e \textbf{controle de fluxo fim-a-fim}
-para evitar pacotes descartados'' \cite{elmasri2018}.
+Elmasri e Navathe tratam o protocolo em um parágrafo que vale reproduzir por inteiro, porque
+recortá-lo mudaria o julgamento. O livro escreve que ``a ideia mais recente a entrar na corrida do
+armazenamento IP corporativo é o \textit{Fibre Channel over Ethernet} (FCoE), que pode ser pensado
+como iSCSI sem o IP. Ele usa muitos elementos de SCSI e FC (assim como o iSCSI), mas não inclui
+componentes TCP/IP. [\ldots] Ele tira proveito de uma tecnologia Ethernet confiável que usa
+\textit{buffering} e controle de fluxo fim-a-fim para evitar pacotes descartados''
+\cite{elmasri2018}. A frase de abertura é analogia didática, e não definição, e o próprio parágrafo
+já a qualifica ao dizer que o FCoE não inclui TCP/IP e que depende de Ethernet confiável com controle
+de fluxo. Registramos que a primeira versão deste relatório ignorava essas duas ressalvas e
+apresentava como falhas do livro dois pontos que ele já cobre (Seção~\ref{sec:adversarial2}).
 
-\smallskip
-\textbf{O que o livro acerta, e que é preciso reconhecer.} A frase de abertura é uma analogia
-didática, não uma definição --- e o próprio parágrafo já a qualifica em dois pontos: diz que o FCoE
-\emph{não} inclui TCP/IP, e diz que ele depende de Ethernet confiável com controle de fluxo. Uma
-crítica que ignorasse essas duas frases estaria atacando um espantalho. \textbf{Registramos que a
-primeira versão deste relatório fazia exatamente isso}, apresentando como ``três razões'' pelas
-quais o livro estaria errado dois pontos que o livro já cobre (Seção~\ref{sec:adversarial2}).
+Restam, contudo, duas imprecisões reais e específicas. A primeira é que o controle de fluxo do FCoE
+não é fim-a-fim, e sim enlace a enlace. O mecanismo é o IEEE 802.1Qbb, \textit{Priority-based Flow
+Control} \cite{ieee8021qbb}: o quadro \textsc{pause} atua entre dois vizinhos adjacentes, por
+prioridade, e cada salto exerce a pressão sobre o salto anterior, sem realimentação entre origem e
+destino como há no TCP. A distinção tem consequência prática, porque é ela que produz o
+\textit{congestion spreading} característico de redes FCoE mal dimensionadas, em que um alvo lento
+propaga pausas para trás e degrada tráfego não relacionado que compartilhe o caminho.
 
-\smallskip
-\textbf{Restam duas imprecisões reais, e são específicas:}
+A segunda imprecisão é a de maior consequência, e é a que a analogia apaga: o FCoE não é roteável em
+camada 3, enquanto o iSCSI é. O FCoE usa um \textit{EtherType} próprio, o 0x8906 para o quadro de
+dados e o 0x8914 para o FIP, que é o protocolo de inicialização, encapsulado diretamente em quadro
+Ethernet; como não há cabeçalho IP, não há o que rotear, e o FCoE vive dentro de um domínio de
+camada 2. O iSCSI, por rodar sobre TCP/IP, atravessa LAN, WAN e a Internet, vantagem que o próprio
+livro destaca ao tratar dele \cite{elmasri2018}. Um projetista que leia ``FCoE é iSCSI sem o IP'' e
+conclua que pode usá-lo entre dois \textit{data centers}, como faria com iSCSI, vai descobrir que não
+pode: para atravessar a WAN, os caminhos são FCIP, que é um túnel entre \textit{fabrics} FC, ou o
+próprio iSCSI. Registramos a categoria dessa análise: é juízo técnico do grupo apoiado em norma, o
+FC-BB-5 e o IEEE 802.1Qbb, e não citação.
 
-\smallskip
-\textbf{(1) O controle de fluxo do FCoE não é ``fim-a-fim'', é enlace a enlace.} O mecanismo é o
-IEEE \textbf{802.1Qbb}, \textit{Priority-based Flow Control} \cite{ieee8021qbb}: o quadro
-\textsc{pause} atua entre
-\emph{dois vizinhos adjacentes}, por prioridade, e cada salto exerce a pressão sobre o salto
-anterior. Não há realimentação entre origem e destino como há no TCP. A distinção não é acadêmica:
-é ela que produz o \textit{congestion spreading} característico de redes FCoE mal dimensionadas, em
-que um alvo lento propaga pausas para trás e degrada tráfego não relacionado que compartilhe o
-caminho. Dizer ``fim-a-fim'' sugere um mecanismo que o FCoE não tem.
-
-\smallskip
-\textbf{(2) O FCoE não é roteável em camada 3; o iSCSI é.} Esta é a diferença que a analogia apaga
-e a de maior consequência prática. O FCoE é um \textit{EtherType} próprio (\textbf{0x8906} para o
-quadro de dados; \textbf{0x8914} para o FIP, o protocolo de inicialização) encapsulado diretamente
-em quadro Ethernet: não há cabeçalho IP, e portanto \textbf{não há o que rotear}. O FCoE vive dentro de um domínio de camada 2. O iSCSI, por rodar sobre TCP/IP, atravessa
-LAN, WAN e a Internet --- vantagem que o próprio livro destaca ao tratar do iSCSI
-\cite{elmasri2018}.
-
-\smallskip
-\textbf{Consequência prática:} um projetista que leia ``FCoE é iSCSI sem o IP'' e conclua que pode
-usá-lo entre dois \textit{data centers}, como faria com iSCSI, vai descobrir que não pode. Para
-atravessar a WAN, os caminhos são FCIP (túnel entre \textit{fabrics} FC) ou iSCSI.
-
-\smallskip
-\textbf{Categoria:} análise do grupo apoiada em norma (FC-BB-5 e IEEE 802.1Qbb), não citação. É
-juízo técnico, e o classificamos como tal.}
-
-\textbf{Onde o FCoE se encaixa.} A promessa do FCoE era a \emph{convergência}: um único par de
+Quanto ao lugar que o FCoE ocupa, sua promessa era a convergência, isto é, um único par de
 adaptadores (CNAs) e um único cabeamento carregando LAN e SAN, reduzindo adaptadores, cabos, portas
-e consumo. Elmasri e Navathe registram a adoção: ``o FCoE foi produtizado com sucesso pela CISCO
-(denominado \textit{Data Center Ethernet}) e pela Brocade'' \cite{elmasri2018}. Na prática, a
-convergência prevaleceu \emph{dentro do rack} (\textit{blade chassis} e sistemas convergentes,
-onde o domínio de camada 2 é pequeno e controlado) e não substituiu o FC no núcleo da SAN nem
-deslocou o iSCSI nas instalações menores. O FCoE ocupa hoje um nicho estreito entre dois vizinhos
-mais simples.
+e consumo. Elmasri e Navathe registram a adoção ao afirmar que ``o FCoE foi produtizado com sucesso
+pela CISCO (denominado \textit{Data Center Ethernet}) e pela Brocade'' \cite{elmasri2018}. Na
+prática, porém, a convergência prevaleceu dentro do rack, em \textit{blade chassis} e sistemas
+convergentes, onde o domínio de camada 2 é pequeno e controlado, e não substituiu o FC no núcleo da
+SAN nem deslocou o iSCSI nas instalações menores, de modo que hoje o FCoE ocupa um nicho estreito
+entre dois vizinhos mais simples.
 
 \subsection{Dois mecanismos que a SAN pressupõe: \textit{multipath} e RAID}
 \label{sec:multipath}
 
-O requisito 5 da Seção~\ref{sec:engine} --- comportamento determinado sob indisponibilidade
-transitória --- não é atendido pelo protocolo sozinho. Quem o atende são dois mecanismos que ficam
-fora da discussão de protocolo e dentro da de arquitetura.
+O quinto requisito da Seção~\ref{sec:engine}, o comportamento determinado sob indisponibilidade
+transitória, não é atendido pelo protocolo sozinho. Quem o atende são dois mecanismos que ficam fora
+da discussão de protocolo e dentro da de arquitetura.
 
-\textbf{\textit{Multipath} e ALUA.} Montar duas \textit{fabrics} independentes
+O primeiro é o \textit{multipath}. Montar duas \textit{fabrics} independentes
 (Seção~\ref{sec:topologias}) só produz disponibilidade se houver, no servidor, uma camada que
-reconheça que os dois caminhos levam ao \emph{mesmo} LUN e escolha entre eles: é o
-\textit{multipath} (DM-Multipath no Linux, MPIO no Windows). Em \textit{arrays} com controladoras
-assimétricas, o padrão \textbf{ALUA} (\textit{Asymmetric Logical Unit Access}) permite ao alvo
-informar quais caminhos são \emph{otimizados} e quais são apenas \emph{disponíveis}, para que o
-\textit{host} não force o \textit{array} a atravessar o \textit{interconnect} interno entre
-controladoras. \textbf{Consequência direta para o SGBD:} o que decide se uma falha de caminho é
-invisível ou fatal é o tempo de detecção e de reprova (\texttt{no\_path\_retry},
-\texttt{fast\_io\_fail\_tmo}). Configurá-lo como ``enfileirar indefinidamente'' congela a
-instância; como ``falhar imediatamente'', aborta transações. É decisão de projeto, não padrão a
-aceitar --- e é a resposta concreta ao requisito 5.
+reconheça que os dois caminhos levam ao mesmo LUN e escolha entre eles, papel do DM-Multipath no
+Linux e do MPIO no Windows. Em \textit{arrays} com controladoras assimétricas, o padrão ALUA
+(\textit{Asymmetric Logical Unit Access}) permite ao alvo informar quais caminhos são otimizados e
+quais são apenas disponíveis, para que o \textit{host} não force o \textit{array} a atravessar o
+\textit{interconnect} interno entre controladoras. A consequência direta para o SGBD é que o que
+decide se uma falha de caminho é invisível ou fatal é o tempo de detecção e de reprova, configurado
+em \texttt{no\_path\_retry} e \texttt{fast\_io\_fail\_tmo}: configurá-lo como ``enfileirar
+indefinidamente'' congela a instância, e como ``falhar imediatamente'' aborta transações. É decisão
+de projeto, e não padrão a aceitar, sendo essa a resposta concreta ao quinto requisito.
 
-\textbf{RAID e a penalidade de escrita, aplicada ao \textit{log}.} Silberschatz dedica a Seção 12.5
-ao RAID e é explícito quanto ao custo do nível 5: ``o RAID nível 5 tem uma sobrecarga significativa
-para escritas aleatórias, já que uma única escrita aleatória de bloco requer 2 leituras de bloco
-(para obter os valores antigos do bloco e do bloco de paridade) e 2 escritas de bloco''
-\cite{silberschatz2020}. E conclui, no mesmo trecho, que ``o RAID nível 1 é popular para aplicações
-como o armazenamento de arquivos de \textit{log} num sistema de banco de dados, já que oferece o
-melhor desempenho de escrita'' \cite{silberschatz2020}.
+O segundo mecanismo é o RAID, e o que importa aqui é a penalidade de escrita aplicada ao \textit{log}.
+Silberschatz dedica a Seção 12.5 ao tema e é explícito quanto ao custo do nível 5: ``o RAID nível 5
+tem uma sobrecarga significativa para escritas aleatórias, já que uma única escrita aleatória de
+bloco requer 2 leituras de bloco (para obter os valores antigos do bloco e do bloco de paridade) e 2
+escritas de bloco'' \cite{silberschatz2020}. No mesmo trecho ele conclui que ``o RAID nível 1 é
+popular para aplicações como o armazenamento de arquivos de \textit{log} num sistema de banco de
+dados, já que oferece o melhor desempenho de escrita'' \cite{silberschatz2020}.
 
 \destaque{A penalidade de escrita aplicada ao WAL --- derivação nossa}{%
 Custo, em operações físicas, de uma escrita aleatória de um bloco:
@@ -1288,17 +1203,16 @@ Custo, em operações físicas, de uma escrita aleatória de um bloco:
 \]
 O \textit{log} de transações é escrito sequencialmente e sincronizado a cada \textit{commit}. Sob
 RAID 5, toda descarga de \textit{log} que não preencha uma faixa completa paga a penalidade de
-$4\times$ --- e é justamente a taxa de \textit{commits} que ela limita. \textbf{Daí a regra prática,
-a mesma há trinta anos, e que o próprio livro enuncia:} \textit{log} em RAID 1 ou 10, dados em RAID
-5 ou 6. É também a razão pela qual a política de AST para o volume de \textit{redo} deve ser fixada,
-e não deixada ao critério estatístico do \textit{array} (Seção~\ref{sec:ast}).}
+$4\times$, e é justamente a taxa de \textit{commits} que ela limita. Daí a regra prática que o
+próprio livro enuncia: \textit{log} em RAID 1 ou 10, dados em RAID 5 ou 6. É também a razão pela qual
+a política de AST para o volume de \textit{redo} deve ser fixada, e não deixada ao critério
+estatístico do \textit{array} (Seção~\ref{sec:ast}).}
 
 \subsection{Nota de fronteira: NVMe-oF}
 
-\textbf{NVMe-oF} (\textit{NVMe over Fabrics}) transporta comandos NVMe sobre FC
-(\textbf{FC-NVMe}), TCP (\textbf{NVMe/TCP}) ou RDMA (\textbf{NVMe/RoCE}).
-As filas paralelas pertencem ao modelo NVMe; SCSI não deve ser confundido com a fila
-única por porta do AHCI. O transporte e a implementação também influenciam o desempenho.
+O NVMe-oF (\textit{NVMe over Fabrics}) transporta comandos NVMe sobre FC (FC-NVMe), TCP (NVMe/TCP)
+ou RDMA (NVMe/RoCE). As filas paralelas pertencem ao modelo NVMe, e o SCSI não deve ser confundido
+com a fila única por porta do AHCI. O transporte e a implementação também influenciam o desempenho.
 
 \subsection{Vantagens e desvantagens da SAN}
 \label{sec:vantsan}
@@ -1340,25 +1254,24 @@ zoneamento pode tornar o dado inacessível instantaneamente para todos os servid
 \label{sec:comparativo}
 %=====================================================================
 
-Antes da grade, uma figura. Boa parte da confusão entre os cinco protocolos --- e quase toda a
-confusão entre iSCSI, FCIP e FCoE --- desaparece quando se vê \emph{o que} cada um coloca dentro de
-\emph{o quê}. A Figura~\ref{fig:encaps} mostra as cinco pilhas lado a lado.
+Boa parte da confusão entre os cinco protocolos, e quase toda a confusão entre iSCSI, FCIP e
+FCoE, desaparece quando se vê o que cada um coloca dentro de o quê. A Figura~\ref{fig:encaps}
+mostra as cinco pilhas lado a lado, antes da grade comparativa.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig/encapsulamento.pdf}
-\caption{O que trafega na rede em cada arquitetura. Três leituras que a figura torna imediatas:
-(i) \textbf{iSCSI e FCoE não são variantes um do outro} --- o iSCSI carrega \emph{comandos SCSI}
-sobre TCP/IP, enquanto o FCoE carrega o \emph{quadro FC inteiro} sobre Ethernet; (ii) \textbf{FCIP e
-FCoE carregam a mesma coisa} (o quadro FC), e diferem apenas em sobre o quê --- daí um ser roteável
-e o outro não; (iii) \textbf{o NAS é o único em que a unidade não é o bloco}: no topo da pilha há
-operações de arquivo, e não comandos SCSI. Essa última diferença é a da Seção~\ref{sec:nas}, e é a
-que decide tudo o mais.}
+\caption{O que trafega na rede em cada arquitetura. A figura torna imediato que iSCSI e FCoE não
+são variantes um do outro, já que o iSCSI carrega comandos SCSI sobre TCP/IP enquanto o FCoE carrega
+o quadro FC inteiro sobre Ethernet; que FCIP e FCoE carregam a mesma coisa, o quadro FC, diferindo
+apenas em sobre o quê, e é daí que um é roteável e o outro não; e que o NAS é o único em que a
+unidade não é o bloco, porque no topo da pilha há operações de arquivo e não comandos SCSI, que é a
+diferença discutida na Seção~\ref{sec:nas}.}
 \label{fig:encaps}
 \end{figure}
 
-A Tabela~\ref{tab:protocolos} reúne, em uma única grade, \textbf{todos} os protocolos listados
-pelo enunciado, cada um como uma linha, com sua norma de origem e as propriedades que decidem sua
+A Tabela~\ref{tab:protocolos} reúne em uma única grade todos os protocolos listados pelo
+enunciado, cada um como uma linha, com sua norma de origem e as propriedades que decidem sua
 aplicabilidade a um SBD.
 
 \newgeometry{landscape,left=1.4cm,right=1.4cm,top=1.6cm,bottom=1.6cm}
@@ -1447,7 +1360,7 @@ Filas paralelas e conjunto de comandos NVMe; depende do transporte e da implemen
 \end{landscape}
 \restoregeometry
 
-\subsection{NAS $\times$ SAN: as dimensões que realmente decidem}
+\subsection{NAS $\times$ SAN: as dimensões que decidem a escolha}
 
 \begin{table}[H]
 \centering
@@ -1475,15 +1388,14 @@ armazenamento compartilhado, cargas com requisito de latência de \textit{commit
 \end{tabular}}
 \end{table}
 
-\destaque{A convergência que os livros já anunciavam}{%
-Silberschatz registra: ``sistemas SAN e NAS modernos suportam o uso de uma combinação de discos
-magnéticos e SSDs, e podem ser configurados para usar os SSDs como \textit{cache} para dados que
-residem em discos magnéticos'' \cite{silberschatz2020}. Na prática de 2026, quase todo
-\textit{array} corporativo é \textbf{unificado}: o mesmo equipamento apresenta LUNs por FC ou
-iSCSI \emph{e} compartilhamentos por NFS e SMB, sobre o mesmo \textit{pool} de mídia. A pergunta
-``comprar NAS ou SAN?'' virou, em grande medida, ``\textbf{qual protocolo apresentar para cada
-carga}?'' --- o que é uma pergunta melhor, porque admite respostas diferentes para o
-\textit{tablespace} e para a área de \textit{dump}.}
+Convém fechar a comparação com uma ressalva que os próprios livros já anunciavam. Silberschatz
+registra que ``sistemas SAN e NAS modernos suportam o uso de uma combinação de discos magnéticos e
+SSDs, e podem ser configurados para usar os SSDs como \textit{cache} para dados que residem em
+discos magnéticos'' \cite{silberschatz2020}. Na prática de 2026, quase todo \textit{array}
+corporativo é unificado: o mesmo equipamento apresenta LUNs por FC ou iSCSI e compartilhamentos por
+NFS e SMB, sobre o mesmo \textit{pool} de mídia. A pergunta ``comprar NAS ou SAN?'' virou, em grande
+medida, ``qual protocolo apresentar para cada carga?'', que é uma pergunta melhor porque admite
+respostas diferentes para o \textit{tablespace} e para a área de \textit{dump}.
 
 %=====================================================================
 \section{AST --- \textit{Automated Storage Tiering}}
@@ -1502,17 +1414,17 @@ implementação de referência: ``a EMC tem uma implementação dessa tecnologia
 automated storage tiering}) que faz monitoramento contínuo da atividade de dados e toma ações para
 mover os dados para o \textit{tier} apropriado com base na política'' \cite{elmasri2018}.
 
-O AST existe porque a hierarquia de armazenamento de Silberschatz (Seção~\ref{sec:hierarquia}) é
-uma \emph{escada de preço por byte}, e a distribuição de acesso a dados é altamente enviesada: em
-praticamente qualquer banco de dados corporativo, uma fração pequena dos blocos concentra a
-maioria esmagadora dos acessos. Comprar \textit{flash} para o banco inteiro é pagar pelo pior caso
-em 100\% da capacidade.
+O AST existe porque a hierarquia de armazenamento de Silberschatz (Seção~\ref{sec:hierarquia})
+ordena os meios por preço por byte, e a distribuição de acesso a dados é bastante enviesada: em
+praticamente qualquer banco de dados corporativo, uma fração pequena dos blocos concentra a maioria
+dos acessos. Comprar \textit{flash} para o banco inteiro significa, portanto, pagar pelo pior caso
+em toda a capacidade instalada.
 
 \subsection{Como funciona, concretamente}
 
 Tomamos como exemplo documentado o Dell EMC Unity FAST VP, cujo \textit{white paper} técnico
-publica os parâmetros exatos \cite{dellfast}. \textbf{Proveniência:} documentação de fabricante,
-produto identificado.
+publica os parâmetros exatos \cite{dellfast}, o que situa a proveniência desta seção na categoria de
+documentação de fabricante com produto identificado.
 
 \begin{table}[H]
 \centering
@@ -1537,9 +1449,9 @@ Auto-Tier}} (padrão recomendado); \textit{Lowest Available Tier} \\
 \end{tabular}}
 \end{table}
 
-O mecanismo é, portanto: (i) contadores de acesso por fatia; (ii) uma métrica agregada de
-``temperatura''; (iii) uma classificação horária; (iv) e a movimentação física das fatias entre
-\textit{tiers} durante uma janela em que o impacto sobre a carga de produção é aceitável.
+O mecanismo, portanto, combina contadores de acesso por fatia, uma métrica agregada de
+temperatura e uma classificação horária, e só então move fisicamente as fatias entre \textit{tiers},
+durante uma janela em que o impacto sobre a carga de produção seja aceitável.
 
 \subsection{AST e \textit{buffer pool}}
 \label{sec:asttensao}
