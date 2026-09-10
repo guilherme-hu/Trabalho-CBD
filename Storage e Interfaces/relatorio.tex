@@ -805,29 +805,24 @@ os cálculos verificam a aritmética, não comprovam disponibilidade ou validade
 
 \subsection{Justificativa das linhas acrescentadas e removidas}
 
-\begin{itemize}
-\item \textbf{Acrescentamos ``Memória CXL 2.0''} porque a hierarquia de 2026 tem um degrau
-      que não existia em 2014 e que é o único candidato a ocupar o vazio deixado pelo
-      Optane. Sem essa linha, o salto de 70\,ns para 50\,\textmu s ficaria inexplicado.
-\item \textbf{Desdobramos ``Flash Memory --- SSD'' em três linhas} (consumidor PCIe~5.0,
-      datacenter QLC de alta capacidade e datacenter TLC de alto desempenho) porque a
-      categoria única do livro esconde uma variação de \textbf{cerca de duas ordens de grandeza em
-      capacidade} (1\,TB a 122,88\,TB) e de mais de 5$\times$ em preço por byte. Para um
-      SBD, escolher entre QLC de capacidade e TLC de desempenho é uma decisão de projeto,
-      não um detalhe.
-\item \textbf{Desdobramos a fita em LTO-9 e LTO-10} porque a transição está em curso
-      exatamente agora: o LTO-10 foi lançado em 2025 com 30\,TB e teve o cartucho de 40\,TB
-      especificado em novembro de 2025, com embarques a partir de janeiro de 2026.
-\item \textbf{Não incluímos o Intel Optane}, apesar de ser a linha que faria mais sentido
-      teórico, porque \textbf{não é comercialmente disponível} --- o que viola o critério
-      C2. Registramos sua ausência como achado, não como omissão.
-\item \textbf{Não incluímos o Sony Optical Disc Archive} pela mesma razão: a linha foi
-      encerrada em todas as regiões em 31 de março de 2025.
-\end{itemize}
+Acrescentamos a linha de memória CXL 2.0 porque a hierarquia de 2026 tem um degrau que não
+existia em 2014 e que é o único candidato a ocupar o vazio deixado pelo Optane; sem ela, o salto de
+70\,ns para 50\,\textmu s ficaria inexplicado. Desdobramos a linha ``Flash Memory --- SSD'' do livro
+em três, uma de consumidor PCIe~5.0, uma de datacenter QLC de alta capacidade e uma de datacenter TLC
+de alto desempenho, porque a categoria única esconde uma variação de cerca de duas ordens de grandeza
+em capacidade, de 1\,TB a 122,88\,TB, e de mais de 5$\times$ em preço por byte, e porque escolher
+entre QLC de capacidade e TLC de desempenho é uma decisão de projeto para um SBD. Desdobramos também
+a fita em LTO-9 e LTO-10, já que a transição está em curso: o LTO-10 foi lançado em 2025 com 30\,TB e
+teve o cartucho de 40\,TB especificado em novembro de 2025, com embarques a partir de janeiro de 2026.
+
+Duas linhas ficaram de fora. O Intel Optane seria a que faria mais sentido teórico, mas não está
+comercialmente disponível, o que viola o critério C2, e por isso registramos sua ausência como achado
+e não como omissão. O Sony Optical Disc Archive saiu pela mesma razão, já que a linha foi encerrada em
+todas as regiões em 31 de março de 2025.
 
 \subsection{Análise: o que mudou entre 2014 e 2026}
 
-\subsubsection*{(a) Capacidade cresceu; latência, quase nada}
+\subsubsection*{(a) Evolução de capacidade}
 
 \begin{center}\small
 \begin{tabular}{@{}lrrr@{}}
@@ -843,42 +838,39 @@ Fita (cartucho)       & 8,5\,TB          & 40\,TB                              &
 \end{tabular}
 \end{center}
 
-\noindent{\footnotesize\textbf{Leitura da coluna de 2014:} é o \emph{topo} de cada faixa da
-Tabela~16.1 original --- ``Main Memory-RAM 4GB--1TB'', ``Flash Memory-SSD 64 GB--1TB'',
-``Flash Memory-USB stick 4GB--512GB'', ``Magnetic Disk 400 GB--8TB'', ``Magnetic Tape
-2.5TB--8.5TB'' (Elmasri \& Navathe, Tabela~16.1, ref.~[1]). Comparamos topo com topo; comparar a
-média seria mais fiel, mas o livro não publica distribuição.\par}
+\noindent{\footnotesize A coluna de 2014 é o topo de cada faixa da Tabela~16.1 original, que
+publica ``Main Memory-RAM 4GB--1TB'', ``Flash Memory-SSD 64 GB--1TB'', ``Flash Memory-USB stick
+4GB--512GB'', ``Magnetic Disk 400 GB--8TB'' e ``Magnetic Tape 2.5TB--8.5TB'' (Elmasri \& Navathe,
+ref.~[1]). Comparamos topo com topo, já que comparar a média seria mais fiel mas o livro não publica
+distribuição.\par}
 
 \medskip
-Os tempos de acesso mantidos do livro não permitem medir uma evolução de latência.
-Capacidade e banda publicadas podem ser comparadas; uma conclusão sobre latência exige
-medições equivalentes de carga, fila e percentil.
+Os tempos de acesso mantidos do livro não permitem medir uma evolução de latência: capacidade e banda
+publicadas podem ser comparadas, mas uma conclusão sobre latência exigiria medições equivalentes de
+carga, fila e percentil, que o livro não traz.
 
-\subsubsection*{(b) A largura de banda foi o que realmente explodiu}
+\subsubsection*{(b) Evolução de largura de banda}
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.92\textwidth]{fig/fig2_banda.pdf}
-\caption{Largura de banda de leitura e escrita por tecnologia (escala logarítmica). O SSD
-NVMe PCIe~5.0 entrega \textbf{20$\times$} a banda da Tabela~16.1 original para SSD
-(750\,MB/s $\rightarrow$ 14,7\,GB/s), enquanto o disco magnético avançou apenas
-1,4$\times$. Note que a fita LTO ultrapassa o disco magnético em taxa sequencial --- fato
-contraintuitivo que decorre de a fita não precisar posicionar um braço entre blocos
-consecutivos.}
+\caption{Largura de banda de leitura e escrita por tecnologia, em escala logarítmica. O SSD
+NVMe PCIe~5.0 entrega 20$\times$ a banda que a Tabela~16.1 original registra para SSD, ou seja,
+750\,MB/s contra 14,7\,GB/s, enquanto o disco magnético avançou 1,4$\times$ no mesmo período. Vale
+notar que a fita LTO ultrapassa o disco magnético em taxa sequencial, resultado contraintuitivo que
+decorre de a fita não precisar posicionar um braço entre blocos consecutivos.}
 \end{figure}
 
 \subsubsection*{(c) SSD e HDD divergiram em vez de convergir}
 
-A expectativa corrente na literatura era de que o preço por terabyte de SSD e HDD
-convergisse por volta de 2026--2028. \textbf{Alcance da afirmação:} é a leitura de projeções de
-mercado amplamente repetidas na imprensa técnica, e \textbf{não fixamos uma projeção nomeada e
-datada} que a sustente --- registramos a lacuna em vez de atribuí-la genericamente ``à
-literatura''. O que \emph{está} documentado, e é o ponto, é o desfecho: \textbf{o oposto ocorreu.} A razão é estrutural: a
-demanda de IA consumiu a capacidade fabril de NAND, e parte dos compradores migrou de SSD
-\emph{de volta} para HDD, pressionando também o preço deste.
+Projeções de mercado repetidas na imprensa técnica esperavam que o preço por terabyte de SSD e
+HDD convergisse por volta de 2026 a 2028, e convém registrar que não fixamos uma dessas projeções com
+autor e data, de modo que a expectativa entra aqui como contexto e não como fonte. O que está
+documentado é o desfecho, e ele foi o contrário: a demanda de IA consumiu a capacidade fabril de
+NAND, parte dos compradores migrou de SSD de volta para HDD, e isso pressionou também o preço do
+disco.
 
-A razão precisa ser \textbf{datada}, porque é extremamente volátil. O \emph{Flash Volatility
-Index} da VDURA (ref.~[29]) registra a evolução trimestral do prêmio do SSD corporativo sobre o
-HDD \emph{nearline}:
+Como a razão entre os dois é volátil, ela só faz sentido com data. O \emph{Flash Volatility Index} da
+VDURA (ref.~[29]) acompanha trimestralmente o prêmio do SSD corporativo sobre o HDD \emph{nearline}:
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -890,27 +882,26 @@ Razão SSD/HDD por TB & 7,0$\times$ & 23,2$\times$ (pico) & 16,3$\times$ & \text
 \end{tabular}
 \end{center}
 
-Em agosto de 2026, um SSD TLC corporativo de 30\,TB custava $\approx$US\$\,22.600
-($\approx$US\$\,753/TB) contra $\approx$US\$\,1.216 de um HDD de 30\,TB
-($\approx$US\$\,41/TB). \textbf{A observação parcial consultada em 05/09/2026 é
-18,6$\times$}; ela não deve ser apresentada como fechamento do 3\textsuperscript{o} trimestre.
-Os 16,3$\times$ referem-se ao trimestre anterior. \textbf{Ressalva de proveniência:} os valores
-de 18,6$\times$, 23,2$\times$ e 7,0$\times$ estão na publicação de 11/ago./2026 da VDURA
-(ref.~[29]); o de 16,3$\times$ vem de divulgação trimestral anterior do mesmo índice, e o grupo
-\textbf{não fixou o comunicado específico} --- quem for reapresentar esta tabela deve fechar essa
-célula antes. Uma versão anterior deste
-trabalho citava ``aproximadamente 16$\times$'' sem carimbo de trimestre --- erro registrado
-como E15 na Seção~9.4. A lição vale além deste número: em um mercado que oscilou de
-7$\times$ a 23$\times$ em quatro trimestres, \textbf{razão sem data não é dado}.
+Em agosto de 2026, um SSD TLC corporativo de 30\,TB custava cerca de US\$\,22.600, ou
+US\$\,753/TB, contra cerca de US\$\,1.216 de um HDD de mesma capacidade, ou US\$\,41/TB. Os
+18,6$\times$ são a observação parcial consultada em 05/09/2026 e não devem ser apresentados como
+fechamento do terceiro trimestre, enquanto os 16,3$\times$ se referem ao trimestre anterior. Quanto à
+proveniência da tabela, os valores de 18,6$\times$, 23,2$\times$ e 7,0$\times$ estão na publicação de
+11 de agosto de 2026 da VDURA (ref.~[29]), mas o de 16,3$\times$ vem de divulgação trimestral
+anterior do mesmo índice, cujo comunicado específico o grupo não chegou a fixar: quem for
+reapresentar esta tabela deve fechar essa célula antes. Uma versão anterior deste trabalho citava
+``aproximadamente 16$\times$'' sem carimbo de trimestre, erro registrado como E15 na Seção~9.4, e a
+lição vale além do número, porque num mercado que oscilou de 7$\times$ a 23$\times$ em quatro
+trimestres uma razão sem data não informa nada.
 
 \subsubsection*{(d) Limite da comparação econômica}
 
-Preço por capacidade não é custo total de propriedade. A comparação não inclui
-energia, manutenção, redundância nem infraestrutura de rede; em mídia removível,
-o preço do cartucho/disco é separado do leitor. Não inferimos tendências de mercado
-a partir de uma consulta pontual.
+Preço por capacidade não é custo total de propriedade, e a comparação acima não inclui energia,
+manutenção, redundância nem infraestrutura de rede; em mídia removível, o preço do cartucho ou do
+disco ainda é separado do preço do leitor. Por isso não inferimos tendências de mercado a partir de
+uma consulta pontual.
 
-\subsubsection*{(e) Síntese das mudanças}
+\subsubsection*{(e) Síntese}
 
 \begin{center}\small
 \begin{tabular}{@{}p{6.2cm}p{9.0cm}@{}}
@@ -932,20 +923,21 @@ SSD e HDD divergiram em custo & Razão observada de 18,6$\times$ por TB em 05/09
 % =====================================================================
 \section{Interfaces de Conexão entre o Dispositivo Físico e o Sistema Computacional}
 
-\subsection{Três reduções separam o número de marketing da taxa real}
+\subsection{Da taxa anunciada à taxa real}
 
-Antes de qualquer comparação, é preciso fixar a aritmética. Três fatores sucessivos
-separam a ``velocidade'' anunciada de uma interface da taxa de dados que ela efetivamente
-entrega.
+Antes de qualquer comparação, é preciso fixar a aritmética, porque três fatores sucessivos
+separam a ``velocidade'' anunciada de uma interface da taxa de dados que ela efetivamente entrega.
 
-\textbf{(1) Unidade.} 1\,GB/s $=$ 8\,Gb/s. Uma interface de \textbf{6\,Gb/s} nunca entrega
-6\,GB/s. Silberschatz, aliás, comete exatamente esse deslize na Seção~12.2 ao escrever que
-\emph{``the SATA-3 version of SATA nominally supports 6 gigabytes per second''} --- são
-6~\textbf{gigabits} por segundo, como o próprio texto reconhece na frase seguinte ao citar
-600\,MB/s.
+O primeiro é a \textbf{unidade}: como 1\,GB/s equivale a 8\,Gb/s, uma interface de 6\,Gb/s nunca
+entrega 6\,GB/s. O próprio Silberschatz comete esse deslize na Seção~12.2 ao escrever que ``\emph{the
+SATA-3 version of SATA nominally supports 6 gigabytes per second}'', quando são 6 gigabits por
+segundo, como a frase seguinte do livro reconhece ao citar 600\,MB/s. Vale notar que a mesma frase
+usa a unidade correta logo adiante, ao dizer que ``\emph{SAS version 3 supports data transfer rates
+of 12 gigabits per second}'', o que mostra tratar-se de lapso e não de convenção do texto.
 
-\textbf{(2) Codificação de linha.} Todo enlace serial insere bits de controle para manter
-o balanceamento DC e permitir a recuperação do relógio a partir do próprio fluxo de dados.
+O segundo fator é a \textbf{codificação de linha}. Todo enlace serial insere bits de controle para
+manter o balanceamento DC e permitir a recuperação do relógio a partir do próprio fluxo de dados, e a
+tabela a seguir reúne as codificações usadas pelas interfaces deste estudo.
 
 \begin{center}\small
 \begin{tabular}{@{}lllp{7.4cm}@{}}
@@ -970,17 +962,16 @@ FLIT: $14/242 = 5{,}8\%$). Sobre o quadro total os percentuais seriam menores --
 armadilha de rótulo da Seção~4.1(1), aplicada a si mesma.\par}
 
 \medskip
-\textbf{(3) Modulação.} NRZ transmite 1 bit por símbolo. \textbf{PAM4} transmite 2 bits por
-símbolo, dobrando a taxa sem dobrar a frequência de sinalização --- ao custo de reduzir a
-margem de ruído a um terço, o que torna a correção de erro (FEC) obrigatória. PAM4 é usado
-em FC 64/128GFC, InfiniBand HDR/NDR/XDR, PCIe 6.0/7.0 e Ethernet 400G. O USB4 v2.0 usa
-\textbf{PAM3} (3 níveis, $\approx$1,58 bit/símbolo).
+O terceiro fator é a \textbf{modulação}. O NRZ transmite 1 bit por símbolo, enquanto o PAM4
+transmite 2, dobrando a taxa sem dobrar a frequência de sinalização, ao custo de reduzir a margem de
+ruído a um terço, o que torna a correção de erro obrigatória. O PAM4 é usado em FC 64/128GFC,
+InfiniBand HDR/NDR/XDR, PCIe 6.0/7.0 e Ethernet 400G, e o USB4 v2.0 usa PAM3, com três níveis e cerca
+de 1,58 bit por símbolo.
 
-\destaque{Os dois exemplos canônicos}{%
-\textbf{SATA 3.0:} 6,0\,Gb/s bruto $\times$ 8/10 $=$ 4,8\,Gb/s úteis $\div$ 8 $=$
-\textbf{600\,MB/s}.\\
-\textbf{PCIe 5.0 $\times$4:} 32\,GT/s $\times$ 4 \emph{lanes} $\times$ 128/130 $\div$ 8 $=$
-\textbf{15,754\,GB/s}.}
+Aplicando os três fatores, o SATA 3.0 entrega 6,0\,Gb/s brutos que, multiplicados por 8/10 da
+codificação e divididos por 8, dão os 600\,MB/s de sua especificação; e o PCIe 5.0 em $\times$4
+entrega 32\,GT/s por \textit{lane} que, multiplicados por 4 \textit{lanes} e por 128/130, e divididos
+por 8, dão 15,754\,GB/s.
 
 \subsection{Tabela comparativa das interfaces}
 
@@ -1118,17 +1109,14 @@ interpretadas como vazão de aplicação.
 
 \subsubsection*{Como ler as três últimas famílias da Tabela~\ref{tab:if}}
 
-As linhas de \textbf{fatores de forma} (M.2, U.2, U.3, EDSFF) e de \textbf{HBA} são de
-natureza distinta das demais e estão incluídas porque constam da lista do enunciado. Elas
-\textbf{não são protocolos}: um M.2 não tem ``taxa própria'' --- ele expõe as mesmas
-\emph{lanes} PCIe da linha correspondente, e por isso as colunas de taxa trazem ``$=$~PCIe''.
-O que distingue essas linhas são as colunas de \textbf{hot-plug}, \textbf{alimentação} e
-\textbf{mecânica}, e é aí que estão as decisões de projeto reais: o M.2 não suporta
-\emph{hot-swap} e opera só em 3,3\,V, o que limita a dissipação a $\approx$8--11\,W e o
-inviabiliza para SSDs PCIe~5.0/6.0 de datacenter, que passam de 25\,W; o EDSFF suporta
-\emph{hot-swap}, 12\,V e até 70\,W. Incluí-las na mesma tabela dos protocolos é uma
-concessão à lista do enunciado, e o grupo prefere sinalizar a diferença de categoria a
-apagá-la.
+As linhas de fatores de forma (M.2, U.2, U.3 e EDSFF) e de HBA são de natureza distinta das
+demais e estão na tabela porque constam da lista do enunciado, mas convém marcar que elas são
+conectores e adaptadores, e não protocolos: um M.2 não tem taxa própria, já que expõe as mesmas
+\textit{lanes} PCIe da linha correspondente, e é por isso que suas colunas de taxa trazem
+``$=$~PCIe''. O que distingue essas linhas são as colunas de \textit{hot-plug}, alimentação e
+mecânica, onde estão as decisões de projeto que importam: o M.2 não suporta \textit{hot-swap} e opera
+só em 3,3\,V, o que limita a dissipação a cerca de 8 a 11\,W e o inviabiliza para SSDs PCIe~5.0/6.0
+de datacenter, que passam de 25\,W, enquanto o EDSFF suporta \textit{hot-swap}, 12\,V e até 70\,W.
 
 \subsection{Análise por família}
 
@@ -1739,34 +1727,34 @@ publica latência; a Samsung não publica IOPS do PM1743. Um trabalho equivalent
 % =====================================================================
 \section{Dúvidas, considerações e pontos para o debate}
 
-O grupo registra as questões que considera em aberto e que gostaria de levar ao debate em
-sala:
+O grupo registra abaixo as questões que considera em aberto e que gostaria de levar ao debate em
+sala.
 
 \begin{enumerate}[label=\textbf{Q\arabic*.}]
-\item \textbf{O modelo de custo do otimizador deveria ser calibrado automaticamente?} Se
+\item O modelo de custo do otimizador deveria ser calibrado automaticamente? Se o
       \texttt{random\_page\_cost} precisa mudar de 4,0 para 1,1 conforme o meio, por que o
       SGBD não mede a razão empiricamente na inicialização, em vez de depender de um
-      administrador que talvez não saiba que o parâmetro existe?
-\item \textbf{Faz sentido continuar ensinando o modelo de I/O baseado em contagem de
-      blocos?} Ou o modelo correto para hardware de 2026 seria baseado em
-      latência\,$\times$\,paralelismo, contabilizando profundidade de fila explicitamente?
-\item \textbf{A descontinuação do Optane foi uma falha de mercado ou de tecnologia?} O
-      3D~XPoint funcionava e ocupava um degrau real da hierarquia. Se a razão foi custo de
-      fabricação, o que impede que a mesma lacuna seja reaberta indefinidamente?
-\item \textbf{O CXL substituirá o \emph{buffer pool} ou o \emph{tier} de SSD?} Se a memória
-      barata escalar via CXL, bancos ``in-memory'' de dezenas de terabytes ficam viáveis ---
-      o que mudaria no projeto de um SGBD que hoje assume que os dados não cabem na memória?
-\item \textbf{Em que ponto a latência de cauda deveria entrar no modelo formal?} Toda a
-      literatura de otimização usa custo esperado (média). SLAs reais são escritos em P99 e
-      P99,9. Existe formalismo de otimização de consultas que otimize percentil em vez de
-      média?
-\item \textbf{Armazenamento em nuvem é aceitável para o \emph{tier} 1?} Silberschatz observa
-      que a nuvem tem latência de dezenas a centenas de milissegundos quando os dados não
-      são colocalizados. Os dados de TPC-C que reunimos confirmam degradação de
-      4,6$\times$. Isso é limite físico ou de arquitetura?
-\item \textbf{O enunciado da tarefa continha um erro factual} (``SATA também é conhecida
-      como NL-SAS''). O grupo optou por documentar a correção em vez de reproduzi-la. Foi a
-      conduta correta em um trabalho avaliativo?
+      administrador que talvez nem saiba que o parâmetro existe?
+\item Faz sentido continuar ensinando o modelo de I/O baseado em contagem de blocos, ou o
+      modelo correto para o hardware de 2026 seria baseado em latência\,$\times$\,paralelismo,
+      contabilizando a profundidade de fila explicitamente?
+\item A descontinuação do Optane foi uma falha de mercado ou de tecnologia? O 3D~XPoint
+      funcionava e ocupava um degrau real da hierarquia, de modo que, se a razão foi custo de
+      fabricação, fica a pergunta sobre o que impede que a mesma lacuna se reabra indefinidamente.
+\item O CXL substituirá o \emph{buffer pool} ou o \emph{tier} de SSD? Se a memória barata
+      escalar via CXL, bancos ``in-memory'' de dezenas de terabytes ficam viáveis, e cabe perguntar
+      o que mudaria no projeto de um SGBD que hoje assume que os dados não cabem na memória.
+\item Em que ponto a latência de cauda deveria entrar no modelo formal? Toda a literatura de
+      otimização usa custo esperado, isto é, média, enquanto os SLAs reais são escritos em P99 e
+      P99,9. Existe formalismo de otimização de consultas que otimize percentil em vez de média?
+\item Armazenamento em nuvem é aceitável para o \emph{tier} 1? Silberschatz observa que a
+      nuvem tem latência de dezenas a centenas de milissegundos quando os dados não são
+      colocalizados, e os dados de TPC-C que reunimos confirmam degradação de 4,6$\times$, o que
+      deixa em aberto se o limite é físico ou de arquitetura.
+\item O enunciado da tarefa continha um erro factual, ao afirmar que ``SATA também é conhecida
+      como NL-SAS'', afirmação que vem do próprio Elmasri \& Navathe (§16.2.1). O grupo optou por
+      documentar a correção em vez de reproduzi-la, e fica a pergunta sobre se essa foi a conduta
+      correta em um trabalho avaliativo.
 \end{enumerate}
 
 % =====================================================================
@@ -1821,10 +1809,10 @@ sala:
 \item AMD. \emph{Ryzen 9 9950X3D2 Dual Edition --- Specifications}.
       \url{https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9950x3d2-dual-edition.html}.
       Consulta: 05/09/2026.
-\item SEAGATE. \emph{Exos M SATA Product Manual, 32/30/28/24\,TB}, Rev.~D, ago./2025 ---
-      sustenta os pontos de 24 a 32\,TB. O ponto de \textbf{36\,TB} \emph{não} consta desse
-      manual e vem de fonte separada: SEAGATE. \emph{Seagate Introduces Hard Drive Capacities of
-      Up to 36TB, Extending Its HAMR-Based Mozaic 3+ Technology Platform}, 20/jan./2025.
+\item SEAGATE. \emph{Exos M SATA Product Manual, 32/30/28/24\,TB}, Rev.~D, ago./2025, que
+      sustenta os pontos de 24 a 32\,TB. O ponto de 36\,TB não consta desse manual e vem de fonte
+      separada: SEAGATE. \emph{Seagate Introduces Hard Drive Capacities of Up to 36TB, Extending
+      Its HAMR-Based Mozaic 3+ Technology Platform}, 20/jan./2025.
       \url{https://investors.seagate.com/news/news-details/2025/Seagate-Introduces-Hard-Drive-Capacities-of-Up-to-36TB-Extending-Its-HAMR-Based-Mozaic-3-Technology-Platform/default.aspx}
 \item SOLIDIGM. \emph{D5-P5336 Product Specification} (até 122,88\,TB).
 \item MICRON. \emph{9550 PRO NVMe SSD}; \emph{9650 Series} (primeiro SSD PCIe~6.0 em
@@ -1843,11 +1831,11 @@ sala:
       RoCE escrita 41,22\,\textmu s, RoCE leitura 162,82\,\textmu s, TCP escrita
       122,37\,\textmu s, TCP leitura 177,15\,\textmu s.
       \url{https://documents.westerndigital.com/content/dam/doc-library/en_us/assets/public/western-digital/collateral/white-paper/white-paper-open-flex-data24-roce-vs-tcp.pdf}
-\item BROADCOM. \emph{Brocade G720 Switch Product Brief}. Texto literal:
-      ``\emph{Latency for locally switched ports is 460 ns (including FEC)}'' --- o valor vale
-      para \textbf{portas comutadas localmente}, não para um caminho porta a porta arbitrário,
-      que soma travessia de ISL. \url{https://docs.broadcom.com/doc/G720-Switch-PB}.
-      \emph{eHBA 9600-24i}; \emph{Emulex LPe38102} (64GFC).
+\item BROADCOM. \emph{Brocade G720 Switch Product Brief}, que registra literalmente
+      ``\emph{Latency for locally switched ports is 460 ns (including FEC)}''. O valor vale para
+      portas comutadas localmente, e não para um caminho porta a porta arbitrário, que ainda soma a
+      travessia de ISL. \url{https://docs.broadcom.com/doc/G720-Switch-PB}. \emph{eHBA 9600-24i};
+      \emph{Emulex LPe38102} (64GFC).
 \item MARVELL. \emph{QLogic 2870 Series 64GFC Fibre Channel HBA}.
 \item NVIDIA. \emph{Magnum IO GPUDirect Storage}; \emph{Quantum InfiniBand Switches};
       \emph{DGX SuperPOD InfiniBand Overview}.
@@ -1861,8 +1849,8 @@ sala:
 \subsection*{Mercado e medições de terceiros}
 \begin{enumerate}[label={[\arabic*]},leftmargin=*,start=28]
 \item TRENDFORCE. Relatórios de preço de contrato de DRAM e NAND, 1T26 a 3T26.
-      \url{https://www.trendforce.com/price}. \textbf{Ressalva:} consultados como série de
-      mercado; não reproduzimos valores pontuais deste provedor no corpo do texto.
+      \url{https://www.trendforce.com/price}. Consultados como série de mercado; não reproduzimos
+      valores pontuais deste provedor no corpo do texto.
 \item VDURA. \emph{Flash Volatility Index} --- ``SSD Prices Settle Into a Costly New Normal at
       $\sim$6.5x Year-Ago Levels'', 11/ago./2026. Fonte primária dos valores de 18,6$\times$,
       23,2$\times$ (pico do 1T26), 7,0$\times$ (3T25) e dos preços de US\$\,22.600 (SSD TLC
@@ -1872,17 +1860,17 @@ sala:
 \item MICROSOFT AZURE. \emph{PostgreSQL on AKS with local NVMe}, blog de engenharia,
       jul./2025. \url{https://techcommunity.microsoft.com/category/azure/blog/adforpostgresql}
 \item UBICLOUD. \emph{PostgreSQL performance: local vs.\ network-attached storage} (TPC-C e
-      TPC-H comparando NVMe local, Amazon Aurora e RDS). \url{https://www.ubicloud.com/blog}.
-      \textbf{Ressalva:} medição de fornecedor sobre a própria plataforma; a degradação de
-      4,6$\times$ citada na Seção~7 (Q6) deve ser lida com essa origem em vista.
+      TPC-H comparando NVMe local, Amazon Aurora e RDS). \url{https://www.ubicloud.com/blog}. É
+      medição de fornecedor sobre a própria plataforma, e a degradação de 4,6$\times$ citada na
+      Seção~7 deve ser lida com essa origem em vista.
 \item SCSI TRADE ASSOCIATION (STA) / SNIA. \emph{SAS Technology Roadmap} e declarações
       sobre 24G$+$ e SAS-5. \url{https://www.snia.org/forums/sfa}
 
-\item \textbf{Medição de latência de expansores CXL 2.0} (214--271\,ns contra 111--117\,ns de
-      DDR5 local, nota~$\dagger$ da Tabela~\ref{tab:161}). \textbf{Lacuna declarada:} os valores
-      vêm de medição independente revisada por pares, mas \textbf{este trabalho não fixou a
-      referência exata}. Enquanto ela não for fixada, os 214--271\,ns devem ser lidos como ordem
-      de grandeza, como já adverte a própria nota, e não como dado com proveniência fechada.
+\item Medição de latência de expansores CXL 2.0 (214--271\,ns contra 111--117\,ns de DDR5
+      local, nota~$\dagger$ da Tabela~\ref{tab:161}). Os valores vêm de medição independente
+      revisada por pares, mas este trabalho não fixou a referência exata, e por isso os
+      214--271\,ns devem ser lidos como ordem de grandeza, e não como dado com proveniência
+      fechada.
 \end{enumerate}
 \endgroup
 
