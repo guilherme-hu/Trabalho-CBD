@@ -229,7 +229,7 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 /* ============================== 9. AFP ============================== */
 {
   const s = slide("Protocolo NAS III — AFP", "Como funciona, por que existiu, e por que acabou",
-    "PERGUNTA PROVÁVEL, e a primeira versão deste deck não sabia responder: 'explique como o AFP FUNCIONA — não o que aconteceu com ele'. O enunciado pede 'como funciona cada uma das soluções', e nós tínhamos só o obituário. Resposta: protocolo de sessão COM ESTADO, sobre TCP/548 via DSI; comandos bifurcados por fork (FPOpenFork, FPRead/FPWrite) porque o arquivo do Mac tem data fork e resource fork; metadados do Finder como atributos de primeira classe; travamento por intervalo de bytes com FPByteRangeLock, mas amarrado à SESSÃO. Segunda armadilha: cliente ≠ servidor. Dizer 'removido no Big Sur' erra por cinco anos — removeu o SERVIDOR.");
+    "PERGUNTA PROVÁVEL, e a primeira versão deste deck não sabia responder: 'explique como o AFP FUNCIONA — não o que aconteceu com ele'. O enunciado pede 'como funciona cada uma das soluções', e nós tínhamos só o obituário. Resposta: protocolo de sessão COM ESTADO, sobre TCP/548 via DSI; comandos bifurcados por fork (FPOpenFork, FPRead/FPWrite) porque o arquivo do Mac tem data fork e resource fork; metadados do Finder como atributos de primeira classe; travamento por intervalo de bytes com FPByteRangeLock, mas amarrado à SESSÃO. Segunda armadilha: cliente ≠ servidor. Dizer 'removido no Big Sur' erra por cinco anos — removeu o SERVIDOR. TERCEIRA armadilha, achada na rodada 3: o AFP sobre TCP nao comeca no 3.0 — a propria Apple documenta 'TCP can be used as the transport protocol for AFP version 2.1 and later'. O que o AFP 3.0 muda e a EXCLUSIVIDADE do TCP: o AppleTalk deixa de transportar dados e fica so na descoberta de servico.");
   card(s, M, 1.50, 5.795, 2.42, "Como funciona",
     "• Sessão COM ESTADO: FPLogin → FPOpenVol →\n   operações sobre identificadores de sessão\n• Sobre TCP porta 548, enquadrado pelo DSI\n• Comandos BIFURCADOS por fork: FPOpenFork,\n   FPRead / FPWrite — o arquivo do Mac tem\n   data fork e resource fork\n• Metadados do Finder como atributos de\n   primeira classe, não emulação\n• FPByteRangeLock, mas com semântica de\n   SESSÃO: o travamento morre com ela", BLUE);
   card(s, M+6.095, 1.50, 5.795, 2.42, "Por que existiu — e o que nunca teve",
@@ -684,22 +684,23 @@ function tabela(s, y, head, rows, colW, fs, rowH){
   tabela(s, 1.56, ["Grandeza","Conta"], linhas, [2.55,9.34], 8.5, 0.51);
 }
 {
-  const s = slideBackup("Post-Mortem — as 33 correções, por família", "Nenhuma foi “alucinação”; todas foram erros bem mais difíceis de detectar",
-    "Slide de defesa sobre o Post-Mortem. A família (d) é a que mais ensinou: são erros de ENQUADRAMENTO, não de fato. Em todos os três, cada afirmação isolada era verdadeira — o erro estava no que ficou de fora. Nenhuma verificação de fatos detecta isso.");
+  const s = slideBackup("Post-Mortem — as 42 correções, por família", "Só UMA foi “alucinação”; as outras 41 foram erros bem mais difíceis de detectar",
+    "Slide de defesa sobre o Post-Mortem. A família (e) é a que mais ensinou, e é a mais recente: a frase era VERDADEIRA e a FONTE era falsa — texto de Wikipédia entre aspas, creditado a uma norma ANSI paga que não tínhamos. Nenhuma checagem de fato pega isso, porque o fato confere; só pega quem abre o documento citado e procura a frase lá dentro. A família (d) vem logo atrás: erros de ENQUADRAMENTO, em que cada afirmação isolada era verdadeira e o erro estava no que ficou de fora.");
   tabela(s, 1.54, ["Família","Qtd.","Exemplos","Antídoto"],
     [
-      ["(a) Rótulo errado sobre número certo","14","full-duplex × por direção · 64b/66b × 256b/257b · Server 2019 × versão 1709 (SAC) · 126 × 127 no FC-AL · CERN “gravou” × “processou” · Aurora sem os 30 min · “<5%” sem a controladora","“Este número mede o quê, em que condições?”"],
-      ["(b) Desatualização","6","cliente AFP · speedmap v21 · RFC 3720 · RFC 5661 · S3 “eventualmente consistente”","Carimbar data; reverificar qual norma vige"],
-      ["(c) Excesso de confiança","8","CIFS ≡ SMB 1.0 · Aurora 7,7× não reconferido · Dropbox “concluiu em 2016” · Kinetic “descontinuada” · custos sem proveniência","Refazer TODA conta citada, inclusive de artigo revisado por pares"],
-      ["(d) RECORTE — os 3 mais graves","3","Lacuna declarada que não existia · “fator exatamente 2” além dos casos tabelados · FCoE citando o livro só até a frase conveniente","Ler o parágrafo INTEIRO: “o que ficou de fora?”"],
-    ], [2.90,0.60,5.60,2.79], 8.5, 0.82);
+      ["(a) Rótulo errado sobre número certo","17","full-duplex × por direção · 64b/66b × 256b/257b · Server 2019 × versão 1709 (SAC) · 126 × 127 no FC-AL · CERN “gravou” × “processou” · Aurora sem os 30 min · “<5%” sem a controladora","“Este número mede o quê, em que condições?”"],
+      ["(b) Desatualização","7","cliente AFP · speedmap v21 · RFC 3720 · RFC 5661 · S3 “eventualmente consistente”","Carimbar data; reverificar qual norma vige"],
+      ["(c) Excesso de confiança","11","CIFS ≡ SMB 1.0 · Aurora 7,7× não reconferido · Dropbox “concluiu em 2016” · Kinetic “descontinuada” · custos sem proveniência","Refazer TODA conta citada, inclusive de artigo revisado por pares"],
+      ["(d) RECORTE — enquadramento","4","Lacuna declarada que não existia · “fator exatamente 2” além dos casos tabelados · FCoE citando o livro só até a frase conveniente","Ler o parágrafo INTEIRO: “o que ficou de fora?”"],
+      ["(e) PROVENIÊNCIA FABRICADA — o pior","1","Frase da Wikipédia entre aspas, atribuída à norma FC-BB-5 (ANSI/INCITS 462-2010) — paga, e que não consultamos","Sem o documento aberto, não se usa aspas"],
+    ], [2.90,0.60,5.60,2.79], 8.0, 0.70);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:6.02, w:CW, h:0.84, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
-  s.addText("A lição: verificar FATOS é necessário e não é suficiente. A segunda pergunta não é “isto é verdade?” e sim “O QUE FOI DEIXADO DE FORA PARA QUE ISTO PARECESSE VERDADE?”.\nA primeira uma IA responde bem. A segunda exige adotar a perspectiva de quem quer derrubar o trabalho — e foi o que o prompt da segunda rodada instruiu.", {
+  s.addText("A lição: verificar FATOS é necessário e não é suficiente. Faltam duas perguntas: “O QUE FOI DEIXADO DE FORA PARA QUE ISTO PARECESSE VERDADE?” (família d) e “ESTA FRASE ESTÁ MESMO NO DOCUMENTO A QUE EU A ATRIBUÍ?” (família e).\nA primeira uma IA responde bem. As outras duas exigem adotar a perspectiva de quem quer derrubar o trabalho — e abrir a fonte.", {
     x:M+0.28, y:6.10, w:CW-0.56, h:0.68, isTextBox:true, fontFace:BF, fontSize:10.5, color:W2 });
 }
 {
-  const s = slideBackup("Post-Mortem — as duas rodadas de verificação", "Rodada 1: 18 correções (16 do teste de 48 + 2 externas) · Rodada 2: 15",
+  const s = slideBackup("Post-Mortem — as três rodadas de verificação", "Rodada 1: 18 correções (16 do teste de 48 + 2 externas) · Rodada 2: 15 · Rodada 3: 9",
     "Slide de defesa sobre o processo. As duas cláusulas do prompt são o que faz a técnica funcionar.");
   s.addShape(pres.ShapeType.roundRect, { x:M, y:1.56, w:CW, h:1.52, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.3 } });
@@ -711,9 +712,10 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     [
       ["1 — verificação de fatos","“Não confirme nada por plausibilidade — só com fonte.”","16 correções no teste de 48 afirmações + 2 verificações externas = 18"],
       ["2 — simulação da correção","“As correções que o grupo alega ter encontrado nos livros estão certas mesmo?”","15 correções, 3 GRAVÍSSIMAS — todas de enquadramento, invisíveis à rodada 1"],
-      ["TOTAL","","33 correções aplicadas (ver slide anterior)"],
-    ], [2.40,3.85,5.64], 10, 0.62);
-  s.addText("Custo-benefício: as duas rodadas somaram ~25% do esforço e produziram 31 das 33 correções. A rodada 2 encontrou o erro mais grave do trabalho — uma lacuna que declaramos e que não existia — e ele está registrado no corpo do relatório, não apagado.", {
+      ["3 — proveniência das citações","“Para cada frase entre aspas, abra o documento primário e procure a frase lá dentro.”","9 correções — inclusive a aspa atribuída a uma norma que não consultamos"],
+      ["TOTAL","","42 correções aplicadas (ver slide anterior)"],
+    ], [2.40,3.85,5.64], 9.5, 0.56);
+  s.addText("Custo-benefício: as três rodadas somaram ~30% do esforço e produziram 40 das 42 correções. Cada rodada achou uma classe que a anterior não via: a 2 achou o recorte de citação; a 3 achou a citação com a fonte errada. Todas registradas no corpo do relatório, não apagadas.", {
     x:M, y:6.42, w:CW, h:0.40, isTextBox:true, fontFace:BF, fontSize:11, bold:true, color:INK });
 }
 {

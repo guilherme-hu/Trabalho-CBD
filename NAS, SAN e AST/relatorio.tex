@@ -108,12 +108,13 @@ terciário} (\textit{offline}).
 
 Todo número publicado carrega proveniência explícita, classificada em quatro categorias
 (especificação normativa, \textit{datasheet} de fabricante, medição publicada, derivação nossa),
-com uma quinta categoria legítima: \emph{não encontrado}. O trabalho passou por uma rodada de
-verificação adversarial documentada na Seção~\ref{sec:postmortem}, e registra
-\textbf{cinco divergências no material-fonte da disciplina} --- um erro de unidade e uma imprecisão
-de mecanismo no Silberschatz \textit{et al.}, um erro de definição, uma imprecisão e um dado
-desatualizado por um fator de dezesseis no Elmasri \& Navathe --- além de duas divergências em
-fontes de fabricante: a especificação do LTO-10, cuja taxa comprimida não fecha com a razão de
+com uma quinta categoria legítima: \emph{não encontrado}. O trabalho passou por três rodadas de
+verificação adversarial documentadas na Seção~\ref{sec:postmortem} --- a última delas dedicada a
+conferir, frase a frase, se cada citação está de fato no documento a que é atribuída --- e registra
+\textbf{quatro divergências no material-fonte da disciplina} --- um erro de unidade no Silberschatz
+\textit{et al.}, e três no Elmasri \& Navathe: um erro de definição (NL-SAS), uma imprecisão de
+mecanismo (o controle de fluxo do FCoE) e um dado envelhecido (a plataforma \textit{Kinetic} da
+Seagate) --- além de duas divergências em fontes de fabricante: a especificação do LTO-10, cuja taxa comprimida não fecha com a razão de
 compressão que ela mesma declara, e as três escalas distintas sob as quais o valor ``128GFC'' é
 publicado.
 
@@ -235,8 +236,8 @@ bibliográficas da disciplina:
 \item \textbf{Silberschatz, Korth \& Sudarshan, Cap.\ 12} \cite{silberschatz2020} --- fornece a
       \emph{física do meio} e a definição canônica dos níveis secundário e terciário
       (Seção~\ref{sec:hierarquia}), que é o eixo pedido pelo enunciado na recomendação final. A
-      Seção 12.2 trata SAN e NAS em dois parágrafos, mas define com precisão a interface orientada
-      a bloco.
+      Seção 12.2 trata SAN e NAS em dois parágrafos; a definição de \emph{interface orientada a
+      bloco} está uma seção antes, na 12.1, no verbete sobre memória \textit{flash}.
 \item \textbf{Garcia-Molina, Ullman \& Widom, Cap.\ 13} \cite{garciamolina2008} --- fornece a
       \emph{formalização do modelo de custo} de E/S: a ideia de que o custo de uma consulta se mede
       em número de acessos a bloco, e que a latência do acesso domina o cálculo. É esse arcabouço
@@ -305,8 +306,10 @@ saída inesperada do sistema operacional, do subsistema de armazenamento ou do p
 no \textit{doublewrite buffer} durante a recuperação'' \cite{mysqldw}. O PostgreSQL resolve o
 mesmo problema por outro caminho, com \texttt{full\_page\_writes} no WAL. Ambos os mecanismos
 custam banda de escrita --- e ambos podem ser desligados quando o dispositivo garante escrita
-atômica, o que o manual do MySQL menciona explicitamente para dispositivos com suporte a
-\textit{atomic writes} \cite{mysqldw}.
+atômica. \textbf{Precisão de alcance:} o manual do MySQL não faz essa concessão a ``dispositivos com
+\textit{atomic writes}'' em geral; ele a restringe a um caso nomeado --- o \textit{doublewrite} é
+desabilitado automaticamente quando reside em dispositivo Fusion-io com suporte a escrita atômica,
+e apenas sobre NVMFS em Linux \cite{mysqldw}.
 
 \item \textbf{Semântica de travamento previsível.} Em configurações de \textit{cluster} com
 armazenamento compartilhado (Oracle RAC, por exemplo), vários nós escrevem no mesmo conjunto de
@@ -420,8 +423,10 @@ sistema de arquivos usando protocolos de sistema de arquivos em rede como NFS ou
 \textbf{O que é.} SMB (\textit{Server Message Block}) é o protocolo de compartilhamento de
 arquivos nativo do mundo Windows. CIFS (\textit{Common Internet File System}) \textbf{não é um
 protocolo diferente}: é o nome que a Microsoft deu, em 1996, à família de dialetos hoje chamada
-SMB~1. A documentação da própria Microsoft é explícita ao afirmar que o protocolo CIFS é um
-\emph{dialeto} do SMB. Tratar ``SMB'' e ``CIFS'' como dois protocolos distintos é um erro comum; a
+SMB~1. A própria Microsoft posiciona assim: a especificação aberta [MS-SMB2] define o SMB~2/3 como
+``uma extensão do protocolo \textit{Server Message Block} (SMB) original (conforme especificado em
+[MS-SMB] e [MS-CIFS])'' \cite{mssmb2ovw} --- isto é, [MS-CIFS] documenta o SMB original, não um
+protocolo à parte. Tratar ``SMB'' e ``CIFS'' como dois protocolos distintos é um erro comum; a
 leitura correta é que \textbf{CIFS é SMB~1}, e que tudo posterior a isso se chama SMB~2 ou SMB~3.
 O enunciado da tarefa usa a grafia composta ``SMB/CIFS'', que é a convenção da indústria e a
 adotada aqui.
@@ -523,9 +528,12 @@ ACLs integrados ao protocolo; operações compostas (\textsc{compound}) reduzem 
 RPCSEC\_GSS.\strut} \\
 \addlinespace
 NFSv4.1 & \makecell[l]{2010\\(RFC 5661)} & \makecell[l]{RFC 8881\\(2020)} & \parbox[t]{7.3cm}{\raggedright Modelo de \textbf{sessões}, que dá semântica de
-execução \textbf{exatamente uma vez} (\textit{exactly-once semantics}): a garantia vem do par sessão
-$+$ \textit{reply cache} e vale para requisições \textsc{compound} precedidas de uma operação
-\textsc{sequence} (ou \textsc{cb\_sequence}) --- não é incondicional. E \textbf{pNFS}
+execução \textbf{exatamente uma vez} (\textit{exactly-once semantics}): vale para toda requisição
+\textsc{compound}/\textsc{cb\_compound} precedida de uma operação \textsc{sequence}/%
+\textsc{cb\_sequence} --- não é incondicional, mas a RFC é explícita em que a exigência ``vale
+independentemente de a requisição ser enviada com \textit{reply caching} especificado''
+\cite{rfc8881}: o \textit{reply cache} é mecanismo de implementação, não condição da garantia.
+E \textbf{pNFS}
 (\textit{parallel NFS}), que separa o caminho de metadados do caminho de dados, permitindo que o
 cliente leia dados diretamente de vários servidores em paralelo \cite{rfc8881}.\strut} \\
 \addlinespace
@@ -580,9 +588,13 @@ mutilava. Por muitos anos foi o único jeito de fazer um NAS servir Macs sem cor
 era o protocolo obrigatório para \textit{backups} do Time Machine em rede.
 
 \textbf{Como funciona.} O AFP é um protocolo de sessão, com estado, historicamente transportado
-sobre AppleTalk (ASP/ATP) e, desde o AFP 3.0, sobre TCP na \textbf{porta 548} por meio do
-\textbf{DSI} (\textit{Data Stream Interface}), a camada que enquadra requisições e respostas e
-multiplexa comandos numa conexão TCP. Suas características determinantes, e o que elas explicam:
+sobre AppleTalk (ASP/ATP) e, \textbf{desde o AFP 2.1}, também sobre TCP na \textbf{porta 548} por
+meio do \textbf{DSI} (\textit{Data Stream Interface}), a camada que enquadra requisições e respostas
+e multiplexa comandos numa conexão TCP. A documentação da Apple é literal: ``\textit{TCP can be used
+as the transport protocol for AFP version 2.1 and later}'' \cite{appleafptcp}. O que o \textbf{AFP
+3.0} (Mac OS X Server 10.0.3, 2001) muda não é a \emph{existência} do transporte TCP, e sim sua
+\emph{exclusividade}: a partir dele o AppleTalk deixa de transportar dados e fica restrito à
+descoberta de serviço. Suas características determinantes, e o que elas explicam:
 
 \begin{itemize}[leftmargin=0.7cm,itemsep=2pt]
 \item \textbf{Modelo de sessão com estado.} O cliente faz \textsc{FPLogin}, abre um \textit{volume}
@@ -982,8 +994,9 @@ portas comutadas localmente é de \textbf{460 ns} (incluindo FEC)'' \cite{brocad
 \smallskip
 \textbf{Derivação nossa:} um caminho típico servidor $\rightarrow$ \textit{switch} $\rightarrow$
 \textit{array} atravessa 1 a 2 saltos, somando $0{,}46$ a $0{,}92\ \mu$s. Comparado com a latência
-de uma leitura aleatória em SSD NVMe --- que Silberschatz situa em ``20 a 100 microssegundos''
-\cite{silberschatz2020} --- a rede FC responde por \textbf{menos de 5\%} do tempo total do acesso.
+de uma leitura aleatória em SSD --- que Silberschatz situa em ``20 a 100 microssegundos''
+\cite{silberschatz2020}, para SSDs em geral, sem particularizar NVMe --- a rede FC responde por
+\textbf{menos de 5\%} do tempo total do acesso.
 O cálculo prova apenas que a \emph{comutação local} é uma fração pequena nesse cenário; não
 mede HBA, serialização, propagação, ISLs, filas, controladora nem alvo. Portanto não autoriza
 concluir que a rede fim a fim deixou de ser gargalo.}
@@ -1214,9 +1227,9 @@ caminho. Dizer ``fim-a-fim'' sugere um mecanismo que o FCoE não tem.
 
 \smallskip
 \textbf{(2) O FCoE não é roteável em camada 3; o iSCSI é.} Esta é a diferença que a analogia apaga
-e a de maior consequência prática. O FCoE é um \textit{EtherType} próprio (\textbf{0x8906})
-encapsulado diretamente em quadro Ethernet: não há cabeçalho IP, e portanto \textbf{não há o que
-rotear}. O FCoE vive dentro de um domínio de camada 2. O iSCSI, por rodar sobre TCP/IP, atravessa
+e a de maior consequência prática. O FCoE é um \textit{EtherType} próprio (\textbf{0x8906} para o
+quadro de dados; \textbf{0x8914} para o FIP, o protocolo de inicialização) encapsulado diretamente
+em quadro Ethernet: não há cabeçalho IP, e portanto \textbf{não há o que rotear}. O FCoE vive dentro de um domínio de camada 2. O iSCSI, por rodar sobre TCP/IP, atravessa
 LAN, WAN e a Internet --- vantagem que o próprio livro destaca ao tratar do iSCSI
 \cite{elmasri2018}.
 
@@ -1314,8 +1327,9 @@ de fila projetado para disco mecânico (ver NVMe-oF). \\
 servidores'' \cite{elmasri2018}. & Elmasri e Navathe registram os problemas remanescentes:
 ``combinar opções de armazenamento de múltiplos fornecedores e lidar com padrões em evolução de
 \textit{software} e \textit{hardware} de gerenciamento'' \cite{elmasri2018}. \\
-Latência de rede desprezível diante da latência da mídia ($<$5\% num acesso NVMe; derivação da
-Seção~\ref{sec:topologias}). & \textit{Boot} e recuperação dependem da \textit{fabric}: um erro de
+Latência de \emph{comutação local} pequena diante da latência da mídia ($<$5\% num acesso NVMe;
+derivação e ressalvas na Seção~\ref{sec:topologias} --- a conta não cobre HBA, ISLs, filas nem
+controladora). & \textit{Boot} e recuperação dependem da \textit{fabric}: um erro de
 zoneamento pode tornar o dado inacessível instantaneamente para todos os servidores. \\
 \bottomrule
 \end{tabular}}
@@ -1413,15 +1427,16 @@ Comandos SCSI em TCP & TCP porta 3260 sobre Ethernet/IP & \textbf{Sim} --- LAN, 
 \textbf{Muito adequada} quando a rede é dedicada ou segregada. Entrega bloco cru sem o custo de
 \textit{fabric} FC \\
 
-\textbf{FCIP} & SAN & IETF \textbf{RFC 3821} (2004) \cite{rfc3821} & \textbf{Quadros FC inteiros}
+\textbf{FCIP} & SAN & IETF \textbf{RFC 3821} (2004), \emph{vigente}, atualizada pela RFC 7146 (2014)
+quanto aos requisitos de IPsec v3 \cite{rfc3821,rfc7146} & \textbf{Quadros FC inteiros}
 em TCP/IP & TCP/IP sobre WAN & Sim & Extensão de FC por IP & Túnel entre sítios, usado em replicação e \textit{backup}. A distância impõe
 latência e normalmente conduz ao modo assíncrono, conforme RPO/RTO (Seção~\ref{sec:fcip}) \\
 
 \textbf{FCoE} & SAN & T11 \textbf{FC-BB-5} $=$ ANSI/INCITS 462-2010; FC-BB-6 (VN2VN)
 \cite{fcbb5} & \textbf{Quadros FC inteiros} em quadros Ethernet, \textbf{sem TCP e sem IP} &
 Ethernet sem perdas obrigatório: DCB (802.1Qbb PFC, 802.1Qaz ETS, DCBX) $+$ \textit{baby jumbo} &
-\textbf{Não} --- ``não é roteável na camada IP e não funcionará através de redes IP roteadas como a
-Internet'' \cite{fcbb5} & Nicho: convergência dentro do rack (\textit{blade}, sistemas
+\textbf{Não} --- sem cabeçalho IP no encapsulamento \cite{fcbb5}, não há o que rotear em L3
+(análise nossa, Seção~\ref{sec:fcoe}) & Nicho: convergência dentro do rack (\textit{blade}, sistemas
 convergentes) & Viável em infraestrutura Ethernet compatível com DCB; não é roteado diretamente por IP \\
 
 \textbf{(fronteira)} \textbf{NVMe-oF} & SAN & NVM Express (FC-NVMe, NVMe/TCP, NVMe/RoCE) & Comandos
@@ -2166,7 +2181,10 @@ Três conclusões se destacam.
 \textbf{Primeira: o argumento de velocidade envelheceu.} A latência de um salto em
 \textit{switch Fibre Channel} de geração corrente é de 460 ns \cite{brocadeg710}, contra 20 a 100
 $\mu$s de uma leitura aleatória em SSD \cite{silberschatz2020} --- menos de 5\% do tempo total do
-acesso (derivação da Seção~\ref{sec:topologias}). A rede saiu do caminho crítico. O que sobra como
+acesso (derivação da Seção~\ref{sec:topologias}). \textbf{Alcance da afirmação:} a conta mede a
+\emph{comutação local}, não o caminho fim a fim, que ainda soma HBA, ISLs, filas e controladora;
+o que ela mostra é que o argumento de velocidade deixou de ser o eixo da escolha, não que a rede
+tenha deixado de importar. O que sobra como
 diferença entre as arquiteturas é semântico: quem garante a atomicidade da página, quem arbitra o
 travamento, o que acontece quando o caminho oscila. É por isso que a Microsoft, ao suportar SQL
 Server sobre SMB, não fala de banda, e sim de \textit{transparent failover} \cite{mssqlsmb}; e é por
@@ -2278,7 +2296,18 @@ Protocol (Consolidated)}. Abr. 2014. Obsoleta a RFC 3720. Disponível em:
 \url{https://www.rfc-editor.org/info/rfc7143/}.
 
 \bibitem{rfc3821} IETF. \textit{RFC 3821 --- Fibre Channel Over TCP/IP (FCIP)}. Jul. 2004.
-Disponível em: \url{https://www.rfc-editor.org/info/rfc3821/}.
+\emph{Proposed Standard}, vigente: não foi obsoletada, apenas atualizada pela RFC 7146. Disponível
+em: \url{https://www.rfc-editor.org/info/rfc3821/}.
+
+\bibitem{rfc7146} IETF. \textit{RFC 7146 --- Securing Block Storage Protocols over IP: RFC 3723
+Requirements Update for IPsec v3}. Abr. 2014. Atualiza a RFC 3821 (entre outras). Disponível em:
+\url{https://www.rfc-editor.org/info/rfc7146/}.
+
+\bibitem{mssmb2ovw} MICROSOFT. \textit{[MS-SMB2]: Server Message Block (SMB) Protocol Versions 2 and
+3 --- Seção 1.3, Overview}. Microsoft Open Specifications. Texto literal: ``\textit{The SMB 2
+Protocol is an extension of the original Server Message Block (SMB) Protocol (as specified in
+[MS-SMB] and [MS-CIFS])}''. Disponível em:
+\url{https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/4287490c-602c-41c0-a23e-140a1f137832}.
 
 \bibitem{fcbb5} INCITS/T11. \textit{FC-BB-5 --- Fibre Channel Backbone-5}, publicado como
 \textbf{ANSI/INCITS 462-2010}. Define o encapsulamento FCoE em quadro Ethernet sob o \textit{EtherType}
@@ -2337,6 +2366,11 @@ Disponível em: \url{https://dev.mysql.com/doc/refman/8.4/en/innodb-doublewrite-
 corporativas do macOS Sequoia 15.5 (2025). Texto literal: ``\textit{Apple Filing Protocol (AFP)
 client is deprecated and will be removed in a future version of macOS}''. Documento de suporte
 121011. Disponível em: \url{https://support.apple.com/121011}.
+
+\bibitem{appleafptcp} APPLE. \textit{AFP Over TCP} --- \textit{Apple Filing Protocol Programming
+Guide} (documentação arquivada). Texto literal: ``\textit{TCP can be used as the transport protocol
+for AFP version 2.1 and later}''; registra a porta 548 e a camada DSI. Disponível em:
+\url{https://developer.apple.com/library/archive/documentation/Networking/Conceptual/AFP/AFPOverTCP/AFPOverTCP.html}.
 
 \bibitem{appleafptm} APPLE. \textit{Types of disks you can use with Time Machine on Mac}.
 Atualizado em jul. 2026; informa o fim do suporte a destinos AFP no macOS 27.
@@ -2558,7 +2592,7 @@ AST e leitura efetiva do PPTX por OOXML quando necessário. A atividade não alt
 correções técnicas, porque registrou o fechamento de achados históricos, e não uma nova rodada.}
 
 \destaque{Responsável principal pelo Post-Mortem}{Guilherme En Shih Hu permaneceu responsável pela
-redação do Post-Mortem e pela condução das duas rodadas adversariais. A conferência solicitada por
+redação do Post-Mortem e pela condução das três rodadas adversariais. A conferência solicitada por
 Raphael foi apoio complementar e não altera essa atribuição.}
 
 \destaque{As quatro decisões humanas que mais mudaram o resultado}{%
@@ -2582,7 +2616,7 @@ só se pode verificar o que está declarado.}
 \subsection{Erros gerados pela IA e correções aplicadas}
 \label{sec:erros}
 
-Lista completa das \textbf{33 correções} aplicadas em duas rodadas. A coluna ``conferido na fonte
+Lista completa das \textbf{42 correções} aplicadas em três rodadas. A coluna ``conferido na fonte
 por'' registra quem foi ao documento primário confirmar a correção antes de ela entrar no texto ---
 distinção que importa, porque \emph{encontrar} um erro e \emph{confirmar} a correção são atos
 diferentes, e o enunciado pergunta pelo segundo.
@@ -2698,31 +2732,110 @@ FALSO $+$ 1 NÃO VERIFICÁVEL $=$ 16, e a tabela declarava 14. & Recontado. A ú
 refizemos era a nossa. & Grave & Guilherme En Shih \\
 \end{longtable}}
 
+\subsubsection*{Terceira rodada (9 correções) --- revisão de proveniência das Seções 1--6}
+
+Rodada conduzida sobre as Seções \ref{sec:nas} a \ref{sec:ast} com um critério único: \emph{para
+cada número e cada frase entre aspas, abrir o documento primário e conferir se a fonte diz aquilo}.
+Foi a rodada que encontrou o defeito mais constrangedor deste trabalho --- uma frase apresentada
+entre aspas como texto de norma ANSI, sendo texto de enciclopédia colaborativa.
+
+{\scriptsize \setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{0.35cm}p{4.6cm}p{5.5cm}p{2.0cm}p{2.0cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Defeito da versão 2} & \textbf{Correção aplicada} & \textbf{Gravidade} &
+\textbf{Conferido na fonte por} \
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Defeito da versão 2} & \textbf{Correção aplicada} & \textbf{Gravidade} &
+\textbf{Conferido na fonte por} \
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+34 & \textbf{Tabela \ref{tab:protocolos} atribuía à norma FC-BB-5, entre aspas, a frase ``não é
+roteável na camada IP e não funcionará através de redes IP roteadas como a Internet''.} O texto é o
+da Wikipédia, não o da ANSI/INCITS 462-2010 --- norma paga, que não acessamos. & Aspas removidas. A
+afirmação passa a ser análise nossa, apoiada na norma apenas quanto ao encapsulamento (sem cabeçalho
+IP $\Rightarrow$ nada a rotear), com remissão à Seção~\ref{sec:fcoe}. & \textbf{Gravíssima} ---
+proveniência fabricada num trabalho cuja tese é a proveniência & Guilherme En Shih \
+
+35 & \textbf{O Resumo declarava ``cinco divergências no material-fonte''} e atribuía duas ao
+Silberschatz; a Tabela~\ref{tab:correcoes} lista quatro (1 Silberschatz $+$ 3 Elmasri). Declarava
+ainda ``um dado desatualizado por um fator de dezesseis'', expressão que \textbf{não aparece em
+nenhum outro ponto do relatório}. & Recontado para quatro, com a atribuição correta por livro.
+Alegação sem lastro removida. & \textbf{Grave} --- é a reincidência exata do \#33 & Vivian Maria \
+
+36 & ``Historicamente sobre AppleTalk e, \textbf{desde o AFP 3.0}, sobre TCP na porta 548.'' & A
+documentação da Apple diz ``\textit{TCP can be used [\ldots] for AFP version 2.1 and later}''
+\cite{appleafptcp}. O AFP 3.0 não introduz o TCP: torna-o exclusivo, relegando o AppleTalk à
+descoberta. & Média & Gabriel Schmitz \
+
+37 & ``A garantia de \textit{exactly-once} do NFSv4.1 vem do par sessão $+$ \textit{reply cache}.''
+& A RFC 8881 §2.10.6 diz o oposto: a exigência ``vale independentemente de a requisição ser enviada
+com \textit{reply caching} especificado'' \cite{rfc8881}. A condição é o \textsc{sequence} inicial,
+não o cache. & Média & Enzo de Carvalho \
+
+38 & \textbf{A correção \#27 estava declarada no Post-Mortem, mas nunca chegou ao corpo do texto:} a
+Seção~\ref{sec:engine} seguia dizendo ``dispositivos com suporte a \textit{atomic writes}'' em geral.
+& Aplicada de fato: o manual restringe a Fusion-io sobre NVMFS em Linux \cite{mysqldw}. &
+\textbf{Grave} --- declarar correção não aplicada é pior que não corrigir & Raphael Henrique \
+
+39 & Tabela~\ref{tab:vantsan} dizia ``latência de rede desprezível'' e a Conclusão, ``a rede saiu do
+caminho crítico'' --- ambas além do que a própria Seção~\ref{sec:topologias} autoriza, que já
+ressalva não medir HBA, ISLs, filas nem controladora. & Reduzidas ao alcance da conta:
+\emph{comutação local}. & \textbf{Grave} --- família (d), contradição interna & Bernardo Brandão \
+
+40 & ``A documentação da própria Microsoft é explícita ao afirmar que o CIFS é um dialeto do SMB'',
+sem citação. & Citado o [MS-SMB2] §1.3, que define SMB~2/3 como extensão do SMB original
+``especificado em [MS-SMB] e [MS-CIFS]'' \cite{mssmb2ovw}. & Baixa & Vivian Maria \
+
+41 & FCIP citado como ``RFC 3821 (2004)'', sem registrar seu estado atual --- assimetria em relação
+ao rigor aplicado ao par RFC 5661/8881 (\#16). & Registrado: vigente, \emph{não} obsoletada, mas
+atualizada pela RFC 7146 (2014) quanto a IPsec v3 \cite{rfc7146}. & Baixa & Gabriel Schmitz \
+
+42 & FCoE descrito com um único \textit{EtherType} (0x8906), embora o texto mencione o FIP. &
+Acrescentado o 0x8914, do FIP. & Baixa & Enzo de Carvalho \
+\end{longtable}}
+
 \destaque{Padrão dos erros --- a lição que levamos}{%
-Das 33 correções, \textbf{nenhuma} foi invenção pura do tipo que se costuma chamar de
-``alucinação''. Quatro famílias, agora que temos duas rodadas para comparar:
+Das 42 correções, \textbf{uma única} --- a \#34 --- é do tipo que se costuma chamar de
+``alucinação'': uma frase de enciclopédia colaborativa apresentada entre aspas como texto de norma
+ANSI. As outras 41 não são invenção. \textbf{Cinco famílias}, agora que temos três rodadas para
+comparar:
 
 \smallskip
 \textbf{(a) Rótulo errado sobre número certo} --- \#2, \#4, \#6, \#7, \#8, \#10, \#13, \#14, \#22,
-\#23, \#25, \#26, \#27, \#31: \textbf{quatorze casos}, a família mais numerosa e a que sobreviveu à
-primeira rodada. O valor existe na fonte, mas descreve outra coisa. \textbf{Antídoto:} perguntar
+\#23, \#25, \#26, \#27, \#31, \#36, \#37, \#42: \textbf{dezessete casos}, a família mais numerosa e a
+que sobreviveu às duas primeiras rodadas. O valor existe na fonte, mas descreve outra coisa. \textbf{Antídoto:} perguntar
 sempre ``este número mede exatamente o quê, em que condições?''.
 
 \smallskip
-\textbf{(b) Desatualização} --- \#1, \#3, \#15, \#16, \#17, \#19: seis casos. \textbf{Antídoto:}
+\textbf{(b) Desatualização} --- \#1, \#3, \#15, \#16, \#17, \#19, \#41: sete casos. \textbf{Antídoto:}
 carimbar data e reverificar qual norma está vigente.
 
 \smallskip
-\textbf{(c) Excesso de confiança na formulação} --- \#5, \#9, \#11, \#12, \#24, \#28, \#32, \#33:
-oito casos. ``Não há fonte'' vira afirmação categórica; conta citada não é refeita.
+\textbf{(c) Excesso de confiança na formulação} --- \#5, \#9, \#11, \#12, \#24, \#28, \#32, \#33,
+\#35, \#38, \#40: \textbf{onze casos}. ``Não há fonte'' vira afirmação categórica; conta citada não é
+refeita; correção declarada no Post-Mortem não é aplicada ao corpo do texto (\#38).
 
 \smallskip
-\textbf{(d) Recorte que favorece o próprio argumento} --- \#20, \#21, \#29: \textbf{três casos, e
-são os três mais graves.} Não são erros de fato: são erros de \emph{enquadramento}. A IA citou o
+\textbf{(d) Recorte que favorece o próprio argumento} --- \#20, \#21, \#29, \#39: \textbf{quatro
+casos, e estão entre os mais graves.} Não são erros de fato: são erros de \emph{enquadramento}. A IA citou o
 livro até a frase que sustentava a crítica e parou; enunciou como regra geral um padrão que valia
 só nas gerações que ela havia tabelado; tratou um item do enunciado pelo ângulo em que tinha
 material. \textbf{Nenhuma verificação de fatos pega isso} --- só pega quem lê o parágrafo inteiro e
-pergunta ``o que foi deixado de fora?''. É o achado metodológico mais importante deste trabalho.}
+pergunta ``o que foi deixado de fora?''.
+
+\smallskip
+\textbf{(e) Proveniência fabricada} --- \#34: \textbf{um caso, e é o pior de todos.} Uma frase
+correta \emph{de fato}, com a fonte \emph{errada} --- texto de enciclopédia colaborativa entre aspas,
+creditado a uma norma ANSI paga que não tínhamos como consultar. Nenhuma checagem de fato pega isso:
+o fato confere. Só pega quem vai ao documento citado e procura a frase lá dentro. \textbf{Antídoto:}
+não usar aspas sem ter o documento aberto; quando a norma for paga e inacessível, dizer isso e
+converter a afirmação em análise própria. É o achado metodológico mais importante deste trabalho,
+e a razão de existir a terceira rodada.}
 
 
 \subsection{Primeira rodada de verificação adversarial}
@@ -2881,7 +2994,7 @@ justa, e o enunciado pergunta exatamente isso.
 
 \smallskip
 \textbf{O que fizemos:} separamos \emph{encontrar} de \emph{confirmar}. A Seção~\ref{sec:erros}
-registra agora, para cada uma das 33 correções, quem foi ao documento primário confirmá-la antes de
+registra agora, para cada uma das 42 correções, quem foi ao documento primário confirmá-la antes de
 ela entrar no texto. \textbf{Essa é a resposta honesta:} a IA foi muito boa em \emph{encontrar} ---
 não reivindicamos o mérito de ter localizado a tabela v24 ou o parágrafo completo do Elmasri. Mas
 nenhuma correção entrou no relatório sem que um integrante abrisse a fonte e confirmasse.

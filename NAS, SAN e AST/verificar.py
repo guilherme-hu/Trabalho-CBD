@@ -81,7 +81,7 @@ chk("SATA-3: 6 Gb/s com 8b/10b -> MB/s", 6e9*0.8/8/1e6, 600)
 
 print("-- Post-Mortem: invariantes do proprio processo --")
 chk("Rodada 1: 5 nao-confirmadas + 11 ressalvas", 5+11, 16)
-chk("Rodada 1 + rodada 2 = total de correcoes",   18+15, 33)
+chk("Rodada 1 + rodada 2 + rodada 3 = total",      18+15+9, 42)
 chk("Rodada 1: 43+3+1+1 afirmacoes",              43+3+1+1, 48)
 
 # ---------- (2) cruzamento .tex x .pptx ----------
@@ -162,7 +162,7 @@ CHAVES = [
   ("FCP_XFER_RDY",       ["XFER\\_RDY", "XFER_RDY"]),
   ("ALUA",               ["ALUA"]),
   ("hard vs soft (NFS)", ["hard"]),
-  ("33 correcoes",       ["33 corre"]),
+  ("42 correcoes",       ["42 corre"]),
 ]
 for nome, alts in CHAVES:
     t_ok = any(a in tex or a in norm(tex) for a in alts)
