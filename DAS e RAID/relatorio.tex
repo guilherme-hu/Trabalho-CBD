@@ -234,7 +234,8 @@ Ambos combinam striping (RAID 0) e mirroring (RAID 1) para obter, simultaneament
 \end{itemize}
 
 \subsection{Quadro Comparativo dos Níveis Padrão de RAID}
-\begin{longtable}{@{}p{1.5cm}p{1.2cm}p{2.5cm}p{1.5cm}p{1.8cm}p{1.8cm}p{5.8cm}@{}}\toprule
+
+\begin{longtable}{@{} p{1.2cm} p{1.2cm} >{\raggedright\arraybackslash}p{2.2cm} p{1.4cm} p{1.8cm} >{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{4.5cm} @{}}\toprule
 \textbf{Nível} & \textbf{Nº mín. discos} & \textbf{Técnica} & \textbf{Discos tolerados} & \textbf{Capacidade útil} & \textbf{Desempenho escrita} & \textbf{Uso recomendado em SBD}\\\midrule\endhead
 RAID 0 & 2 & Striping em bloco & 0 & $N \times \text{disco}$ & Muito alto & Dados não críticos/temporários (tempdb)\\
 RAID 1 & 2 & Espelhamento (mirroring) & 1 (de 2) & $1 \times \text{disco}$ & Moderado (2 gravações) & Logs de transação, volumes de sistema\\
