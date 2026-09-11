@@ -95,7 +95,7 @@ das instalações corporativas de Sistemas de Banco de Dados (SBD): \textbf{NAS}
 \emph{semântica de arquivo} sobre a rede IP de propósito geral, e \textbf{SAN}, que exporta uma
 \emph{semântica de bloco} sobre uma rede dedicada de armazenamento. A distinção não é de
 desempenho nem de meio físico --- é de \emph{unidade de abstração}, e é dela que decorrem todas as
-demais diferenças: quem é dono do sistema de arquivos, onde ocorre o travamento, quem garante a
+demais diferenças: quem é dono do sistema de arquivos, onde ocorre o lock, quem garante a
 atomicidade da página e o que acontece quando a rede oscila.
 
 Cobrimos os protocolos de cada família com suas normas de origem: SMB/CIFS, NFS e AFP no lado NAS;
@@ -146,7 +146,7 @@ correto para o usuário do banco pensar, já que ``o objetivo de um sistema de b
 simplificar e facilitar o acesso aos dados'' \cite{silberschatz2020}. Para quem implementa o
 sistema, porém, essa simplificação se paga em complexidade: uma consulta SQL não muda de sintaxe
 quando os arquivos de dados do banco saem de um disco local e passam a ser acessados pela rede, mas
-o custo de cada acesso, a semântica de travamento, o comportamento sob falha e o próprio conjunto de
+o custo de cada acesso, a semântica de lock, o comportamento sob falha e o próprio conjunto de
 configurações suportadas pelo fabricante do SGBD mudam completamente. A escolha da arquitetura de
 armazenamento é um dos pontos em que essa distância entre o nível lógico e o nível físico fica mais
 visível.
@@ -290,9 +290,9 @@ convém registrar o alcance real dessa concessão: o manual do MySQL não a este
 \textit{atomic writes} em geral, e sim a um caso nomeado, o de dispositivos Fusion-io, e apenas sobre
 NVMFS em Linux \cite{mysqldw}.
 
-O quarto é a \textbf{semântica de travamento previsível}. Em configurações de \textit{cluster} com
+O quarto é a \textbf{semântica de lock previsível}. Em configurações de \textit{cluster} com
 armazenamento compartilhado, como o Oracle RAC, vários nós escrevem no mesmo conjunto de blocos, e o
-travamento tem de permanecer correto sob falha de nó e sob partição de rede.
+lock tem de permanecer correto sob falha de nó e sob partição de rede.
 
 O quinto é o \textbf{comportamento determinado sob indisponibilidade transitória}. Se o caminho até o
 armazenamento some por trinta segundos, o SGBD precisa saber se a operação de E/S vai bloquear,
@@ -374,7 +374,7 @@ NFS não oferece coerência forte por padrão, e o manual do Linux é explícito
 protocolo NFS não foi projetado para suportar coerência de \textit{cache} verdadeira de sistema de
 arquivos de \textit{cluster} sem algum tipo de serialização pela aplicação'', de modo que ``se
 coerência absoluta de \textit{cache} entre clientes for necessária, as aplicações devem usar
-travamento de arquivo'', e que ``alternativamente, as aplicações podem abrir seus arquivos com a
+lock de arquivo'', e que ``alternativamente, as aplicações podem abrir seus arquivos com a
 \textit{flag} \texttt{O\_DIRECT} para desabilitar completamente o \textit{cache} de dados''
 \cite{nfsman}. É por essa razão que os SGBDs suportados sobre NFS usam \texttt{O\_DIRECT} ou
 substituem o cliente NFS do sistema operacional por um próprio, como se discute na
@@ -474,10 +474,10 @@ protocolo está na coluna ``introduzida em''.}
 NFSv2 & 1989 & RFC 1094 & \parbox[t]{7.3cm}{\raggedright Sobre UDP; \textit{offsets} de 32 bits (limite de 2~GiB por arquivo).\strut} \\
 \addlinespace
 NFSv3 & 1995 & RFC 1813 & \parbox[t]{7.3cm}{\raggedright \textit{Offsets} de 64 bits, escritas assíncronas com
-\textsc{commit} explícito, TCP. \textbf{Sem estado}: o travamento fica \emph{fora} do protocolo, num
+\textsc{commit} explícito, TCP. \textbf{Sem estado}: o lock fica \emph{fora} do protocolo, num
 serviço separado (NLM, \textit{Network Lock Manager}), o que torna a recuperação após falha frágil.\strut} \\
 \addlinespace
-NFSv4.0 & \makecell[l]{2000\\(RFC 3010)} & \makecell[l]{RFC 7530\\(2015)} & \parbox[t]{7.3cm}{\raggedright \textbf{Com estado}. Travamento, montagem e
+NFSv4.0 & \makecell[l]{2000\\(RFC 3010)} & \makecell[l]{RFC 7530\\(2015)} & \parbox[t]{7.3cm}{\raggedright \textbf{Com estado}. lock, montagem e
 ACLs integrados ao protocolo; operações compostas (\textsc{compound}) reduzem idas e voltas; uma
 única porta (\textbf{2049}), o que o torna atravessável por \textit{firewall}; segurança via
 RPCSEC\_GSS.\strut} \\
@@ -553,14 +553,14 @@ com reconexão. Os comandos são bifurcados por \textit{fork}, com \textsc{FPOpe
 um arquivo do Macintosh, e essa é a razão técnica original de o protocolo existir, já que SMB1 e NFS
 só emulavam isso com truques como arquivos \texttt{.\_nome} e \textit{AppleDouble}, ao custo de
 corrupção silenciosa de metadados; pela mesma lógica, os metadados do Finder e os nomes longos em
-UTF-8 com decomposição canônica trafegam como atributos de primeira classe. Por fim, o travamento por
+UTF-8 com decomposição canônica trafegam como atributos de primeira classe. Por fim, o lock por
 intervalo de \textit{bytes} existe, via \textsc{FPByteRangeLock}, mas com semântica de sessão: morre
 com ela, e não há equivalente às \textit{leases} com prazo do NFSv4 nem aos \textit{oplocks} do
 SMB~2/3.
 
 O que o AFP nunca teve é a razão de não servir a banco de dados: nenhum caminho de dados com RDMA,
 nenhum equivalente a \textit{multichannel}, nenhuma disponibilidade contínua com \textit{failover}
-transparente, e um travamento amarrado à sessão. Comparado ao SMB~3 (Seção~\ref{sec:smb}) e ao
+transparente, e um lock amarrado à sessão. Comparado ao SMB~3 (Seção~\ref{sec:smb}) e ao
 NFSv4.1 (Seção~\ref{sec:nfs}), ele parou no conjunto de recursos de um protocolo de compartilhamento
 de arquivos de escritório.
 
@@ -593,7 +593,7 @@ A relevância do AFP para SBD é nenhuma, e esse é justamente o achado. Pesquis
 suporte publicadas por Oracle, Microsoft, PostgreSQL e MySQL e não localizamos AFP em nenhuma delas,
 de modo que o que afirmamos é que nenhum dos quatro SGBDs de maior participação o lista como
 configuração suportada, e não um negativo universal sobre todo o mercado. O motivo técnico está nas
-características acima: sem travamento independente de sessão, sem RDMA e sem disponibilidade
+características acima: sem lock independente de sessão, sem RDMA e sem disponibilidade
 contínua, o AFP não atende aos requisitos quatro e cinco da Seção~\ref{sec:engine}. Para um NAS que
 precise servir clientes Apple, a recomendação em 2026 é SMB~3, protocolo primário do macOS desde o
 OS~X 10.9 Mavericks, de 2013. Se o AFP aparece na lista do enunciado, é como item de completude
@@ -637,9 +637,9 @@ especializada. & Compete por banda com o tráfego de aplicação, a menos que se
 rede física separada. \\
 Compartilhamento concorrente entre servidores é nativo, sem sistema de arquivos de
 \textit{cluster}. & Coerência de \textit{cache} fraca por padrão (\textit{close-to-open}); exige
-\texttt{O\_DIRECT}, travamento explícito ou cliente dedicado \cite{nfsman}. \\
+\texttt{O\_DIRECT}, lock explícito ou cliente dedicado \cite{nfsman}. \\
 Provisionamento simples: criar um compartilhamento e conceder permissão, sem zoneamento nem
-mapeamento de LUN. & Camada extra de sistema de arquivos no caminho: metadados, travamento e
+mapeamento de LUN. & Camada extra de sistema de arquivos no caminho: metadados, lock e
 \textit{journaling} do lado do NAS somam latência. \\
 Independência de sistema operacional dos clientes \cite{elmasri2018}. & Semântica de escrita
 atômica de página não é garantida pelo protocolo; o SGBD tem que se proteger sozinho. \\
@@ -1136,8 +1136,7 @@ componentes TCP/IP. [\ldots] Ele tira proveito de uma tecnologia Ethernet confi�
 \textit{buffering} e controle de fluxo fim-a-fim para evitar pacotes descartados''
 \cite{elmasri2018}. A frase de abertura é analogia didática, e não definição, e o próprio parágrafo
 já a qualifica ao dizer que o FCoE não inclui TCP/IP e que depende de Ethernet confiável com controle
-de fluxo. Registramos que a primeira versão deste relatório ignorava essas duas ressalvas e
-apresentava como falhas do livro dois pontos que ele já cobre (Seção~\ref{sec:adversarial2}).
+de fluxo.
 
 Restam, contudo, duas imprecisões reais e específicas. A primeira é que o controle de fluxo do FCoE
 não é fim-a-fim, e sim enlace a enlace. O mecanismo é o IEEE 802.1Qbb, \textit{Priority-based Flow
@@ -1208,11 +1207,6 @@ próprio livro enuncia: \textit{log} em RAID 1 ou 10, dados em RAID 5 ou 6. É t
 a política de AST para o volume de \textit{redo} deve ser fixada, e não deixada ao critério
 estatístico do \textit{array} (Seção~\ref{sec:ast}).}
 
-\subsection{Nota de fronteira: NVMe-oF}
-
-O NVMe-oF (\textit{NVMe over Fabrics}) transporta comandos NVMe sobre FC (FC-NVMe), TCP (NVMe/TCP)
-ou RDMA (NVMe/RoCE). As filas paralelas pertencem ao modelo NVMe, e o SCSI não deve ser confundido
-com a fila única por porta do AHCI. O transporte e a implementação também influenciam o desempenho.
 
 \subsection{Vantagens e desvantagens da SAN}
 \label{sec:vantsan}
@@ -1319,7 +1313,7 @@ conforme o SGBD e a configuração homologada; considerar a coerência
 de arquivo & TCP porta 548 & Sim & \textbf{Legado}: servidor removido no macOS 11 (2020);
 cliente depreciado no macOS 15.5 (mai./2025) \cite{appleafp}; a Apple informa oficialmente que
 destinos AFP do Time Machine deixam de ser suportados no macOS 27 \cite{appleafptm} &
-\textbf{Legado, sem recomendação para novas implantações.} Possui travamento por intervalo de bytes, mas não identificamos configuração de SGBD homologada neste estudo \\
+\textbf{Legado, sem recomendação para novas implantações.} Possui lock por intervalo de bytes, mas não identificamos configuração de SGBD homologada neste estudo \\
 
 \textbf{FCP sobre FC} & SAN & T11/INCITS (FC-FS, FC-PI); FCP $=$ mapeamento FC-4 de SCSI-3 &
 Comandos e dados SCSI em quadros FC & \textit{Fibre Channel} (rede sem perdas por BB\_Credit) &
@@ -1377,7 +1371,7 @@ Rede & Ethernet/IP, compartilhada ou segregada & FC ou Ethernet/IP; isolamento d
 Protocolos & SMB/CIFS, NFS, AFP & FCP/FC, iSCSI, FCIP, FCoE \\
 Compartilhamento entre servidores & Nativo; o dispositivo arbitra & Exige sistema de arquivos de
 \textit{cluster} ou LVM ciente de \textit{cluster} \\
-Travamento & No protocolo (NLM no NFSv3; integrado a partir do NFSv4; \textit{oplocks}/\textit{leases}
+Lock & No protocolo (NLM no NFSv3; integrado a partir do NFSv4; \textit{oplocks}/\textit{leases}
 no SMB) & No servidor; a SAN não sabe o que é um arquivo \\
 Coerência de \textit{cache} & Depende do protocolo e do cliente; NFS usa \textit{close-to-open} \cite{nfsman} & Coordenada pelos servidores ao compartilhar blocos \\
 Custo relativo & Depende de capacidade, rede e suporte & Depende de capacidade, rede, HBA e suporte \\
@@ -1674,7 +1668,7 @@ O armazenamento por objetos abre mão de coisas para ganhar escala. Cada renúnc
 \item \textbf{Abre mão da atualização parcial} $\rightarrow$ objetos imutáveis eliminam
 \textit{read-modify-write} distribuído, tornam a replicação trivialmente correta e permitem
 versionamento nativo.
-\item \textbf{Abre mão do POSIX} $\rightarrow$ sem \texttt{fsync}, sem travamento em intervalo de
+\item \textbf{Abre mão do POSIX} $\rightarrow$ sem \texttt{fsync}, sem lock em intervalo de
 \textit{bytes}, sem semântica de \textit{rename} atômico; sobra HTTP, que atravessa qualquer rede.
 \item \textbf{Em troca, ganha durabilidade extrema por codificação de apagamento.} A AWS declara
 que o S3 é ``projetado para durabilidade de \textbf{99,999999999\% (11 noves)}''
@@ -2098,7 +2092,7 @@ acesso (derivação da Seção~\ref{sec:topologias}). \textbf{Alcance da afirma�
 o que ela mostra é que o argumento de velocidade deixou de ser o eixo da escolha, não que a rede
 tenha deixado de importar. O que sobra como
 diferença entre as arquiteturas é semântico: quem garante a atomicidade da página, quem arbitra o
-travamento, o que acontece quando o caminho oscila. É por isso que a Microsoft, ao suportar SQL
+lock, o que acontece quando o caminho oscila. É por isso que a Microsoft, ao suportar SQL
 Server sobre SMB, não fala de banda, e sim de \textit{transparent failover} \cite{mssqlsmb}; e é por
 isso que a Oracle reimplementou o cliente NFS dentro do próprio motor \cite{oracledn}.
 
@@ -2995,7 +2989,7 @@ NASD & \textit{Network-Attached Secure Disks}. Projeto da CMU (1996) que separou
 de plano de dados; origem do armazenamento por objetos. \\
 NDMP & \textit{Network Data Management Protocol}. Protocolo de \textit{backup} de NAS; separa
 controle de dados. \\
-NLM & \textit{Network Lock Manager}. Serviço de travamento externo, usado pelo NFSv3. \\
+NLM & \textit{Network Lock Manager}. Serviço de lock externo, usado pelo NFSv3. \\
 NPIV & \textit{N\_Port ID Virtualization}. Permite a uma HBA física apresentar vários WWNs. \\
 NVMe-oF & \textit{NVMe over Fabrics}. Comandos NVMe sobre FC, TCP ou RDMA. \\
 OLTP & \textit{Online Transaction Processing}. Carga transacional de alta taxa e baixa latência. \\

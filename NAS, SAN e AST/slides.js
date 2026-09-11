@@ -127,136 +127,148 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 
 /* ============================== 3. A TESE ============================== */
 {
-  const s = slide("A pergunta não é de velocidade", "É de unidade de abstração",
-    "Este é o slide-chave. Se o professor perguntar uma coisa só, é esta. A diferença entre NAS e SAN não é o cabo nem a banda: é ONDE a fronteira de rede corta a pilha de E/S. Todas as outras diferenças (protocolo, custo, compartilhamento, modelo de falha) decorrem daí.");
+  const s = slide("A diferença entre NAS e SAN é de unidade de abstração",
+    "Um entrega arquivos, o outro entrega blocos, e disso decorre todo o resto",
+    "Slide de abertura do argumento. A ideia a fixar é que a distinção entre as duas arquiteturas não está no cabo nem na banda, e sim em onde a fronteira de rede corta a pilha de entrada e saída. Se essa parte ficar clara, protocolo, custo, forma de compartilhamento e modelo de falha aparecem depois como consequência, e não como listas soltas. Vale dizer em voz alta que a SAN deixa o servidor dono do sistema de arquivos, enquanto o NAS transfere essa propriedade para o equipamento de armazenamento.");
   s.addShape(pres.ShapeType.roundRect, { x:M, y:1.62, w:CW, h:1.34, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
-  s.addText("SAN move a fronteira de rede ABAIXO do sistema de arquivos: o servidor recebe blocos e continua dono do sistema de arquivos.\nNAS move a fronteira ACIMA: o servidor recebe arquivos, e o sistema de arquivos é do dispositivo de armazenamento.", {
+  s.addText("A SAN move a fronteira de rede abaixo do sistema de arquivos: o servidor recebe blocos e continua sendo o dono do sistema de arquivos.\nO NAS move a fronteira acima: o servidor recebe arquivos, e o sistema de arquivos passa a ser do dispositivo de armazenamento.", {
     x:M+0.30, y:1.76, w:CW-0.6, h:1.06, isTextBox:true,
     fontFace:BF, fontSize:15.5, color:W2, lineSpacingMultiple:1.12 });
-  card(s, M, 3.16, 5.795, 1.55, "SAN — semântica de BLOCO",
-    "O SGBD controla alocação, ordenação de escrita\ne atomicidade de página. Rede dedicada.\nCompartilhar exige FS de cluster.", BLUE);
-  card(s, M+6.095, 3.16, 5.795, 1.55, "NAS — semântica de ARQUIVO",
-    "O dispositivo é dono do FS: aloca, faz journaling\ne arbitra travamento. Compartilhamento nativo.\nCoerência de cache é fraca por padrão.", ACC);
-  s.addText("Consequência: a escolha certa é a que o Database Engine precisa controlar — não a que tem o cabo mais rápido.", {
-    x:M, y:4.92, w:CW, h:0.40, isTextBox:true, fontFace:BF, fontSize:14, bold:true, color:INK });
-  fonteNota(s, 5.40, "Fontes: Silberschatz et al., §12.2; Elmasri & Navathe, §16.11.1 e §16.11.2.");
+  card(s, M, 3.16, 5.795, 1.62, "SAN: semântica de bloco",
+    "O SGBD controla a alocação, a ordenação de escrita\ne a atomicidade de página, porque continua sendo\nele o dono do sistema de arquivos. A rede é dedicada.\nCompartilhar um mesmo volume entre servidores exige\num sistema de arquivos de cluster.", BLUE);
+  card(s, M+6.095, 3.16, 5.795, 1.62, "NAS: semântica de arquivo",
+    "O dispositivo é dono do sistema de arquivos: é ele\nque aloca blocos, faz o journaling de metadados e\narbitra o travamento. O compartilhamento entre\nservidores é nativo, mas a coerência de cache é\nfraca por padrão.", ACC);
+  s.addText("A consequência prática é que a escolha certa depende do que o Database Engine precisa controlar, e não de qual das duas tem o enlace mais rápido.", {
+    x:M, y:4.98, w:CW, h:0.40, isTextBox:true, fontFace:BF, fontSize:14, bold:true, color:INK });
+  fonteNota(s, 5.44, "Fontes: Silberschatz et al., §12.2 (definição de SAN e NAS); Elmasri & Navathe, §16.11.1 e §16.11.2.");
 }
 
 /* ============================== 4. FIGURA DAS PILHAS ============================== */
 {
-  const s = slide("Onde a rede corta a pilha de E/S", "DAS não corta; SAN corta abaixo do FS; NAS corta acima",
-    "Explicar a figura da esquerda para a direita. Em DAS não há rede no caminho. Em SAN a rede carrega blocos SCSI ou NVMe. Em NAS a rede carrega operações de arquivo. As caixas sombreadas são as camadas que deixam de ser responsabilidade do servidor de banco de dados.");
-  s.addImage({ path:"fig/pilhas.png", x:M+0.15, y:1.56, w:CW-0.3, h:4.55 });
-  fonteNota(s, 6.24, "Elaboração própria a partir das definições de Silberschatz §12.2 e Elmasri & Navathe §16.11.");
+  const s = slide("Onde a rede corta a pilha de entrada e saída",
+    "Em DAS não há corte; em SAN o corte é abaixo do sistema de arquivos; em NAS é acima",
+    "Conduzir a figura da esquerda para a direita. Em DAS não existe rede no caminho do dado, então o servidor faz tudo. Em SAN a rede carrega blocos SCSI ou NVMe, e o servidor continua montando o sistema de arquivos por cima. Em NAS a rede carrega operações de arquivo já prontas, do tipo abrir, ler, escrever e travar. As caixas sombreadas são exatamente as camadas que deixam de ser responsabilidade do servidor de banco de dados e passam a ser do equipamento de armazenamento.");
+  s.addImage({ path:"fig/pilhas.png", x:M+0.15, y:1.56, w:CW-0.3, h:4.42 });
+  s.addText("Toda camada sombreada é trabalho que o servidor de banco deixou de fazer, e que passou a depender do comportamento e da configuração do equipamento de armazenamento.", {
+    x:M, y:6.08, w:CW, h:0.34, isTextBox:true, fontFace:BF, fontSize:12, bold:true, color:INK });
+  fonteNota(s, 6.44, "Elaboração própria a partir das definições de Silberschatz §12.2 e de Elmasri & Navathe §16.11.");
 }
 
 /* ============================== 5. O QUE O ENGINE EXIGE ============================== */
 {
-  const s = slide("O que o Database Engine exige do armazenamento", "Cinco requisitos, em ordem de rigidez",
-    "Esta é a régua contra a qual NAS e SAN devem ser avaliados — e não um benchmark genérico. Destacar o item 2: é a LATÊNCIA do fsync, não a banda, que limita a taxa de commits em OLTP. E o item 3: torn page é o motivo de existir o doublewrite buffer do InnoDB e o full_page_writes do PostgreSQL.");
+  const s = slide("O que o Database Engine exige do armazenamento",
+    "Cinco requisitos, em ordem de rigidez, e é contra eles que comparamos NAS e SAN",
+    "Esta é a régua do trabalho: comparamos as duas arquiteturas contra estes cinco requisitos, e não contra um benchmark genérico. Dois merecem ênfase na fala. No requisito 2, o que limita a taxa de commits de uma carga OLTP é a latência da chamada de sincronização, e não a banda do canal, o que já explica por que a discussão de velocidade envelheceu. No requisito 3, a página parcialmente escrita é o motivo de existirem o doublewrite buffer do InnoDB e o full_page_writes do PostgreSQL. Se perguntarem sobre desligar o doublewrite, a concessão do manual do MySQL vale para dispositivos Fusion-io sobre NVMFS em Linux, e não para qualquer dispositivo com escrita atômica.");
   const it = [
-    ["1. Acesso em blocos/páginas", "8 KiB no PostgreSQL e Oracle; 16 KiB no InnoDB. Toda a modelagem de custo de E/S é construída sobre essa unidade."],
-    ["2. Durabilidade sob comando (fsync)", "O commit só retorna com o log em mídia não volátil. É a LATÊNCIA dessa chamada — não a banda — que limita a vazão de OLTP."],
-    ["3. Atomicidade da escrita de página", "Se a energia cai no meio de uma página de 16 KiB, é preciso detectar e reparar. InnoDB: doublewrite buffer. PostgreSQL: full_page_writes."],
-    ["4. Travamento previsível", "Em cluster com armazenamento compartilhado, vários nós escrevem nos mesmos blocos. Tem de ser correto sob falha de nó."],
-    ["5. Comportamento sob falha transitória", "Se o caminho some por 30 s: bloqueia, erra, ou devolve sucesso falso? A diferença decide se a instância sobrevive."],
+    ["1. Acesso em unidades de bloco ou página", "São 8 KiB no PostgreSQL e no Oracle por padrão, e 16 KiB no InnoDB do MySQL. Toda a modelagem de custo de entrada e saída é construída sobre essa unidade."],
+    ["2. Durabilidade sob comando explícito", "O commit só retorna depois que o registro de log está em mídia não volátil, o que se faz por fsync ou equivalente. É a latência dessa chamada, e não a banda, que limita a vazão de uma carga OLTP."],
+    ["3. Atomicidade da escrita de página", "Se a energia cai no meio da gravação de uma página de 16 KiB, o SGBD precisa detectar e reparar a página quebrada. O InnoDB usa o doublewrite buffer e o PostgreSQL usa full_page_writes."],
+    ["4. Semântica de travamento previsível", "Em cluster com armazenamento compartilhado, como o Oracle RAC, vários nós escrevem no mesmo conjunto de blocos, e o travamento tem de continuar correto sob falha de nó e sob partição de rede."],
+    ["5. Comportamento determinado sob falha transitória", "Se o caminho até o armazenamento some por trinta segundos, a operação bloqueia, retorna erro ou devolve sucesso falso? A diferença entre bloquear e errar decide se a instância sobrevive ou aborta."],
   ];
-  let y = 1.60;
-  it.forEach(r => { card(s, M, y, CW, 0.94, r[0], r[1], r[0][0]==="2"||r[0][0]==="3" ? ACC : LINE); y += 1.02; });
+  let y = 1.54;
+  it.forEach(r => { card(s, M, y, CW, 0.96, r[0], r[1], (r[0][0]==="2"||r[0][0]==="3") ? ACC : LINE); y += 1.03; });
+  fonteNota(s, 6.72, "Fontes: Silberschatz et al., §12.1; Garcia-Molina et al., cap. 13; MySQL 8.4 Reference Manual §17.6.4; documentação do PostgreSQL.");
 }
 
 /* ============================== 6. NAS ============================== */
 {
-  const s = slide("NAS — como funciona", "O dispositivo é dono do sistema de arquivos",
-    "Citar Elmasri & Navathe: os dispositivos NAS 'são, de fato, servidores que não fornecem nenhum dos serviços comuns de servidor, mas simplesmente permitem a adição de armazenamento para compartilhamento de arquivos'. O NAS head é a interface entre o sistema e os clientes de rede.");
-  bullets(s, 1.58, [
-    "O NAS head possui discos organizados internamente, tipicamente em RAID — Elmasri & Navathe registram suporte típico a RAID 0, 1 e 5",
-    "Sobre esse armazenamento, o NAS head MONTA E OPERA UM SISTEMA DE ARQUIVOS PRÓPRIO (WAFL, ZFS, XFS…)",
-    "Esse sistema de arquivos é exportado pela LAN por SMB/CIFS, NFS ou AFP",
-    "O cliente monta o compartilhamento e enxerga arquivos e diretórios — emite open/read/write/close/lock, não comandos de bloco",
-  ], 14);
-  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.10, w:CW, h:1.28, rectRadius:0.06,
+  const s = slide("NAS: como funciona",
+    "O equipamento monta um sistema de arquivos próprio e exporta arquivos pela rede IP",
+    "Abrir com a definição de Elmasri e Navathe, que descrevem o NAS a partir daquilo que ele deixa de fazer: são servidores que não fornecem nenhum dos serviços comuns de servidor, e simplesmente permitem a adição de armazenamento para compartilhamento de arquivos. O NAS head é a interface entre o sistema e os clientes de rede, e os clientes se conectam a ele, e não aos discos individuais. O ponto que vale repetir na fala é o do quadro laranja: a alocação de blocos, o journaling e o controle de concorrência passam a ser do equipamento, então o servidor de banco delega essas três coisas e fica dependente de como o NAS as implementa.");
+  bullets(s, 1.54, [
+    "O NAS head possui discos ou SSDs organizados internamente, tipicamente em RAID, e Elmasri e Navathe registram que esses dispositivos suportam usualmente os níveis 0, 1 e 5",
+    "Sobre esse armazenamento, o NAS head monta e opera um sistema de arquivos próprio, que costuma ser o WAFL da NetApp, o ZFS ou ext4 e XFS em soluções abertas",
+    "Esse sistema de arquivos é então exportado pela rede local por meio de um protocolo de compartilhamento, que pode ser SMB/CIFS, NFS ou AFP",
+    "O cliente, que aqui é o servidor de banco de dados, monta o compartilhamento e enxerga arquivos e diretórios, emitindo operações como open, read, write, close e lock, e não comandos de bloco",
+  ], 13.5);
+  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.22, w:CW, h:1.30, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
-  s.addText("O ponto que decide tudo: quem executa a alocação de blocos, o journaling de metadados e o controle de concorrência de arquivo é o DISPOSITIVO NAS, não o servidor de banco de dados. O servidor delega.", {
-    x:M+0.26, y:4.26, w:CW-0.52, h:0.98, isTextBox:true, fontFace:BF, fontSize:14, color:INK });
-  fonteNota(s, 5.56, "Elmasri & Navathe, §16.11.2; Silberschatz et al., §12.2.");
+  s.addText("O ponto que decide todo o resto está no sistema de arquivos próprio: quem executa a alocação de blocos, o journaling de metadados e o controle de concorrência de arquivo é o dispositivo NAS, e não o servidor de banco de dados, que delega essas três funções e passa a depender de como o equipamento as executa.", {
+    x:M+0.26, y:4.36, w:CW-0.52, h:1.02, isTextBox:true, fontFace:BF, fontSize:13.5, color:INK });
+  fonteNota(s, 5.68, "Fontes: Elmasri & Navathe, §16.11.2 (as três citações); Silberschatz et al., §12.2.");
 }
 
 /* ============================== 7. SMB/CIFS ============================== */
 {
-  const s = slide("Protocolo NAS I — SMB/CIFS", "CIFS não é outro protocolo: é o nome que a Microsoft deu, em 1996, à família SMB 1",
-    "Ponto de arguição provável: 'qual a diferença entre SMB e CIFS?'. Resposta: nenhuma de natureza — a Microsoft documenta que o CIFS é um DIALETO do SMB. CIFS designa a família SMB 1. Ao especificar 'SMB/CIFS' num projeto novo em 2026, o que se está de fato especificando é SMB 3.");
+  const s = slide("Protocolo NAS I: SMB/CIFS",
+    "CIFS não é outro protocolo, é o nome que a Microsoft deu em 1996 à família hoje chamada SMB 1",
+    "Pergunta provável de banca: qual a diferença entre SMB e CIFS? A resposta é que não há diferença de natureza. A especificação aberta [MS-SMB2] define o SMB 2 e 3 como extensão do protocolo SMB original, especificado em [MS-SMB] e [MS-CIFS], ou seja, o documento de CIFS descreve o SMB original e não um protocolo à parte. Na prática, ao escrever SMB/CIFS num projeto novo em 2026, o que se está especificando é SMB 3. Vale ter na ponta da língua a precisão de rótulo: o primeiro Windows Server sem SMBv1 por padrão foi a versão 1709 do canal semianual, sendo o Server 2019 o primeiro do canal de suporte prolongado.");
   tabela(s, 1.58,
     ["Dialeto","Introduzido em","O que trouxe de relevante"],
     [
-      ["SMB 1.0 (CIFS)","Anos 1980–90","Protocolo original; verboso, muitas idas e voltas por operação"],
-      ["SMB 2.0","Vista / Server 2008","Reescrita: comandos reduzidos, requisições compostas, créditos"],
-      ["SMB 2.1","Win 7 / 2008 R2","Leasing de arquivo (cache de cliente mais agressivo e correto)"],
-      ["SMB 3.0","Win 8 / Server 2012","SMB Direct (RDMA), Multichannel, transparent failover, AES-128-CCM"],
-      ["SMB 3.0.2","Win 8.1 / 2012 R2","E/S pequena e aleatória; SMB1 pode ser removido por completo"],
-      ["SMB 3.1.1","Win 10 / Server 2016","Integridade da negociação pré-autenticação; AES-128-GCM"],
+      ["SMB 1.0 (CIFS)","Anos 1980–90","Protocolo original, verboso, com muitas idas e voltas por operação"],
+      ["SMB 2.0","Vista / Server 2008","Reescrita: comandos reduzidos, requisições compostas, créditos de fluxo"],
+      ["SMB 2.1","Win 7 / 2008 R2","Leasing de arquivo, que torna o cache do cliente mais agressivo e correto"],
+      ["SMB 3.0","Win 8 / Server 2012","SMB Direct (RDMA), Multichannel, transparent failover e AES-128-CCM"],
+      ["SMB 3.0.2","Win 8.1 / 2012 R2","Otimiza E/S pequena e aleatória; permite remover o SMB1 por completo"],
+      ["SMB 3.1.1","Win 10 / Server 2016","Integridade da negociação pré-autenticação e AES-128-GCM"],
     ], [1.75,2.35,7.79], 11, 0.44);
-  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.86, w:CW, h:1.18, rectRadius:0.06,
+  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.86, w:CW, h:1.42, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:BLUE, width:1.2 } });
-  s.addText("Uso com SGBD: a Microsoft suporta arquivos do SQL Server 2012+ em fileshare SMB — bancos de sistema e de usuário. Exige SMB 3.0 transparent failover para carga crítica. FILESTREAM NÃO é suportado. Só caminhos UNC.", {
-    x:M+0.26, y:5.00, w:CW-0.52, h:0.92, isTextBox:true, fontFace:BF, fontSize:13, color:INK });
-  fonteNota(s, 6.14, "Fonte: Microsoft Learn — [MS-SMB2] e 'Install SQL Server with SMB Fileshare Storage'.");
+  s.addText("Uso com SGBD: a Microsoft suporta oficialmente arquivos do SQL Server 2012 e posteriores em compartilhamento SMB, tanto os bancos de sistema quanto os de usuário. As condições que ela impõe são justamente os pontos frágeis do NAS para banco: para carga crítica o compartilhamento precisa suportar transparent failover do SMB 3, a conta de serviço precisa de controle total no compartilhamento e no NTFS, o FILESTREAM não é suportado, e só valem caminhos UNC.", {
+    x:M+0.26, y:4.98, w:CW-0.52, h:1.18, isTextBox:true, fontFace:BF, fontSize:12.5, color:INK });
+  fonteNota(s, 6.38, "Fontes: Microsoft Learn, [MS-SMB2] §1.3 e 'Install SQL Server with SMB Fileshare Storage'; página de SMBv1/v2/v3 do Windows Server.");
 }
 
 /* ============================== 8. NFS ============================== */
 {
-  const s = slide("Protocolo NAS II — NFS", "É o protocolo NAS que aparece em instalações sérias de banco de dados",
-    "Marcos: NFSv3 é SEM ESTADO e deixa o travamento fora do protocolo (NLM), o que torna a recuperação após falha frágil. NFSv4 integra travamento e usa uma única porta (2049), o que o torna atravessável por firewall. NFSv4.1 traz sessões com semântica exactly-once e pNFS.");
+  const s = slide("Protocolo NAS II: NFS",
+    "É o protocolo NAS que efetivamente aparece em instalações de banco de dados",
+    "Os marcos a destacar na fala são três. O NFSv3 é sem estado e deixa o travamento fora do protocolo, num serviço separado chamado NLM, o que torna frágil a recuperação depois de uma falha. O NFSv4 integra travamento, montagem e ACLs ao protocolo e usa uma única porta, a 2049, o que o torna atravessável por firewall. O NFSv4.1 traz o modelo de sessões, que dá semântica de execução exatamente uma vez, e o pNFS, que separa o caminho de metadados do caminho de dados. Se perguntarem sobre a garantia exactly-once, a RFC 8881 é explícita em que ela vale para toda requisição precedida de uma operação SEQUENCE, independentemente de o reply caching ter sido solicitado.");
   tabela(s, 1.52,
     ["Versão","Introduzida","Norma vigente","Característica determinante"],
     [
-      ["NFSv2","1989","RFC 1094","Sobre UDP; offsets de 32 bits (limite de 2 GiB por arquivo)"],
-      ["NFSv3","1995","RFC 1813","64 bits, escrita assíncrona com COMMIT. SEM ESTADO: travamento fora do protocolo (NLM)"],
-      ["NFSv4.0","2000","RFC 7530 (2015)","COM ESTADO. Travamento e ACLs no protocolo; operações COMPOUND; porta única 2049"],
-      ["NFSv4.1","2010","RFC 8881 (2020)","Sessões dão semântica exactly-once (com SEQUENCE à frente); pNFS separa metadados de dados"],
-      ["NFSv4.2","2016","RFC 7862","Cópia no servidor, arquivos esparsos, hole punching"],
+      ["NFSv2","1989","RFC 1094","Sobre UDP, com offsets de 32 bits, o que limita o arquivo a 2 GiB"],
+      ["NFSv3","1995","RFC 1813","Offsets de 64 bits e escrita assíncrona com COMMIT. Sem estado: o travamento fica fora do protocolo, no NLM"],
+      ["NFSv4.0","2000","RFC 7530 (2015)","Com estado. Travamento e ACLs no protocolo, operações COMPOUND e porta única 2049"],
+      ["NFSv4.1","2010","RFC 8881 (2020)","Sessões dão semântica exatamente uma vez, com SEQUENCE à frente; pNFS separa metadados de dados"],
+      ["NFSv4.2","2016","RFC 7862","Cópia no lado do servidor, arquivos esparsos e hole punching"],
     ], [1.35,1.35,2.05,7.14], 10.5, 0.46);
-  s.addText("Cuidado ao ler: “norma vigente” é a RFC EM VIGOR, muitas vezes uma reedição — por isso a v4.2 (2016) parece anteceder a v4.1 (2020). A cronologia real está na coluna “introduzida”.", {
+  s.addText("Cuidado ao ler a tabela: a coluna de norma vigente traz a RFC em vigor, que muitas vezes é uma reedição posterior, e por isso a v4.2 de 2016 parece anteceder a v4.1 de 2020. A cronologia real do protocolo está na coluna de introdução.", {
     x:M, y:4.14, w:CW, h:0.30, isTextBox:true, fontFace:BF, fontSize:11, italic:true, color:ACC });
-  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.52, w:CW, h:1.62, rectRadius:0.06,
+  s.addShape(pres.ShapeType.roundRect, { x:M, y:4.52, w:CW, h:1.68, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.2 } });
-  s.addText("O calcanhar de Aquiles é a coerência de cache: o NFS usa close-to-open. O manual nfs(5) do Linux é explícito — “se coerência absoluta de cache entre clientes for necessária, as aplicações devem usar travamento de arquivo” ou “abrir seus arquivos com a flag O_DIRECT”. É por isso que a Oracle reimplementou o cliente NFS DENTRO do motor: o Direct NFS (dNFS), com suporte a NFSv3, v4, v4.1 e pNFS.\nE o requisito 5 (comportamento sob falha transitória) tem resposta concreta aqui: a opção de montagem hard vs soft. Com hard, a E/S bloqueia até o servidor voltar; com soft, retorna erro e o SGBD pode corromper. Para banco, a recomendação dos fornecedores é hard.", {
-    x:M+0.26, y:4.62, w:CW-0.52, h:1.42, isTextBox:true, fontFace:BF, fontSize:11.5, color:INK });
-  fonteNota(s, 6.26, "Fontes: RFCs do IETF; man 5 nfs (Linux); Oracle Database Installation Guide 19c.");
+  s.addText("A maior limitação do NFS para banco de dados é a coerência de cache, porque o protocolo implementa close-to-open, que verifica o cache ao abrir e descarrega ao fechar. O manual nfs(5) do Linux é explícito ao dizer que, se coerência absoluta entre clientes for necessária, as aplicações devem usar travamento de arquivo, ou abrir seus arquivos com a flag O_DIRECT. Foi por isso que a Oracle reimplementou o cliente NFS dentro do próprio motor, no Direct NFS, com suporte a NFSv3, v4, v4.1 e pNFS.\nO requisito 5 da régua também tem resposta concreta aqui, na opção de montagem: com hard, a E/S bloqueia até o servidor voltar; com soft, ela retorna erro e o SGBD pode corromper dados. Para banco, a recomendação dos fornecedores é hard.", {
+    x:M+0.26, y:4.62, w:CW-0.52, h:1.48, isTextBox:true, fontFace:BF, fontSize:11.5, color:INK });
+  fonteNota(s, 6.32, "Fontes: RFCs 1094, 1813, 7530, 8881 e 7862 do IETF; man 5 nfs do Linux; Oracle Database Installation Guide 19c.");
 }
 
 /* ============================== 9. AFP ============================== */
 {
-  const s = slide("Protocolo NAS III — AFP", "Como funciona, por que existiu, e por que acabou",
-    "PERGUNTA PROVÁVEL, e a primeira versão deste deck não sabia responder: 'explique como o AFP FUNCIONA — não o que aconteceu com ele'. O enunciado pede 'como funciona cada uma das soluções', e nós tínhamos só o obituário. Resposta: protocolo de sessão COM ESTADO, sobre TCP/548 via DSI; comandos bifurcados por fork (FPOpenFork, FPRead/FPWrite) porque o arquivo do Mac tem data fork e resource fork; metadados do Finder como atributos de primeira classe; travamento por intervalo de bytes com FPByteRangeLock, mas amarrado à SESSÃO. Segunda armadilha: cliente ≠ servidor. Dizer 'removido no Big Sur' erra por cinco anos — removeu o SERVIDOR. TERCEIRA armadilha, achada na rodada 3: o AFP sobre TCP nao comeca no 3.0 — a propria Apple documenta 'TCP can be used as the transport protocol for AFP version 2.1 and later'. O que o AFP 3.0 muda e a EXCLUSIVIDADE do TCP: o AppleTalk deixa de transportar dados e fica so na descoberta de servico.");
-  card(s, M, 1.50, 5.795, 2.42, "Como funciona",
-    "• Sessão COM ESTADO: FPLogin → FPOpenVol →\n   operações sobre identificadores de sessão\n• Sobre TCP porta 548, enquadrado pelo DSI\n• Comandos BIFURCADOS por fork: FPOpenFork,\n   FPRead / FPWrite — o arquivo do Mac tem\n   data fork e resource fork\n• Metadados do Finder como atributos de\n   primeira classe, não emulação\n• FPByteRangeLock, mas com semântica de\n   SESSÃO: o travamento morre com ela", BLUE);
-  card(s, M+6.095, 1.50, 5.795, 2.42, "Por que existiu — e o que nunca teve",
-    "EXISTIU porque SMB1 e NFS da época não sabiam\nrepresentar o resource fork sem truques (arquivos\n._nome, AppleDouble), e o resultado era corrupção\nsilenciosa de metadados.\n\nNUNCA TEVE: RDMA, múltiplos canais, disponibilidade\ncontínua com failover transparente, nem travamento\nindependente de sessão. Parou no conjunto de\nrecursos de um protocolo de escritório.", INK2);
-  let y = 4.08;
-  [["macOS 11 (2020)","Removido o SERVIDOR AFP: um Mac deixa de poder compartilhar pastas por AFP.", LINE],
-   ["macOS 15.5 (mai./2025)","Depreciado o CLIENTE. Texto da Apple: “Apple Filing Protocol (AFP) client is deprecated and will be removed in a future version of macOS.”", LINE],
-   ["macOS 27 (Apple, jul./2026)","A Apple informa oficialmente o fim do suporte do Time Machine a destinos AFP.", ACC],
-  ].forEach(r => { card(s, M, y, CW, 0.68, r[0], r[1], r[2]); y += 0.76; });
-  s.addText("Relevância para novas implantações de SBD: protocolo legado e não recomendado. Nas matrizes consultadas de Oracle, Microsoft, PostgreSQL e MySQL, AFP não aparece como configuração suportada. Para NAS com clientes Apple: SMB 3.", {
-    x:M, y:6.38, w:CW, h:0.42, isTextBox:true, fontFace:BF, fontSize:10.5, bold:true, color:INK });
+  const s = slide("Protocolo NAS III: AFP",
+    "Como funciona, por que existiu, e em que estado está em 2026",
+    "O enunciado pede como funciona cada solução, então a metade esquerda do slide é o mecanismo, e não o obituário. Na fala: é um protocolo de sessão com estado, o cliente faz FPLogin, abre um volume com FPOpenVol e daí em diante opera sobre identificadores de sessão. Os comandos são bifurcados por fork porque um arquivo do Macintosh tem data fork e resource fork. Há travamento por intervalo de bytes, o FPByteRangeLock, mas com semântica de sessão, o que significa que ele morre junto com ela. Duas precisões de rótulo que valem ouro em arguição: primeiro, cliente e servidor foram removidos em momentos diferentes, separados por cinco anos, então dizer que a Apple removeu o AFP no Big Sur erra a data; segundo, o AFP sobre TCP não começa na versão 3.0, e a própria Apple documenta que TCP pode ser usado como transporte desde a versão 2.1. O que o 3.0 muda é a exclusividade do TCP.");
+  card(s, M, 1.50, 5.795, 2.46, "Como funciona",
+    "→ Sessão com estado: FPLogin, depois FPOpenVol,\n    e daí em diante operações sobre identificadores\n→ Sobre TCP na porta 548, enquadrado pelo DSI,\n    e assim desde o AFP 2.1, não desde o 3.0\n→ Comandos bifurcados por fork (FPOpenFork,\n    FPRead e FPWrite), porque o arquivo do Mac\n    tem data fork e resource fork\n→ Metadados do Finder como atributos de\n    primeira classe, e não como emulação\n→ FPByteRangeLock trava intervalo de bytes,\n    mas com semântica de sessão: morre com ela", BLUE);
+  card(s, M+6.095, 1.50, 5.795, 2.46, "Por que existiu, e o que nunca teve",
+    "Existiu porque o SMB1 e o NFS da época não sabiam\nrepresentar o resource fork sem truques, como os\narquivos ._nome e o AppleDouble, e o resultado era\ncorrupção silenciosa de metadados.\n\nNunca teve RDMA, múltiplos canais, disponibilidade\ncontínua com failover transparente, nem travamento\nindependente de sessão. Por isso parou no conjunto\nde recursos de um protocolo de compartilhamento de\narquivos de escritório.", INK2);
+  let y = 4.12;
+  [["macOS 11 (2020)","Removido o servidor AFP, ou seja, um Mac deixa de poder compartilhar pastas por esse protocolo.", LINE],
+   ["macOS 15.5 (maio de 2025)","Depreciado o cliente. O texto da Apple é literal: o cliente do Apple Filing Protocol está depreciado e será removido em uma versão futura do macOS.", LINE],
+   ["macOS 27 (Apple, julho de 2026)","A Apple informa oficialmente o fim do suporte do Time Machine a destinos AFP, incluindo Time Capsules e AirPort Disks.", ACC],
+  ].forEach(r => { card(s, M, y, CW, 0.68, r[0], r[1], r[2]); y += 0.74; });
+  s.addText("Relevância para novas implantações de SBD: é protocolo legado e sem recomendação. Nas matrizes de suporte consultadas de Oracle, Microsoft, PostgreSQL e MySQL, o AFP não aparece como configuração suportada. Para um NAS que precise servir clientes Apple, a recomendação é SMB 3, que é o protocolo primário do macOS desde o OS X 10.9 Mavericks, de 2013.", {
+    x:M, y:6.36, w:CW, h:0.44, isTextBox:true, fontFace:BF, fontSize:10.5, bold:true, color:INK });
+  fonteNota(s, 6.84, "Fontes: Apple, documentação AFP Over TCP (transporte desde a 2.1); documentos de suporte 121011 e 102423.");
 }
 
 /* ============================== 10. NAS vantagens/desvantagens ============================== */
 {
-  const s = slide("NAS — vantagens e desvantagens", "Sob a ótica de um SBD",
-    "Não ler a tabela inteira: destacar a linha de coerência de cache (é a que explica o dNFS) e a de custo (é a que explica por que NAS domina data warehouse).");
+  const s = slide("NAS: vantagens e desvantagens",
+    "Sob a ótica de um sistema de banco de dados",
+    "Não ler a tabela inteira em voz alta. Vale destacar duas linhas. A de coerência de cache, porque é ela que explica a existência do Direct NFS da Oracle e o uso de O_DIRECT. E a de custo, porque é ela que explica por que o NAS domina em data warehouse e área de dump, onde a latência de commit não é o gargalo. Se perguntarem quanto o NAS é mais barato, a resposta honesta é que a direção da comparação é estrutural e certa, já que a SAN acrescenta categorias inteiras de componente, mas a magnitude em dólares por terabyte útil não está neste trabalho, e isso está declarado no relatório como lacuna.");
   tabela(s, 1.58, ["Vantagens","Desvantagens"],
     [
-      ["Usa a rede Ethernet/IP existente: sem HBA, sem switch FC, sem equipe especializada","Compete por banda com o tráfego de aplicação, salvo VLAN ou rede física separada"],
-      ["Compartilhamento concorrente nativo, sem FS de cluster","Coerência de cache fraca por padrão (close-to-open); exige O_DIRECT ou cliente dedicado"],
-      ["Provisionamento simples: criar compartilhamento e dar permissão","Camada extra de FS no caminho: metadados, travamento e journaling somam latência"],
-      ["Independência de sistema operacional dos clientes","Escrita atômica de página não é garantida pelo protocolo"],
-      ["Instantâneos e clones no nível de arquivo, com granularidade compreensível","Nem todo recurso do SGBD funciona (FILESTREAM não é suportado sobre SMB)"],
-      ["Menor custo por TB útil, de aquisição e de operação","Depende de SMB 3 transparent failover / NFSv4.1 para sobreviver a falhas"],
-    ], [5.945,5.945], 11, 0.62);
-  fonteNota(s, 6.34, "Elaboração própria a partir de Elmasri & Navathe §16.11.2, Microsoft Learn e man 5 nfs.");
+      ["Usa a rede Ethernet/IP que já existe, sem HBA dedicada, sem switch FC e sem equipe especializada","Compete por banda com o tráfego de aplicação, a menos que se segregue por VLAN ou rede física separada"],
+      ["O compartilhamento concorrente entre servidores é nativo, sem sistema de arquivos de cluster","A coerência de cache é fraca por padrão, no modelo close-to-open, e exige O_DIRECT ou cliente dedicado"],
+      ["Provisionamento simples: basta criar o compartilhamento e conceder permissão","Há uma camada extra de sistema de arquivos no caminho, e metadados, travamento e journaling somam latência"],
+      ["Independência de sistema operacional dos clientes, como registram Elmasri e Navathe","A escrita atômica de página não é garantida pelo protocolo, então o SGBD tem de se proteger sozinho"],
+      ["Instantâneos e clones no nível de arquivo, com granularidade compreensível","Nem todo recurso do SGBD funciona, e o FILESTREAM não é suportado sobre SMB"],
+      ["Menor custo por terabyte útil, tanto de aquisição quanto de operação","Depende de recursos avançados do protocolo, como transparent failover e sessões, para sobreviver a falhas"],
+    ], [5.945,5.945], 10.5, 0.66);
+  fonteNota(s, 6.44, "Elaboração própria a partir de Elmasri & Navathe §16.11.2, de Microsoft Learn e do man 5 nfs. As linhas de custo são qualitativas: ver a declaração de lacuna na Seção 3.6 do relatório.");
 }
 
 /* ============================== 11. SAN ============================== */
@@ -356,91 +368,98 @@ function tabela(s, y, head, rows, colW, fs, rowH){
 
 /* ============================== 16. FCoE ============================== */
 {
-  const s = slide("Protocolo SAN III — FCoE", "Precisando o livro-texto — com o parágrafo inteiro à vista",
-    "ATENÇÃO: o professor tem o livro aberto. Por isso a citação está COMPLETA no slide, e não recortada. Nossa primeira versão apresentava 'três razões pelas quais o livro está errado', e duas delas estavam no próprio parágrafo, três linhas depois da frase que citávamos. A segunda rodada de verificação pegou, e é o tipo de recorte que derruba um trabalho em trinta segundos. O que resta são duas imprecisões REAIS e específicas — e a segunda é a de consequência prática: quem aceitar a analogia vai tentar usar FCoE entre data centers. Não dá.");
+  const s = slide("Protocolo SAN IV: FCoE",
+    "Precisando o livro-texto, com o parágrafo inteiro à vista",
+    "A citação está completa no slide de propósito, porque o professor tem o livro aberto e porque a nossa primeira versão errou justamente aqui: apresentávamos três razões pelas quais o livro estaria errado, e duas delas estavam no próprio parágrafo, poucas linhas depois da frase que citávamos. A segunda rodada de verificação pegou isso. O que resta são duas imprecisões reais e específicas. A segunda é a de consequência prática: quem aceitar a analogia de que FCoE é iSCSI sem o IP vai tentar usá-lo entre dois data centers, e não vai funcionar, porque não há cabeçalho IP para rotear.");
   s.addShape(pres.ShapeType.roundRect, { x:M, y:1.50, w:CW, h:1.16, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:LINE, width:1.2 } });
-  s.addText("Elmasri & Navathe, §16.11.3 — o parágrafo inteiro:", {
+  s.addText("Elmasri & Navathe, §16.11.3, o parágrafo inteiro:", {
     x:M+0.26, y:1.58, w:CW-0.52, h:0.26, isTextBox:true, fontFace:BF, fontSize:11.5, bold:true, color:INK2 });
-  s.addText("“FCoE […] pode ser pensado como iSCSI sem o IP. Ele usa muitos elementos de SCSI e FC (assim como o iSCSI), mas NÃO INCLUI COMPONENTES TCP/IP. […] Ele tira proveito de uma tecnologia Ethernet CONFIÁVEL que usa buffering e controle de fluxo FIM-A-FIM para evitar pacotes descartados.”", {
+  s.addText("“FCoE [...] pode ser pensado como iSCSI sem o IP. Ele usa muitos elementos de SCSI e FC (assim como o iSCSI), mas não inclui componentes TCP/IP. [...] Ele tira proveito de uma tecnologia Ethernet confiável que usa buffering e controle de fluxo fim-a-fim para evitar pacotes descartados.”", {
     x:M+0.26, y:1.86, w:CW-0.52, h:0.72, isTextBox:true, fontFace:BF, fontSize:11.5, italic:true, color:INK });
-  s.addText("O livro já qualifica a analogia em dois pontos. Uma crítica que ignorasse isso seria um espantalho. Restam duas imprecisões reais:", {
+  s.addText("O livro já qualifica a analogia em dois pontos, ao dizer que não há TCP/IP e que depende de Ethernet confiável. Restam duas imprecisões reais:", {
     x:M, y:2.76, w:CW, h:0.30, isTextBox:true, fontFace:BF, fontSize:12.5, bold:true, color:INK });
   let y = 3.16;
-  [["1. O controle de fluxo não é “fim-a-fim” — é ENLACE A ENLACE","O mecanismo é o IEEE 802.1Qbb (PFC): o quadro PAUSE atua entre DOIS VIZINHOS ADJACENTES, por prioridade. Não há realimentação origem→destino como no TCP. É isso que produz o congestion spreading: um alvo lento propaga pausas para trás e degrada tráfego não relacionado que compartilhe o caminho."],
-   ["2. FCoE NÃO é roteável em L3; iSCSI é — e o livro não diz","FCoE é um EtherType próprio (0x8906) direto no quadro Ethernet: sem cabeçalho IP, não há o que rotear. Vive num domínio de camada 2. O iSCSI, sobre TCP/IP, atravessa LAN, WAN e Internet. CONSEQUÊNCIA: para ligar dois data centers, o caminho é FCIP ou iSCSI — nunca FCoE."],
+  [["1. O controle de fluxo não é fim-a-fim, e sim enlace a enlace","O mecanismo é o IEEE 802.1Qbb, o Priority-based Flow Control: o quadro PAUSE atua entre dois vizinhos adjacentes, por prioridade, e cada salto exerce pressão sobre o salto anterior. Não existe realimentação entre origem e destino como há no TCP, e é isso que produz o congestion spreading, em que um alvo lento propaga pausas para trás e degrada tráfego não relacionado que compartilhe o caminho."],
+   ["2. O FCoE não é roteável em camada 3, enquanto o iSCSI é","O FCoE usa um EtherType próprio, o 0x8906 para o quadro de dados e o 0x8914 para o FIP, encapsulado diretamente em quadro Ethernet. Como não há cabeçalho IP, não há o que rotear, e ele vive dentro de um domínio de camada 2. O iSCSI, por rodar sobre TCP/IP, atravessa LAN, WAN e Internet. Para ligar dois data centers, portanto, o caminho é FCIP ou iSCSI."],
   ].forEach(r => { card(s, M, y, CW, 1.48, r[0], r[1], ACC); y += 1.58; });
-  fonteNota(s, 6.36, "Normas: T11 FC-BB-5 = ANSI/INCITS 462-2010 (EtherType 0x8906); IEEE 802.1Qbb. Categoria: análise do grupo apoiada em norma — juízo técnico, não citação.");
+  fonteNota(s, 6.36, "Normas: T11 FC-BB-5, publicada como ANSI/INCITS 462-2010; IEEE 802.1Qbb. Categoria de proveniência: análise do grupo apoiada em norma, ou seja, juízo técnico e não citação.");
 }
 
 /* ============================== 17. FIGURA DE ENCAPSULAMENTO ============================== */
 {
-  const s = slide("O que cada protocolo coloca dentro de quê", "Cinco pilhas lado a lado — a figura que dispensa três explicações",
-    "SLIDE DE ALTO RETORNO. Três leituras para conduzir com o ponteiro. (1) iSCSI e FCoE NÃO são variantes um do outro: o iSCSI carrega COMANDOS SCSI sobre TCP/IP; o FCoE carrega o QUADRO FC INTEIRO sobre Ethernet. (2) FCIP e FCoE carregam a MESMA coisa — o quadro FC — e diferem só em sobre o quê: por isso um é roteável e o outro não. (3) O NAS é o único em que o topo da pilha NÃO é comando SCSI: são operações de arquivo. É essa última diferença que decide tudo o mais no trabalho.");
+  const s = slide("O que cada protocolo coloca dentro de quê",
+    "As cinco pilhas lado a lado, que é a figura que dispensa três explicações",
+    "Conduzir com o ponteiro, em três leituras. A primeira é que iSCSI e FCoE não são variantes um do outro: o iSCSI carrega comandos SCSI sobre TCP/IP, enquanto o FCoE carrega o quadro FC inteiro sobre Ethernet. A segunda é que FCIP e FCoE carregam a mesma coisa, o quadro FC, e diferem apenas em sobre o quê, e é daí que um é roteável e o outro não. A terceira é que o NAS é o único em que o topo da pilha não é comando SCSI, e sim operação de arquivo, que é exatamente a diferença discutida na abertura e a que decide todo o resto do trabalho.");
   s.addImage({ path:"fig/encapsulamento.png", x:M+0.10, y:1.52, w:CW-0.20, h:4.32 });
   s.addShape(pres.ShapeType.roundRect, { x:M, y:5.98, w:CW, h:0.66, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:ACC, width:1.1 } });
-  s.addText("Regra de leitura: azul = carga SCSI · laranja = quadro Fibre Channel inteiro · cinza = pilha Ethernet/IP comum.  Quem tem IP na pilha, roteia. Quem não tem, não sai do domínio de camada 2.", {
+  s.addText("Regra de leitura: azul é carga SCSI, laranja é quadro Fibre Channel inteiro e cinza é pilha Ethernet/IP comum. Quem tem IP na pilha, roteia; quem não tem, não sai do domínio de camada 2.", {
     x:M+0.26, y:6.06, w:CW-0.52, h:0.50, isTextBox:true, fontFace:BF, fontSize:12, bold:true, color:INK });
+  fonteNota(s, 6.72, "Elaboração própria a partir das normas de cada protocolo: RFC 7143 (iSCSI), RFC 3821 (FCIP) e T11 FC-BB-5 (FCoE).");
 }
 
 /* ============================== 18. TABELA DE PROTOCOLOS ============================== */
 {
-  const s = slide("Todos os protocolos do enunciado, lado a lado", "Cada item exigido é uma LINHA da tabela — não uma menção em prosa",
-    "Slide de fechamento da parte de protocolos. Serve para o avaliador conferir item a item que os oito protocolos do enunciado foram tratados. Se houver pergunta sobre um deles, voltar ao slide específico.");
+  const s = slide("Todos os protocolos do enunciado, lado a lado",
+    "Cada item exigido aparece como uma linha da tabela, e não como menção em prosa",
+    "Slide de fechamento da parte de protocolos, feito para o avaliador conferir item a item que os oito protocolos pedidos foram tratados. Se houver pergunta sobre algum deles, voltar ao slide específico. Duas observações que podem cair: o FC Switch é uma topologia e não um protocolo, e por isso a linha dele diz que transporta FCP; e a norma vigente do iSCSI é a RFC 7143, de 2014, que obsoleta a RFC 3720, embora boa parte da literatura ainda cite a antiga.");
   tabela(s, 1.50,
     ["Protocolo","Família","Norma / origem","Unidade","Roteável L3?","Aplicabilidade a SGBD"],
     [
-      ["SMB/CIFS","NAS","[MS-SMB2]; CIFS = SMB 1","Operações de arquivo","Sim","Suportado (SQL Server 2012+); exige transparent failover"],
-      ["NFS","NAS","RFC 8881 (v4.1)","Operações de arquivo","Sim","Conforme configuração homologada pelo SGBD"],
-      ["AFP","NAS","Proprietário Apple","Operações de arquivo","Sim","Legado; sem recomendação para novo SGBD"],
+      ["SMB/CIFS","NAS","[MS-SMB2]; CIFS é a família SMB 1","Operações de arquivo","Sim","Suportado no SQL Server 2012 e posteriores; exige transparent failover"],
+      ["NFS","NAS","RFC 8881 (v4.1)","Operações de arquivo","Sim","Conforme a configuração homologada por cada SGBD"],
+      ["AFP","NAS","Proprietário Apple","Operações de arquivo","Sim","Legado, sem recomendação para nova implantação"],
       ["FCP sobre FC","SAN","T11 (FC-FS, FC-PI)","Comandos SCSI em quadros FC","Não","Referência para OLTP crítico e cluster compartilhado"],
-      ["FC Switch (FC-SW)","SAN","T11 — é TOPOLOGIA","(transporta FCP)","Não","Duas fabrics para alta disponibilidade"],
-      ["iSCSI","SAN","RFC 7143 (2014)","Comandos SCSI em TCP","Sim","Muito adequada com rede dedicada ou segregada"],
-      ["FCIP","SAN","RFC 3821 (2004)","Quadros FC em TCP/IP","Sim","Extensão FC por IP; replicação e backup"],
-      ["FCoE","SAN","FC-BB-5 = INCITS 462-2010","Quadros FC em Ethernet","Não","Exige Ethernet compatível; sem roteamento IP"],
+      ["FC Switch (FC-SW)","SAN","T11; é topologia, não protocolo","Transporta o FCP","Não","Duas fabrics independentes para alta disponibilidade"],
+      ["iSCSI","SAN","RFC 7143 (2014)","Comandos SCSI em TCP","Sim","Muito adequada quando a rede é dedicada ou segregada"],
+      ["FCIP","SAN","RFC 3821 (2004)","Quadros FC em TCP/IP","Sim","Extensão de FC por IP, usada em replicação e backup"],
+      ["FCoE","SAN","FC-BB-5, ou INCITS 462-2010","Quadros FC em Ethernet","Não","Exige Ethernet compatível com DCB; não é roteado por IP"],
     ], [1.85,0.80,2.55,2.55,1.05,3.09], 10, 0.545);
-  fonteNota(s, 6.48, "Normas verificadas na fonte primária; ver referências do relatório.");
+  fonteNota(s, 6.48, "Todas as normas foram verificadas na fonte primária. A relação completa está na seção de referências do relatório.");
 }
 
 /* ============================== 18. NAS x SAN ============================== */
 {
-  const s = slide("NAS × SAN — as dimensões que decidem", "E a convergência que os próprios livros já anunciavam",
-    "Fechar com a observação de convergência: quase todo array corporativo hoje é unificado — o mesmo equipamento apresenta LUNs por FC/iSCSI E compartilhamentos por NFS/SMB sobre o mesmo pool. A pergunta virou 'qual protocolo para cada carga?', que é uma pergunta melhor.");
+  const s = slide("NAS × SAN: as dimensões que decidem a escolha",
+    "E a convergência que os próprios livros-texto já anunciavam",
+    "Percorrer a tabela por blocos, e não linha a linha. As duas primeiras linhas são a causa, e todas as outras são consequência. Fechar com a observação de convergência do quadro inferior: quase todo array corporativo hoje é unificado, e o mesmo equipamento apresenta LUNs por FC ou iSCSI e compartilhamentos por NFS e SMB sobre o mesmo pool de mídia. Por isso a pergunta deixou de ser comprar NAS ou SAN e passou a ser qual protocolo apresentar para cada carga, que é uma pergunta melhor porque admite respostas diferentes para o tablespace e para a área de dump.");
   tabela(s, 1.52, ["Dimensão","NAS","SAN"],
     [
-      ["Unidade de abstração","Arquivo","Bloco (LUN)"],
-      ["Dono do sistema de arquivos","O dispositivo de armazenamento","O servidor"],
-      ["Rede","Ethernet/IP, compartilhada ou segregada","FC ou Ethernet/IP, conforme projeto"],
-      ["Compartilhamento entre servidores","Nativo; o dispositivo arbitra","Exige FS de cluster ou LVM ciente de cluster"],
-      ["Travamento","No protocolo (NLM/NFSv4; oplocks no SMB)","No servidor — a SAN não sabe o que é arquivo"],
-      ["Coerência de cache","Depende do protocolo e do cliente","Servidores coordenam o acesso compartilhado"],
+      ["Unidade de abstração","Arquivo","Bloco, apresentado como LUN"],
+      ["Dono do sistema de arquivos","O dispositivo de armazenamento","O servidor de banco de dados"],
+      ["Rede","Ethernet/IP, compartilhada ou segregada","FC ou Ethernet/IP, conforme o projeto"],
+      ["Compartilhamento entre servidores","Nativo, porque o dispositivo arbitra o acesso","Exige sistema de arquivos de cluster ou LVM ciente de cluster"],
+      ["Travamento","No protocolo: NLM no v3, integrado a partir do NFSv4, oplocks no SMB","No servidor, porque a SAN não sabe o que é um arquivo"],
+      ["Coerência de cache","Depende do protocolo e do cliente, e o NFS usa close-to-open","Os servidores é que coordenam o acesso compartilhado"],
       ["Custo relativo","Depende de capacidade, rede e suporte","Depende de capacidade, rede, HBA e suporte"],
-      ["Caso de uso típico","Backup, análise e configurações NFS/SMB homologadas","OLTP crítico, cluster compartilhado, latência de commit"],
+      ["Caso de uso típico","Backup, análise e bancos em configurações homologadas","OLTP crítico, cluster compartilhado e cargas com requisito de latência de commit"],
     ], [3.00,4.39,4.50], 10, 0.475);
   s.addShape(pres.ShapeType.roundRect, { x:M, y:6.00, w:CW, h:0.72, rectRadius:0.06,
     fill:{ color:SOFT }, line:{ color:BLUE, width:1.2 } });
-  s.addText("Convergência: arrays unificados oferecem arquivos e blocos. “Comprar NAS ou SAN?” virou “qual protocolo apresentar para cada carga?” — pergunta melhor, porque admite respostas diferentes para o tablespace e para a área de dump.", {
+  s.addText("Convergência: os arrays unificados oferecem arquivos e blocos no mesmo equipamento, então comprar NAS ou SAN virou qual protocolo apresentar para cada carga, que é a pergunta melhor porque admite respostas diferentes para o tablespace e para a área de dump.", {
     x:M+0.26, y:6.10, w:CW-0.52, h:0.54, isTextBox:true, fontFace:BF, fontSize:12, color:INK });
+  fonteNota(s, 6.82, "Fonte da observação de convergência: Silberschatz et al., §12.4, sobre arrays que combinam disco e SSD.");
 }
 
 /* ============================== 19. AST ============================== */
 {
-  const s = slide("AST — Automated Storage Tiering", "Como funciona, com os parâmetros reais de um produto documentado",
-    "Elmasri & Navathe definem AST e citam o FAST da EMC. Fomos ao white paper e extraímos os parâmetros exatos: fatia de 256 MB, análise horária, janela de relocação diária 17h–1h, quatro políticas. Proveniência: documentação de fabricante, produto identificado.");
+  const s = slide("AST: Automated Storage Tiering",
+    "Como funciona, com os parâmetros reais de um produto documentado",
+    "Elmasri e Navathe definem o AST e citam o FAST da EMC como implementação de referência, mas não publicam parâmetros. Fomos ao white paper técnico da Dell e extraímos os valores exatos, que são os da tabela: fatia de 256 MB, análise horária, janela de relocação diária das 17h à 1h e quatro políticas, com a Start High then Auto-Tier como padrão recomendado. A proveniência aqui é documentação de fabricante com produto identificado, e não especificação normativa, o que vale dizer se perguntarem. O mecanismo, resumido, combina contadores de acesso por fatia, uma métrica agregada de temperatura e uma classificação horária, e só então move fisicamente as fatias durante a janela.");
   bullets(s, 1.52, [
-    "“Move automaticamente dados entre diferentes tipos de armazenamento — SATA, SAS e SSDs — dependendo da necessidade” (Elmasri & Navathe, §16.11.4)",
-    "Existe porque a hierarquia de armazenamento é uma escada de preço por byte, e o acesso é altamente enviesado: comprar flash para o banco inteiro é pagar pelo pior caso em 100% da capacidade",
-  ], 13.5);
-  tabela(s, 2.72, ["Parâmetro (Dell EMC Unity FAST VP)","Valor documentado"],
+    "Elmasri e Navathe definem que o AST “move automaticamente dados entre diferentes tipos de armazenamento, como SATA, SAS e solid-state drives, dependendo da necessidade” (§16.11.4)",
+    "Existe porque a hierarquia de armazenamento ordena os meios por preço por byte e o acesso é bastante enviesado: comprar flash para o banco inteiro significa pagar pelo pior caso em toda a capacidade instalada",
+  ], 13);
+  tabela(s, 2.78, ["Parâmetro (Dell EMC Unity FAST VP)","Valor documentado"],
     [
-      ["Granularidade de relocação","Fatias (slices) de 256 MB"],
-      ["Tiers","Extreme Performance (flash) · Performance (SAS 10K/15K) · Capacity (NL-SAS 7,2K)"],
-      ["Frequência de análise","“Uma vez por hora, o FAST VP analisa os dados coletados e classifica cada fatia”"],
-      ["Janela de relocação","Agendada; padrão diário, das 17h à 1h"],
-      ["Políticas","Highest Available · Auto-Tier · START HIGH THEN AUTO-TIER (padrão) · Lowest Available"],
-    ], [4.60,7.29], 11.5, 0.53);
-  fonteNota(s, 6.10, "AST move dados; cache mantém cópia; backup cria versão recuperável; replicação mantém estado corrente. AST não substitui backup. Fonte: Dell H15086.3.");
+      ["Granularidade de relocação","Fatias, chamadas slices, de 256 MB"],
+      ["Tiers definidos","Extreme Performance (flash), Performance (SAS de 10K e 15K rpm) e Capacity (NL-SAS de 7,2K rpm)"],
+      ["Frequência de análise","“Uma vez por hora, o FAST VP analisa os dados coletados e classifica cada fatia com base em sua temperatura”"],
+      ["Janela de relocação","Agendada e configurável, com padrão diário das 17h à 1h do dia seguinte"],
+      ["Políticas disponíveis","Highest Available Tier, Auto-Tier, Start High then Auto-Tier (que é o padrão recomendado) e Lowest Available Tier"],
+    ], [4.60,7.29], 11, 0.58);
+  fonteNota(s, 6.20, "Fonte: Dell Technologies, white paper H15086.3, 'Dell EMC Unity: FAST Technology Overview'. Vale distinguir os quatro mecanismos: o AST move dados, o cache mantém cópia, o backup cria versão recuperável e a replicação mantém estado corrente, de modo que o AST não substitui backup.");
 }
 
 /* ============================== 20. AST x BUFFER MANAGER ============================== */
@@ -638,20 +657,21 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     "Fita pode usar FC na SAN ou SAS direto. O estágio em disco pode ser NAS, LUN SAN ou disco local.\nSe produção e backup compartilham enlaces, dimensionar a capacidade. Zoneamento controla acesso, não reserva banda.\nNAS e SAN podem atender papéis distintos no caminho até a mídia terciária.", INK2);
 }
 {
-  const s = slideBackup("RAID e multipath: o que a SAN pressupõe", "Dois mecanismos fora da discussão de protocolo e dentro da de arquitetura",
-    "Backup para perguntas sobre RAID (que ocupa uma seção inteira do Elmasri e quase não aparece no corpo) e sobre o que faz a fabric dupla realmente funcionar.");
+  const s = slideBackup("RAID e multipath: o que a SAN pressupõe", "Dois mecanismos que ficam fora da discussão de protocolo e dentro da de arquitetura",
+    "Backup para perguntas sobre RAID, que ocupa uma seção inteira do Elmasri e quase não aparece no corpo do deck, e sobre o que faz a fabric dupla realmente funcionar. Na fala: o requisito 5 da régua não é atendido pelo protocolo sozinho, e quem o atende são estes dois mecanismos. O parâmetro de multipath é o que decide se uma falha de caminho é invisível ou fatal, e é o análogo, do lado SAN, da escolha entre hard e soft na montagem NFS.");
   s.addShape(pres.ShapeType.roundRect, { x:M, y:1.56, w:CW, h:1.98, rectRadius:0.06,
     fill:{ color:DARK }, line:{ color:DARK, width:1 } });
-  s.addText("A penalidade de escrita aplicada ao WAL — derivação nossa", {
+  s.addText("A penalidade de escrita aplicada ao WAL, derivação nossa", {
     x:M+0.28, y:1.66, w:CW-0.56, h:0.28, isTextBox:true, fontFace:BF, fontSize:12.5, bold:true, color:"FFD9C7" });
-  s.addText("Custo, em operações físicas, de uma escrita aleatória de um bloco:\n\nRAID 1 → 2          RAID 5 → 4  (2 leituras + 2 escritas)          RAID 6 → 6  (3 + 3)\n\nO log é escrito sequencialmente e sincronizado a CADA COMMIT. Sob RAID 5, toda descarga de log que não preencha uma faixa\ncompleta paga 4× — e é justamente a taxa de commits que ela limita.\n\nSilberschatz §12.5: “o RAID nível 1 é popular para aplicações como o armazenamento de arquivos de log num sistema de banco de\ndados, já que oferece o melhor desempenho de escrita”.   Regra: log em RAID 1/10, dados em RAID 5/6.", {
+  s.addText("Custo, em operações físicas, de uma escrita aleatória de um bloco:\n\nRAID 1 → 2          RAID 5 → 4  (2 leituras + 2 escritas)          RAID 6 → 6  (3 leituras + 3 escritas)\n\nO log de transações é escrito sequencialmente e sincronizado a cada commit. Sob RAID 5, toda descarga de log que não preencha\numa faixa completa paga a penalidade de quatro vezes, e é justamente a taxa de commits que ela limita.\n\nSilberschatz, §12.5: “o RAID nível 1 é popular para aplicações como o armazenamento de arquivos de log num sistema de banco de\ndados, já que oferece o melhor desempenho de escrita”. Daí a regra prática: log em RAID 1 ou 10, dados em RAID 5 ou 6.", {
     x:M+0.28, y:1.98, w:CW-0.56, h:1.48, isTextBox:true, fontFace:BF, fontSize:11, color:W2, lineSpacingMultiple:1.02 });
   card(s, M, 3.70, 5.795, 1.72, "Multipath e ALUA",
-    "Duas fabrics só produzem disponibilidade se houver,\nno servidor, uma camada que reconheça que os dois\ncaminhos levam ao MESMO LUN: DM-Multipath (Linux),\nMPIO (Windows). O ALUA deixa o array informar quais\ncaminhos são otimizados.", BLUE);
-  card(s, M+6.095, 3.70, 5.795, 1.72, "O parâmetro que decide tudo",
-    "no_path_retry / fast_io_fail_tmo:\n“enfileirar indefinidamente” CONGELA a instância;\n“falhar imediatamente” ABORTA transações.\nÉ decisão de projeto, não padrão a aceitar —\ne é o análogo SAN do hard vs soft do NFS.", ACC);
-  s.addText("Por que isto importa para o AST: é a mesma razão pela qual a política do volume de redo deve ser FIXADA, e não deixada ao critério estatístico do array.", {
+    "Montar duas fabrics só produz disponibilidade se\nhouver, no servidor, uma camada que reconheça que\nos dois caminhos levam ao mesmo LUN, papel do\nDM-Multipath no Linux e do MPIO no Windows. O padrão\nALUA permite que o array informe quais caminhos são\notimizados e quais são apenas disponíveis.", BLUE);
+  card(s, M+6.095, 3.70, 5.795, 1.72, "O parâmetro que decide o resultado",
+    "Em no_path_retry e fast_io_fail_tmo, configurar como\nenfileirar indefinidamente congela a instância, e como\nfalhar imediatamente aborta transações. É decisão de\nprojeto, e não padrão a aceitar, sendo o análogo, do\nlado da SAN, da escolha entre hard e soft na\nmontagem de um compartilhamento NFS.", ACC);
+  s.addText("Por que isto importa para o AST: é a mesma razão pela qual a política de tiering do volume de redo deve ser fixada, e não deixada ao critério estatístico do array.", {
     x:M, y:5.60, w:CW, h:0.36, isTextBox:true, fontFace:BF, fontSize:12, bold:true, color:INK });
+  fonteNota(s, 6.04, "Fontes: Silberschatz et al., §12.5.5 (as duas citações sobre RAID 5 e RAID 1); padrão T10 SPC para o ALUA; multipath.conf(5).");
 }
 
 /* ============================== BACKUP DE MÉTODO ============================== */
@@ -732,8 +752,8 @@ function tabela(s, y, head, rows, colW, fs, rowH){
     ], [3.10,3.70,5.09], 9, 0.72);
 }
 
-pres.writeFile({ fileName: process.env.OUTPUT_PPTX || "Slides_NAS_SAN_Armazenamento_SBD.pptx" })
+pres.writeFile({ fileName: process.env.OUTPUT_PPTX || "Slides_NAS_SAN_Armazenamento_SBD_v2.pptx" })
   .then(async f => {
-    await require('../scripts/normalizar_pptx.cjs')(process.env.OUTPUT_PPTX || 'Slides_NAS_SAN_Armazenamento_SBD.pptx');
+    await require('../scripts/normalizar_pptx.cjs')(process.env.OUTPUT_PPTX || 'Slides_NAS_SAN_Armazenamento_SBD_v2.pptx');
     console.log("OK ->", f, "| slides numerados:", n);
   });
