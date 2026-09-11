@@ -74,14 +74,18 @@ nuvens pública, privada e híbrida. Em seguida relacionamos requisitos de banco
 serviços EC2, S3, EBS, classes S3 Glacier, RDS, Aurora, DynamoDB e Redshift. O estudo econômico
 trata 3,5~PB como um problema de arquitetura, não como simples multiplicação de preço por GB:
 separa armazenamento, processamento, requisições, recuperação, transferência, proteção e suporte.
-Com preços públicos da região us-east-1 consultados em 6 de setembro de 2026, 3,5~PB decimais
-correspondem a aproximadamente 3.259.629 unidades de cobrança binárias da AWS. Custariam cerca de
-US\$~69.015/mês somente em S3 Standard, US\$~40.745 em Standard-IA,
-US\$~11.735 em Glacier Flexible Retrieval ou US\$~3.227 em Deep Archive. Esses valores não são
-alternativas equivalentes: possuem latências, cobranças de recuperação e durações mínimas distintas.
-Propomos, por isso, um data lake em S3 com dados colunares e particionados, catálogo, políticas de
-ciclo de vida e computação escolhida segundo o perfil da consulta. O Post-Mortem registra os
-prompts, as intervenções humanas ainda pendentes de confirmação e as correções de erros da IA.
+Adotando a definição SI (1~PB = $10^{15}$ bytes), 3,5~PB correspondem a 3.500~TB decimais.
+Como o S3 contabiliza armazenamento em ``GB'' binários (1~GB = $2^{30}$ bytes), essa mesma
+capacidade equivale a aproximadamente 3.259.629~GB de cobrança (3.183,23~TB binários).
+Com preços públicos de us-east-1 consultados em setembro de 2026, custaria cerca de
+US\$~69.015/mês em S3 Standard, US\$~40.745 em Standard-IA, US\$~11.735 em Glacier Flexible
+Retrieval ou US\$~3.227 em Deep Archive. Esses valores não são alternativas equivalentes: possuem latências,
+cobranças de recuperação e durações mínimas distintas. Para ilustrar o custo de processamento, usamos também
+o preço sob demanda do Athena (US\$~5/TB escaneado): uma consulta que leia 1\% da base (35~TB) custaria
+aproximadamente US\$~175, enquanto uma varredura lógica integral de 3,5~PB chegaria a cerca de US\$~17.500,
+antes de custos adicionais. Propomos, por isso, um data lake em S3 com dados colunares e particionados,
+catálogo, políticas de ciclo de vida e computação escolhida segundo o perfil da consulta. O Post-Mortem
+registra prompts-chave, divisão declarada de responsabilidades e correções aplicadas sobre saídas de IA.
 
 \noindent\textbf{Palavras-chave:} computação em nuvem; AWS; armazenamento de objetos; DBaaS;
 DWaaS; data lake; custo total de propriedade; 3,5 PB.
@@ -100,7 +104,7 @@ governança e custo continuam sob responsabilidade do arquiteto.
 
 O enunciado pede também uma decisão para 3,5~PB. Sem caracterizar o conjunto de dados, não existe
 um único preço tecnicamente honesto: uma base transacional, um data warehouse e um arquivo regulatório
-exigem serviços diferentes. Este relatório explicita premissas e oferece três cenários comparáveis.
+exigem serviços diferentes. Este relatório explicita premissas e compara classes de armazenamento e opções de processamento adequadas a perfis distintos.
 
 Nossa tese é que, nessa escala, a primeira decisão não é escolher uma instância: é separar a
 persistência durável da capacidade de computação. Objetos em S3 formam a camada de verdade para o
@@ -124,9 +128,9 @@ Folha de rosto com nomes e DRE & página 1\\\bottomrule
 O estudo combina os livros indicados no enunciado com normas e documentação operacional. Usamos o
 NIST para a definição de nuvem; livros-texto para modelos e implicações de SBD; documentação AWS
 para semântica, limites e preços. Afirmações mutáveis registram região e data. Preço publicado é
-tratado como estimativa, não proposta comercial. Quando a documentação usa ``GB'' para uma unidade
-binária, preservamos a regra de cobrança e mostramos a conversão em vez de misturar PB, PiB, GB e
-GiB \cite{s3pricing}.
+tratado como estimativa, não proposta comercial. A documentação de preços do S3 chama de ``GB'' uma unidade binária de $2^{30}$ bytes e de ``TB''
+uma unidade de $2^{40}$ bytes. Por isso, partimos de PB no SI e convertemos explicitamente para a
+unidade de cobrança da AWS, evitando tratar PB e PiB como sinônimos \cite{s3pricing}.
 
 As comparações seguem quatro perguntas: (1) qual abstração o consumidor recebe; (2) quem mantém cada
 camada; (3) qual SLO pode ser construído; e (4) quais variáveis compõem o custo total. Isso aproxima
@@ -204,7 +208,7 @@ A diferença entre essas categorias não está apenas na velocidade, mas na \tex
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Modelo de Blocos:} entrega endereços de disco brutos e deixa o controle de arquivos e concorrência por conta do servidor. Bancos de dados relacionais tradicionais dependem de gravações frequentes e alterações em pequenas partes de arquivos (páginas de dados), o que se encaixa perfeitamente nesse modelo.
-    \item \textbf{Modelo de Objetos:} trata o arquivo como um bloco único e indivisível. Se for preciso alterar apenas uma linha de um arquivo no S3, o sistema geralmente precisa substituir ou versionar o objeto inteiro por meio da API. Por isso, os \emph{data lakes} utilizam o S3 para armazenar arquivos grandes e \emph{imutáveis} (que não mudam após criados), otimizados para análises em lote.
+    \item \textbf{Modelo de Objetos:} não oferece atualização parcial \emph{in-place} como um dispositivo de blocos. Se for preciso alterar apenas uma linha de um arquivo no S3, a aplicação normalmente grava uma nova versão ou substitui o objeto por meio da API. Por isso, \emph{data lakes} frequentemente adotam arquivos grandes tratados como imutáveis por convenção, otimizados para análises em lote.
 \end{itemize}
 
 Em suma, tentar forçar o S3 a se comportar como um disco rígido tradicional (EBS) por meio de camadas de compatibilidade não altera a sua natureza fundamental, gerando problemas de desempenho e arquitetura.
@@ -214,7 +218,7 @@ Em sistemas de armazenamento em nuvem e arquiteturas de banco de dados, os conce
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Consistência:} Responde à pergunta \textit{``qual versão de um dado a leitura observa imediatamente após uma operação de escrita?''}. O Amazon S3, por exemplo, oferece consistência forte de leitura após operações de \texttt{PUT} e \texttt{DELETE} em objetos novos ou existentes \cite{s3consistency}. Contudo, consistência técnica ao nível de infraestrutura não valida a semântica da aplicação: o sistema pode gravar com sucesso um estado logicamente inválido ou permitir a exclusão acidental de um objeto correto.
-    \item \textbf{Durabilidade:} Responde à pergunta \textit{``qual é a probabilidade estatística de que o dado aceito e armazenado permaneça intacto ao longo do tempo, sem corrupção ou perda?''}. É uma métrica voltada para a resistência física e lógica contra falhas catastróficas de hardware ou de infraestrutura de armazenamento.
+    \item \textbf{Durabilidade:} Responde à pergunta \textit{``qual é a probabilidade estatística de que o dado aceito e armazenado permaneça intacto ao longo do tempo, sem corrupção ou perda?''}. É uma métrica voltada sobretudo à resistência a falhas de mídia e de infraestrutura; não protege, por si só, contra exclusão autorizada, erro lógico da aplicação ou credenciais comprometidas.
     \item \textbf{Disponibilidade:} Responde à pergunta \textit{``qual é a probabilidade de que uma operação receba uma resposta bem-sucedida no momento em que é solicitada?''}. Trata-se da operacionalidade contínua do serviço sob a perspectiva do cliente, mensurada por meio de acordos de nível de serviço (SLA) e indicadores de desempenho (\emph{SLIs}).
 \end{itemize}
 
@@ -294,7 +298,7 @@ O modelo de responsabilidade compartilhada delimita que a segurança e a gestão
     \item \textbf{IaaS (\emph{Infrastructure as a Service}):} O provedor entrega os componentes fundamentais de computação, rede e armazenamento virtualizado. O cliente assume a responsabilidade total sobre o sistema operacional, \emph{patches} de segurança, configuração de rede lógica, instalação, ajuste (\emph{tuning}) e alta disponibilidade do SGBD.
     \item \textbf{PaaS (\emph{Platform as a Service}):} O provedor gerencia o sistema operacional, o \emph{runtime} e a orquestração do ambiente, permitindo que a equipe de engenharia concentre-se no código da aplicação e na lógica de negócio, com menor controle sobre os parâmetros de baixo nível do host.
     \item \textbf{SaaS (\emph{Software as a Service}):} A pilha tecnológica inteira é operada pelo fornecedor. A organização gerencia apenas identidades de usuários, permissões de acesso ao conteúdo e políticas de governança corporativa.
-    \item \textbf{DBaaS (\emph{Database as a Service}) e DWaaS (\emph{Data Warehouse as a Service}):} Especializações verticais da PaaS voltadas para a persistência e o processamento analítico. O provedor automatiza tarefas complexas como failover, backups incrementais, replicação e aplicação de correções no motor do banco de dados, restringe-se ao cliente a responsabilidade pelo modelo relacional, projeto de índices, escrita de consultas, gestão de concorrência e políticas de retenção.
+    \item \textbf{DBaaS (\emph{Database as a Service}) e DWaaS (\emph{Data Warehouse as a Service}):} Serviços gerenciados voltados para persistência e processamento analítico. O provedor automatiza provisionamento, manutenção, backups e, quando a configuração de alta disponibilidade é habilitada, mecanismos de replicação e failover. O cliente continua responsável pelo modelo de dados, índices, consultas, privilégios, concorrência e políticas de retenção.
 \end{itemize}
 
 \begin{table}[H]\centering\caption{Fronteiras operacionais nos modelos de serviço voltados a dados.}
@@ -302,7 +306,7 @@ O modelo de responsabilidade compartilhada delimita que a segurança e a gestão
 \textbf{Modelo} & \textbf{Exemplo AWS} & \textbf{O provedor gerencia} & \textbf{O cliente projeta e opera}\\\midrule
 IaaS & EC2 / EBS / S3 & Hardware, data center, hipervisor e rede base & SO, patches, SGBD, replicação, backup e dados\\
 PaaS & Elastic Beanstalk & Infraestrutura, runtime e balanceamento & Código-fonte, configuração e dados da aplicação\\
-DBaaS & RDS / Aurora & Instância, engine, failover automatizado e patches & Esquema SQL, índices, privilégios e plano de capacidade\\
+DBaaS & RDS / Aurora & Infraestrutura, backups, patches e failover nas configurações de HA & Esquema SQL, índices, privilégios e plano de capacidade\\
 DWaaS & Redshift & Cluster MPP, nós de computação e storage & Modelo dimensional, chaves de distribuição, WLM e custos\\
 SaaS & QuickSight & Aplicação analítica ponta a ponta & Datasets, painéis, usuários, permissões e governança\\\bottomrule
 \end{tabularx}\end{table}
@@ -322,7 +326,7 @@ Além disso, a análise de uma arquitetura baseia-se em dimensões essenciais de
 
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Disponibilidade e SLIs:} A disponibilidade real não deve ser deduzida apenas do contrato do provedor (SLA), mas acompanhada por SLIs ponta a ponta que medem o sucesso operacional sob a perspectiva do usuário. Ambientes críticos exigem redundância ativa em múltiplas Zonas de Disponibilidade (Multi-AZ).
-    \item \textbf{Confiabilidade e Recuperação (RPO/RTO):} É preciso separar durabilidade (probabilidade estatística de retenção do dado sem corrupção, como os 11 noves do Amazon S3) de recuperabilidade. Como a durabilidade física não protege contra exclusões lógicas ou falhas humanas, métricas rigorosas de \textbf{RPO} (\emph{Recovery Point Objective} --- limite de perda aceitável de dados) e \textbf{RTO} (\emph{Recovery Time Objective} --- tempo máximo de restabelecimento) exigem versionamento, cofres imutáveis (\emph{Object Lock}) e testes de restauração periódicos.
+    \item \textbf{Confiabilidade e Recuperação (RPO/RTO):} É preciso separar durabilidade (probabilidade estatística de retenção do dado sem corrupção, como os 11 noves do Amazon S3) de recuperabilidade. Como a durabilidade física não protege contra exclusões lógicas ou falhas humanas, objetivos de \textbf{RPO} (\emph{Recovery Point Objective} --- limite de perda aceitável de dados) e \textbf{RTO} (\emph{Recovery Time Objective} --- tempo máximo de restabelecimento) devem ser sustentados por uma estratégia de backup/replicação e por testes de restauração; versionamento e \emph{Object Lock} podem ser adicionados quando o risco exige imutabilidade.
     \item \textbf{Escalabilidade e Limites Operacionais:} A elasticidade de bases de dados difere de aplicações sem estado (\emph{stateless}). Enquanto o processamento puro escala com facilidade, sistemas de dados enfrentam restrições inerentes à consistência de transações, contenção de \emph{locks}, replicação de estado e limites físicos de I/O por nó ou \emph{cluster}.
     \item \textbf{Segurança e Custo Total de Propriedade (TCO):} A segurança exige uma estratégia em profundidade com menor privilégio via IAM, criptografia ponta a ponta e gestão de chaves (KMS). Paralelamente, o TCO vai muito além da capacidade bruta (GB-mês), englobando chamadas de API, varreduras de consulta, tráfego de saída (\emph{egress}), replicação entre regiões e custos de suporte técnico.
 \end{enumerate}
@@ -351,19 +355,19 @@ O Amazon EC2 (Elastic Compute Cloud) é o serviço de IaaS da AWS que fornece ca
 O provisionamento envolve duas escolhas arquiteturais centrais:
 \begin{itemize}[leftmargin=*]
     \item \textbf{Tipos de Instância (Famílias):} A seleção do hardware ideal para a carga de trabalho. A AWS categoriza as máquinas em diferentes famílias, variando desde instâncias de uso geral até modelos especializados. Para um banco de dados, por exemplo, o arquiteto pode escolher máquinas otimizadas para computação (para consultas complexas), otimizadas para memória (para \emph{caching} e alto desempenho) ou otimizadas para armazenamento (focadas em alta taxa de leitura e gravação local).
-    \item \textbf{Modelos de Pagamento:} Define como o recurso será faturado. Pode ser Sob Demanda (\emph{On-Demand}), onde se paga apenas pelo uso exato, ou por instâncias \emph{Spot} (capacidade ociosa com grande desconto, mas sujeita a interrupções abruptas, sendo inadequada para bancos de dados críticos). Para cargas previsíveis, utiliza-se Instâncias Reservadas ou \emph{Savings Plans}, ambos com descontos em troca de compromissos de 1 a 3 anos. A diferença é que as Reservadas fixam o cliente a um tipo de máquina específico, enquanto os \emph{Savings Plans} atrelam o compromisso a um gasto por hora, oferecendo flexibilidade para trocar de hardware ao longo do contrato.
+    \item \textbf{Modelos de Pagamento:} Define como o recurso será faturado. Pode ser Sob Demanda (\emph{On-Demand}), onde se paga apenas pelo uso exato, ou por instâncias \emph{Spot} (capacidade ociosa com grande desconto, mas sujeita a interrupções abruptas, sendo inadequada para bancos de dados críticos). Para cargas previsíveis, há Instâncias Reservadas e \emph{Savings Plans}, com descontos em troca de compromissos de uso. As Reservadas aplicam descontos sob atributos e escopos específicos e existem também modalidades conversíveis; os \emph{Savings Plans} se baseiam em compromisso de gasto por hora e, em geral, oferecem maior flexibilidade de família e configuração.
 \end{itemize}
-Para garantir disponibilidade, a arquitetura utiliza o \emph{Auto Scaling}, que monitora métricas de uso e escala a infraestrutura \textbf{horizontalmente} --- criando novas instâncias e distribuindo o tráfego via \emph{Elastic Load Balancing} quando gatilhos de sobrecarga são atingidos. Para que essas instâncias tenham onde gravar dados de forma persistente, o EC2 depende quase que exclusivamente do Amazon EBS.
+Em aplicações sem estado, é comum combinar EC2 Auto Scaling e Elastic Load Balancing para escalar horizontalmente. Um SGBD auto-gerenciado, porém, não pode ser escalado de forma ingênua atrás de um balanceador: escrita e estado exigem replicação, particionamento e coordenação. Para armazenamento persistente em bloco, a opção padrão do EC2 é o Amazon EBS, embora aplicações também possam usar serviços como EFS, FSx ou S3 conforme o padrão de acesso.
 
 \subsection{Armazenamento --- EBS, S3 e Glacier}
 Enquanto o EC2 fornece o processamento, as opções de armazenamento dividem-se fundamentalmente pela forma como o sistema operacional acessa os dados:
 
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Amazon EBS (Elastic Block Store):} Como visto anteriormente, o EBS atua como um armazenamento de blocos (disco rígido virtual) persistente e independente, sendo a escolha primária para SGBDs tradicionais. Ele resolve o problema do armazenamento efêmero nativo do EC2 (\emph{Instance Store}). O seu grande diferencial prático na AWS é a elasticidade \textbf{vertical}: o recurso \emph{Elastic Volumes} permite aumentar o tamanho do disco ou alterar sua capacidade de leitura/escrita (IOPS) em tempo real, sem desconectar o volume ou desligar a instância.
+    \item \textbf{Amazon EBS (Elastic Block Store):} Como visto anteriormente, o EBS atua como armazenamento de blocos persistente para EC2 e é uma escolha comum para SGBDs auto-gerenciados. \emph{Elastic Volumes} permite aumentar capacidade e alterar características de desempenho de volumes compatíveis sem desligar a instância, embora o sistema operacional e o sistema de arquivos possam exigir etapas adicionais. Normalmente um volume é anexado a uma instância por vez; volumes io1/io2 com \emph{Multi-Attach} são uma exceção e podem ser compartilhados por até 16 instâncias Nitro na mesma AZ \cite{ebsmultiattach}.
     
-    \item \textbf{Amazon S3 (Simple Storage Service) e S3 Glacier:} Conforme introduzido anteriormente, o S3 é um armazenamento de objetos acessado via rede por API/SDKs e estruturado em \emph{buckets}, atuando como a fundação de \emph{Data Lakes} em vez de bancos transacionais. Para garantir sua altíssima durabilidade, a arquitetura padrão replica os objetos imutáveis em pelo menos três Zonas de Disponibilidade (AZs) distintas.
+    \item \textbf{Amazon S3 (Simple Storage Service) e S3 Glacier:} Conforme introduzido anteriormente, o S3 é um armazenamento de objetos acessado via rede por API/SDKs e estruturado em \emph{buckets}, atuando como a fundação de \emph{Data Lakes} em vez de bancos transacionais. Nas classes multi-AZ, como S3 Standard e Standard-IA, os dados são armazenados redundantemente em pelo menos três Zonas de Disponibilidade; classes One Zone são a exceção e permanecem em uma única AZ \cite{s3classes}.
     
-    O modelo de custos do ecossistema S3 varia conforme a classe de armazenamento (\emph{tier}), separando a cobrança entre a retenção do dado e a sua recuperação. A família \textbf{S3 Standard} utiliza três ou mais AZs e é ideal para dados acessados frequentemente (como imagens médicas de carregamento imediato); retém-se o dado a um custo maior, mas sem taxas extras de leitura. A família \textbf{S3 One Zone} difere por utilizar apenas uma AZ. Dentro dessas famílias há variações: o \emph{Express One Zone} entrega latência baixíssima por um custo de armazenamento maior, enquanto as opções \emph{IA (Infrequent Access)} reduzem o custo de retenção, mas embutem uma taxa financeira na recuperação. Por fim, a família \textbf{S3 Glacier} foca em arquivamento (como retenção legal de longo prazo) e divide-se em três opções: \emph{Instant Retrieval} (mantém acesso em milissegundos, mas com alta taxa financeira de leitura), \emph{Flexible Retrieval} (armazenamento mais barato, mas a recuperação leva de minutos a horas) e \emph{Deep Archive} (retenção com o menor custo possível, exigindo de 12 a 48 horas para recuperar os dados).
+    O modelo de custos do ecossistema S3 varia conforme a classe de armazenamento (\emph{tier}), separando a cobrança entre a retenção do dado e a sua recuperação. A classe \textbf{S3 Standard} utiliza três ou mais AZs e é adequada a dados acessados frequentemente; o custo de retenção é maior, mas não há cobrança por GB de recuperação de dados (as requisições continuam sendo cobradas). A família \textbf{S3 One Zone} difere por utilizar apenas uma AZ. Dentro dessas famílias há variações: o \emph{Express One Zone} entrega latência baixíssima por um custo de armazenamento maior, enquanto as opções \emph{IA (Infrequent Access)} reduzem o custo de retenção, mas embutem uma taxa financeira na recuperação. Por fim, a família \textbf{S3 Glacier} foca em arquivamento (como retenção legal de longo prazo) e divide-se em três opções: \emph{Instant Retrieval} (mantém acesso em milissegundos, mas com alta taxa financeira de leitura), \emph{Flexible Retrieval} (armazenamento mais barato, mas a recuperação leva de minutos a horas) e \emph{Deep Archive} (retenção com o menor custo possível, exigindo de 12 a 48 horas para recuperar os dados).
 \end{itemize}
 
 
@@ -373,13 +377,13 @@ A AWS oferece um portfólio de serviços gerenciados de banco de dados que se di
 
 \begin{itemize}[leftmargin=*]
 
-    \item \textbf{Amazon RDS (Relational Database Service):} serviço de \emph{Database as a Service} (DBaaS) para bancos de dados relacionais tradicionais, suportando os motores MySQL, PostgreSQL, MariaDB, Oracle e SQL Server. O RDS automatiza tarefas operacionais como provisionamento, aplicação de \emph{patches} no motor de banco, backups automáticos com retenção configurável (snapshots diários combinados a logs de transação, permitindo restauração \emph{point-in-time}) e monitoramento. Para alta disponibilidade, oferece implantações \textbf{Multi-AZ}, nas quais uma réplica síncrona é mantida em outra \emph{Availability Zone} e promovida automaticamente em caso de falha do nó primário; para escalabilidade de leitura, suporta \textbf{Read Replicas} assíncronas.
+    \item \textbf{Amazon RDS (Relational Database Service):} serviço de \emph{Database as a Service} (DBaaS) para bancos relacionais gerenciados, com suporte a Db2, MariaDB, MySQL, Oracle, PostgreSQL e SQL Server. O RDS automatiza provisionamento, \emph{patches}, backups automáticos e restauração \emph{point-in-time}, enquanto o cliente continua responsável por esquema, índices, consultas e privilégios. Para alta disponibilidade, configurações Multi-AZ mantêm capacidade redundante e permitem failover automático; para aumentar throughput de leitura, Read Replicas mantêm cópias assíncronas do banco \cite{rdsmultiaz}\cite{rdsreadreplicas}.
 
-    \item \textbf{Amazon Aurora:} motor relacional desenvolvido pela própria AWS, compatível com as APIs e o \emph{wire protocol} do MySQL e do PostgreSQL, permitindo migração sem alteração significativa da camada de aplicação. Sua principal diferença arquitetural é o desacoplamento entre a camada de computação e a camada de armazenamento: o armazenamento é distribuído, replicado em seis cópias ao longo de três \emph{Availability Zones} e escala automaticamente em incrementos de até 128 TB, sem necessidade de provisionamento manual. Isso resulta em maior taxa de transferência (\emph{throughput}), recuperação de falhas mais rápida e suporte a até 15 réplicas de leitura de baixa latência (contra 5 no RDS convencional). O Aurora também realiza \emph{backup} contínuo para o Amazon S3, sem impacto perceptível de desempenho, e oferece variantes como o \textbf{Aurora Serverless} (escalonamento automático de capacidade computacional conforme a demanda) e o \textbf{Aurora Global Database} (replicação entre regiões com baixa latência, voltada a aplicações globais e disaster recovery).
+    \item \textbf{Amazon Aurora:} banco relacional gerenciado compatível com MySQL e PostgreSQL cuja principal diferença arquitetural é a camada de armazenamento distribuída e compartilhada pelas instâncias do cluster. Os dados são mantidos em seis cópias distribuídas por três \emph{Availability Zones}; o volume cresce automaticamente e o limite máximo é 128 ou 256~TiB, conforme a versão do mecanismo \cite{auroralimits}. Um cluster pode ter até 15 Aurora Replicas compartilhando o mesmo volume lógico, além de recursos como backup contínuo/PITR, Aurora Serverless v2 e Global Database. Portanto, a distinção essencial frente ao RDS convencional não é uma contagem fixa de réplicas, mas a arquitetura de armazenamento compartilhado e sua integração com leitura e failover \cite{aurorafaq}.
 
-    \item \textbf{Amazon DynamoDB:} banco de dados NoSQL totalmente gerenciado, do tipo chave-valor/documento, sem esquema fixo --- cada item pode conter um número e tipo de atributos distintos. Sua origem remonta ao sistema interno \emph{Dynamo} (2004--2007), desenvolvido pela Amazon para resolver a indisponibilidade do carrinho de compras da Amazon.com em picos de tráfego, quando bancos relacionais tradicionais não sustentavam o volume de escritas concorrentes. O DynamoDB herda esses princípios de alta disponibilidade e escalabilidade horizontal, oferecendo latência de milissegundos de dois dígitos de forma consistente, independentemente do volume de dados armazenado. Suporta dois modos de capacidade (\emph{On-Demand}, com cobrança por uso, e \emph{Provisioned}, com capacidade de leitura/escrita reservada) e permite escolher entre consistência eventual ou consistência forte nas leituras. É indicado para cargas de trabalho de altíssima escala e baixa latência, como e-commerce, sistemas de sessão, jogos online e IoT, sendo o modelo de dados desenhado em função dos padrões de consulta da aplicação, e não da normalização relacional --- razão pela qual não é adequado para consultas com \emph{joins} complexos entre entidades.
+    \item \textbf{Amazon DynamoDB:} banco de dados NoSQL serverless e totalmente gerenciado, do tipo chave-valor/documento. A AWS o descreve como capaz de manter desempenho consistente de \textbf{milissegundos de um dígito} em qualquer escala. Suporta modos de capacidade \emph{On-Demand} e \emph{Provisioned}, leituras eventualmente consistentes ou fortemente consistentes e transações ACID. O modelo de dados é desenhado em torno dos padrões de acesso da aplicação, e o serviço não oferece operador de \emph{JOIN}; por isso, aplicações costumam desnormalizar dados para evitar múltiplas viagens ao banco \cite{dynamodb}.
 
-    \item \textbf{Amazon Redshift:} serviço de \emph{Data Warehouse as a Service} (DWaaS), baseado em armazenamento colunar e processamento massivamente paralelo (\emph{Massively Parallel Processing}, MPP), voltado a consultas analíticas (OLAP) sobre grandes volumes de dados históricos. O armazenamento por colunas, combinado a técnicas de compressão (\emph{dictionary encoding}, \emph{run-length encoding}, entre outras), permite que operações de agregação leiam apenas as colunas relevantes para a consulta, em vez de linhas inteiras, reduzindo drasticamente o volume de I/O em relação a bancos orientados a linha. O Redshift foi lançado em 2012 com base na tecnologia da ParAccel, na qual a AWS investira, como resposta ao alto custo e à rigidez de soluções tradicionais de \emph{data warehousing} on-premises (Teradata, Oracle, IBM Netezza), oferecendo desempenho equivalente a uma fração do custo e sem necessidade de hardware proprietário. Integra-se nativamente ao Amazon S3 por meio do \textbf{Redshift Spectrum}, recurso que permite consultar diretamente dados armazenados no \emph{data lake} sem necessidade de carregá-los previamente no cluster, viabilizando uma arquitetura de \emph{lake house}. Tipicamente, o Redshift é alimentado por processos de ETL a partir de bancos operacionais (RDS, Aurora, DynamoDB), consolidando dados transacionais para fins de \emph{Business Intelligence} e relatórios agregados.
+    \item \textbf{Amazon Redshift:} serviço de \emph{Data Warehouse as a Service} (DWaaS), baseado em armazenamento colunar e processamento massivamente paralelo (\emph{Massively Parallel Processing}, MPP), voltado a consultas analíticas (OLAP) sobre grandes volumes de dados históricos. O armazenamento por colunas, combinado a técnicas de compressão (\emph{dictionary encoding}, \emph{run-length encoding}, entre outras), permite que operações de agregação leiam apenas as colunas relevantes para a consulta, em vez de linhas inteiras, reduzindo drasticamente o volume de I/O em relação a bancos orientados a linha. O Redshift integra-se ao Amazon S3 por meio do \textbf{Redshift Spectrum}, recurso que permite consultar diretamente dados do \emph{data lake} sem carregá-los previamente no armazenamento local do warehouse, viabilizando uma arquitetura de \emph{lakehouse}. Tipicamente, o Redshift é alimentado por processos de ETL a partir de bancos operacionais (RDS, Aurora, DynamoDB), consolidando dados transacionais para fins de \emph{Business Intelligence} e relatórios agregados.
 
 \end{itemize}
 
@@ -387,39 +391,52 @@ Em síntese, RDS e Aurora atendem a cargas transacionais estruturadas (OLTP), co
 
 \clearpage
 \section{Estudo de Custo: Armazenamento e Processamento de 3,5 Petabytes na AWS}\label{sec:custo}
-Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em agosto de 2026, e representam preços de lista (list price) --- sem descontos por volume negociados, Savings Plans ou Reserved Capacity, que na prática reduziriam esses valores. Recomenda-se fortemente que o grupo confirme os valores atualizados no AWS Pricing Calculator antes da apresentação, pois os preços de nuvem mudam com frequência.
+Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em setembro de 2026, e representam preços públicos de lista --- sem descontos privados ou contratuais por volume. Recomenda-se confirmar os valores no AWS Pricing Calculator antes da apresentação, pois preços e condições podem mudar.
 
-\noindent\textbf{Premissa de conversão:} adotando o padrão binário usual em sistemas de armazenamento (1 PB = 1.024 TB = 1.048.576 GB), 3,5 PB equivalem a aproximadamente 3.584 TB, ou 3.670.016 GB.
+\noindent\textbf{Premissa de conversão:} o prefixo PB é decimal no SI: 1~PB = $10^{15}$ bytes. Portanto, 3,5~PB = 3.500~TB decimais = 3.500.000~GB decimais. O S3, entretanto, define sua unidade de cobrança ``GB'' como $2^{30}$ bytes e ``TB'' como $2^{40}$ bytes \cite{s3pricing}. Assim, 3,5~PB correspondem a aproximadamente \textbf{3.259.629 GB de cobrança} (GiB) ou \textbf{3.183,23 TB de cobrança} (TiB). A versão anterior do trabalho usava 3.584~TB e 3.670.016~GB; esses números correspondem a \textbf{3,5~PiB}, não a 3,5~PB.
 
 \subsection{Custo de armazenamento por classe do Amazon S3}
-O Amazon S3 Standard utiliza um modelo de preço escalonado (tiered): US\$ 0,023/GB nos primeiros 50 TB mensais, US\$ 0,022/GB nos 450 TB seguintes e US\$ 0,021/GB acima de 500 TB por mês. Aplicando essa tabela aos 3.584 TB do estudo, obtém-se a estimativa apresentada na Tabela 2.
+O Amazon S3 Standard utiliza preço escalonado: US\$~0,023/GB nos primeiros 50~TB de cobrança, US\$~0,022/GB nos 450~TB seguintes e US\$~0,021/GB acima de 500~TB por mês. Como a própria AWS define 1~TB de cobrança como 1.024~GB, os limites das duas primeiras faixas correspondem a 51.200 e 460.800~GB, respectivamente. Aplicando essas faixas aos 3.259.629~GB de cobrança do estudo, obtém-se a estimativa abaixo.
 
-\begin{table}[H]\centering\caption{Estimativa de custo mensal de armazenamento de 3,5 PB no Amazon S3 Standard (preços de lista, us-east-1, ago/2026).}\label{tab:s3standard}
-\small\begin{tabularx}{\textwidth}{@{}Yrrr@{}}\toprule
-\textbf{Faixa} & \textbf{Volume (TB)} & \textbf{Preço/GB (US\$)} & \textbf{Custo mensal (US\$)}\\\midrule
-Primeiros 50 TB & 50 & 0,023 & 1.150\\
-50 TB -- 500 TB & 450 & 0,022 & 9.900\\
-Acima de 500 TB & 3.084 & 0,021 & 64.764\\\midrule
-\textbf{Total (S3 Standard)} & \textbf{3.584} & \textbf{---} & \textbf{$\approx$ 75.814 / mês ($\approx$ US\$ 909.800 / ano)}\\\bottomrule
+\begin{table}[H]\centering\caption{Estimativa de custo mensal de armazenamento de 3,5 PB no Amazon S3 Standard (preços de lista, us-east-1, set/2026).}\label{tab:s3standard}
+\small\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{3.1cm}p{2.7cm}Y@{}}\toprule
+\textbf{Faixa} & \textbf{Volume (GB de cobrança)} & \textbf{Preço/GB (US\$)} & \textbf{Custo mensal (US\$)}\\\midrule
+Primeiros 50 TB AWS & 51.200 & 0,023 & 1.178\\
+50 TB -- 500 TB AWS & 460.800 & 0,022 & 10.138\\
+Acima de 500 TB AWS & 2.747.629 & 0,021 & 57.700\\\midrule
+\textbf{Total (S3 Standard)} & \textbf{$\approx$ 3.259.629} & \textbf{---} & \textbf{$\approx$ 69.015 / mês ($\approx$ US\$ 828.185 / ano)}\\\bottomrule
 \end{tabularx}\end{table}
 
-Como esse é um valor recorrente e elevado, é comum, na prática, aplicar políticas de ciclo de vida (lifecycle policies) que movem automaticamente dados frios para classes mais baratas. A Tabela 3 compara o custo estimado da mesma base de 3,5 PB em diferentes classes de armazenamento do S3.
+Como esse é um valor recorrente e elevado, é comum, na prática, aplicar políticas de ciclo de vida (lifecycle policies) que movem automaticamente dados frios para classes mais baratas. A Tabela~\ref{tab:s3classes_comp} compara o custo estimado da mesma base de 3,5 PB em diferentes classes de armazenamento do S3.
 
 \begin{table}[H]\centering\caption{Comparação de custo mensal estimado de 3,5 PB por classe de armazenamento do Amazon S3.}\label{tab:s3classes_comp}
 \small\begin{tabularx}{\textwidth}{@{}p{4.2cm}p{3cm}p{3cm}Y@{}}\toprule
 \textbf{Classe de armazenamento} & \textbf{Preço aprox. (US\$/GB/mês)} & \textbf{Custo mensal estimado (US\$)} & \textbf{Latência de acesso}\\\midrule
-S3 Standard & 0,021 -- 0,023 (escalonado) & $\approx$ 75.800 & Milissegundos\\
-S3 Standard-IA & 0,0125 & $\approx$ 45.875 & Milissegundos (com taxa de recuperação)\\
-S3 Glacier Flexible Retrieval & $\approx$ 0,0036 & $\approx$ 13.212 & Minutos a horas\\
-S3 Glacier Deep Archive & 0,00099 & $\approx$ 3.633 ($\approx$ US\$ 43.600/ano) & 12 a 48 horas\\\bottomrule
+S3 Standard & 0,021 -- 0,023 (escalonado) & $\approx$ 69.015 & Milissegundos\\
+S3 Standard-IA & 0,0125 & $\approx$ 40.745 & Milissegundos (com taxa de recuperação)\\
+S3 Glacier Flexible Retrieval & $\approx$ 0,0036 & $\approx$ 11.735 & Minutos a horas\\
+S3 Glacier Deep Archive & 0,00099 & $\approx$ 3.227 ($\approx$ US\$ 38.724/ano) & Horas (restauração assíncrona)\\\bottomrule
 \end{tabularx}\end{table}
 
-A diferença é expressiva: migrar a base inteira de S3 Standard para Glacier Deep Archive representaria uma economia de armazenamento superior a 95\%. Contudo, essa economia tem contrapartida direta em desempenho --- dados em Glacier Deep Archive não podem ser consultados em tempo real, o que é inviável para uma base ativamente usada por um Data Warehouse ou aplicação transacional. Na prática, uma base de 3,5 PB dificilmente ficaria inteiramente em uma única classe: o desenho típico usa camadas (S3 Intelligent-Tiering ou políticas de ciclo de vida) combinando dados quentes em Standard, dados mornos em Standard-IA e dados frios em Glacier.
+A diferença é expressiva: S3 Glacier Deep Archive reduz o custo de capacidade em cerca de 95,3\% em relação ao S3 Standard, mas não é uma alternativa equivalente. Standard-IA possui duração mínima de armazenamento de 30 dias; Glacier Flexible Retrieval, 90 dias; e Deep Archive, 180 dias. Além disso, classes Glacier têm custos e tempos de restauração e cobram metadados adicionais por objeto arquivado \cite{s3pricing}. Na prática, uma base de 3,5 PB tende a usar camadas: dados quentes em Standard, dados mornos em Standard-IA e dados frios em classes Glacier, com S3 Intelligent-Tiering ou políticas de ciclo de vida quando o padrão de acesso justificar.
 
 \subsection{Custos adicionais: requisições, transferência de dados (egress) e processamento}
-O custo de armazenamento é apenas uma das dimensões da fatura. Requisições (PUT/GET/LIST) são cobradas por milhar (cerca de US\$ 0,005 por 1.000 requisições de escrita e US\$ 0,0004 por 1.000 requisições de leitura), o que pode representar valores relevantes em cargas de altíssimo volume de acesso. A transferência de dados para fora da AWS (egress) é tipicamente a maior fonte de "surpresas" na fatura, com preços que partem de aproximadamente US\$ 0,09/GB para os primeiros 10 TB mensais, reduzindo-se em faixas seguintes --- transferir a totalidade de uma base de 3,5 PB para fora da nuvem uma única vez custaria, portanto, centenas de milhares de dólares, o que reforça a importância de processar os dados dentro da própria nuvem (evitando egress) sempre que possível.
+O custo de armazenamento é apenas uma das dimensões da fatura. Requisições (PUT/GET/LIST), recuperação de classes frias e transferência para a Internet podem ser cobradas separadamente. Na transferência de dados para a Internet, a AWS oferece atualmente os primeiros 100~GB/mês sem cobrança agregados entre serviços; acima disso há faixas de preço, e para volumes superiores a 500~TB/mês a própria página de preços orienta contatar a AWS, de modo que não é tecnicamente correto extrapolar uma tarifa pública única para 3,5~PB \cite{s3pricing}. Para uma migração definitiva para fora da AWS, existe ainda um processo de isenção de Data Transfer Out elegível mediante solicitação ao suporte \cite{s3freeegress}. Portanto, egress operacional continua sendo uma variável relevante de TCO, mas não deve ser apresentado como um custo inevitável de centenas de milhares de dólares em toda migração de saída.
 
-Para processar uma base dessa escala, a AWS oferece, entre outras opções: clusters Amazon EMR (Hadoop/Spark) para processamento distribuído em lote; Amazon Redshift (ou Redshift Spectrum, que consulta dados diretamente no S3) para cargas analíticas recorrentes; e Amazon Athena para consultas SQL ad hoc sobre dados no S3, cobradas por volume de dados escaneado (aproximadamente US\$ 5 por TB escaneado), o que também reforça a importância de formatos de armazenamento colunares e particionados (Parquet, ORC) para reduzir custo de consulta em bases desse porte.
+Para processar uma base dessa escala, a AWS oferece, entre outras opções, Amazon EMR (Hadoop/Spark) para processamento distribuído em lote, Amazon Redshift/Redshift Spectrum para cargas analíticas recorrentes e Amazon Athena para SQL ad hoc diretamente sobre o S3. No modo sob demanda, o Athena cobra atualmente US\$~5 por TB escaneado \cite{athena}. Como esse valor depende do que cada consulta realmente lê, não existe um único ``custo de processar 3,5~PB''. A Tabela~\ref{tab:athena_scenarios} mostra apenas um cenário ilustrativo, mantendo o tamanho lógico do enunciado em unidades decimais e ignorando custos auxiliares de S3/Glue/resultados.
+
+\begin{table}[H]\centering\caption{Exemplo ilustrativo de custo de processamento com Amazon Athena a US\$~5/TB escaneado.}\label{tab:athena_scenarios}
+\small\begin{tabularx}{\textwidth}{@{}p{4cm}p{3.5cm}p{3.4cm}Y@{}}\toprule
+\textbf{Fração lógica da base lida} & \textbf{Volume escaneado} & \textbf{Custo por consulta} & \textbf{Interpretação}\\\midrule
+1\% & 35~TB & $\approx$ US\$~175 & Consulta muito seletiva/particionada\\
+10\% & 350~TB & $\approx$ US\$~1.750 & Consulta analítica ampla\\
+100\% & 3.500~TB & $\approx$ US\$~17.500 & Varredura lógica integral\\\bottomrule
+\end{tabularx}\end{table}
+
+O exemplo evidencia por que compressão, particionamento e formatos colunares como Parquet/ORC têm efeito financeiro direto: reduzir o volume efetivamente escaneado reduz proporcionalmente o custo no modelo por consulta. Para cargas frequentes, concorrentes ou previsíveis, Redshift ou capacidade reservada do próprio Athena podem ser mais adequados; a escolha depende do \emph{workload}, não apenas do volume total armazenado.
+
+\subsection{Por que S3 é a camada-base nessa escala}
+Os 3,5~PB não devem ser interpretados como tamanho de uma única instância de banco relacional. O Aurora convencional, por exemplo, limita o volume de cluster a 128 ou 256~TiB conforme a versão \cite{auroralimits}; portanto, um conjunto de 3,5~PB exigiria particionamento entre vários domínios ou outra arquitetura. RDS e Aurora são apropriados para subconjuntos que exigem transações OLTP; o acervo analítico bruto pode permanecer no S3 e ser consultado por Athena ou Redshift Spectrum. Essa separação entre armazenamento de objetos e motores de consulta é a razão arquitetural para usar S3 como camada de persistência do estudo, e não apenas uma decisão de preço.
 
 \subsection{Vantagens de armazenar e processar 3,5 PB na AWS}
 \begin{itemize}[leftmargin=*]
@@ -427,23 +444,23 @@ Para processar uma base dessa escala, a AWS oferece, entre outras opções: clus
     \item \textbf{Durabilidade e disponibilidade:} 99,999999999\% de durabilidade no S3 Standard, com replicação automática entre múltiplas zonas de disponibilidade.
     \item \textbf{Ecossistema integrado:} possibilidade de usar o mesmo dado armazenado no S3 diretamente em serviços de analytics (Athena, Redshift Spectrum), machine learning (SageMaker) e data lakes, sem necessidade de movimentação (evitando egress).
     \item \textbf{Granularidade de custo por camada:} uso de políticas de ciclo de vida para reduzir custo de dados frios automaticamente, algo difícil de replicar com a mesma flexibilidade em infraestrutura própria.
-    \item \textbf{Segurança e conformidade:} criptografia nativa, controle de acesso granular (IAM) e certificações (ISO, SOC, PCI-DSS) que seriam custosas de obter em um data center próprio.
+    \item \textbf{Segurança e conformidade:} criptografia, IAM, KMS e amplo conjunto de programas/certificações de conformidade. Esses recursos reduzem trabalho de infraestrutura, mas não tornam automaticamente a aplicação do cliente conforme: configuração, dados e controles do cliente continuam dentro do modelo de responsabilidade compartilhada.
 \end{itemize}
 
 \subsection{Desvantagens de armazenar e processar 3,5 PB na AWS}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Custo recorrente elevado:} diferentemente de um investimento em hardware próprio (custo majoritariamente único), o custo em nuvem é mensal e contínuo --- na ordem de centenas de milhares de dólares por ano apenas para armazenamento em classes de acesso rápido.
-    \item \textbf{Custo de egress e vendor lock-in:} mover uma base de 3,5 PB para outro provedor, caso necessário no futuro, tem custo de transferência de dados significativo, o que dificulta a portabilidade e aumenta a dependência do provedor escolhido.
+    \item \textbf{Custo recorrente elevado:} a nuvem transforma grande parte do investimento em despesa operacional mensal. Infraestrutura própria também possui OPEX, renovação, energia e equipe, mas o custo de capacidade em nuvem permanece recorrente e precisa ser acompanhado continuamente.
+    \item \textbf{Portabilidade e egress:} transferências operacionais recorrentes para fora da AWS podem ter custo relevante e APIs/serviços proprietários também criam \emph{lock-in}. Para uma saída definitiva do provedor, a AWS atualmente oferece um processo de isenção de Data Transfer Out elegível, o que deve ser considerado separadamente do egress cotidiano \cite{s3freeegress}.
     \item \textbf{Complexidade de otimização (FinOps):} obter o melhor custo-benefício exige monitoramento contínuo, escolha correta de classes de armazenamento, formatos de arquivo e padrões de acesso --- o que demanda equipe especializada.
     \item \textbf{Latência em dados arquivados:} classes mais baratas (Glacier) não permitem acesso imediato, o que é inadequado caso parte da base de 3,5 PB precise ser consultada com frequência.
-    \item \textbf{Governança e soberania de dados:} dependendo da região escolhida, pode haver questões regulatórias (ex.: LGPD) sobre onde os dados fisicamente residem e quem tem acesso a eles.
+    \item \textbf{Governança e soberania de dados:} a escolha de região afeta residência, jurisdição, latência e controles de acesso. No caso da LGPD, transferências internacionais e os mecanismos jurídicos aplicáveis devem ser avaliados; não se deve resumir a exigência a uma regra genérica de ``dados precisam ficar no Brasil''.
 \end{itemize}
 
-Em síntese, a AWS é tecnicamente capaz de armazenar e processar uma base de 3,5 PB, mas o custo mensal recorrente --- estimado entre aproximadamente US\$ 45 mil e US\$ 76 mil por mês apenas para armazenamento (a depender da classe escolhida), sem contar processamento, requisições e eventual egress --- torna essencial um desenho cuidadoso de arquitetura (camadas de armazenamento, formatos colunares, particionamento) e uma análise de custo total de propriedade (TCO) comparando essa opção com alternativas on-premises ou de nuvem híbrida, especialmente em cenários de uso de longuíssimo prazo.
+Em síntese, a AWS é tecnicamente capaz de armazenar e processar 3,5~PB, mas as classes comparadas não são equivalentes: o armazenamento puro varia, nas premissas deste estudo, de aproximadamente US\$~3,2 mil/mês em Deep Archive a US\$~69,0 mil/mês em S3 Standard; entre as opções de acesso em milissegundos mostradas na tabela, fica aproximadamente entre US\$~40,7 mil e US\$~69,0 mil/mês. Processamento, requisições, recuperação, proteção, suporte e transferência podem alterar materialmente o TCO.
 
 \clearpage
 \section{Conclusão}
-A computação em nuvem consolidou-se como o modelo predominante para armazenamento e processamento de dados em escala, oferecendo elasticidade, durabilidade e um amplo portfólio de serviços gerenciados que reduzem a carga operacional das equipes de TI. O estudo da AWS evidenciou como os conceitos de IaaS, PaaS, SaaS, DBaaS e DWaaS se materializam em serviços concretos --- EC2, S3/EBS/Glacier e RDS/Aurora/DynamoDB/Redshift, respectivamente --- e como características como escalabilidade, disponibilidade e segurança são endereçadas pela plataforma.
+A computação em nuvem oferece elasticidade e um amplo portfólio de serviços gerenciados, mas distribui responsabilidades entre provedor e cliente. No estudo da AWS, EC2/EBS representam infraestrutura como serviço; Elastic Beanstalk exemplifica PaaS; QuickSight, SaaS; RDS, Aurora e DynamoDB são bancos gerenciados; Redshift é um data warehouse gerenciado; e S3 fornece armazenamento de objetos com classes para diferentes padrões de acesso.
 
 O estudo de custo para uma base de 3,5 Petabytes demonstrou, no entanto, que a elasticidade da nuvem tem um preço real e recorrente, e que a escolha ingênua de uma única classe de armazenamento pode custar dezenas ou centenas de milhares de dólares a mais por ano do que uma estratégia de camadas bem desenhada. Isso reforça a importância, para qualquer profissional de Banco de Dados e Engenharia de Dados, de compreender não apenas os aspectos técnicos dos serviços de nuvem, mas também seu modelo de precificação, de modo a tomar decisões de arquitetura que sejam tecnicamente adequadas e financeiramente sustentáveis.
 
@@ -460,8 +477,8 @@ O estudo de custo para uma base de 3,5 Petabytes demonstrou, no entanto, que a e
 \section{Post-Mortem}\label{sec:postmortem}
 Esta seção atende aos três elementos exigidos: log dos prompts, autoria/decisões e erros da IA com
 correções. Ela distingue fatos verificáveis nesta revisão de informações humanas que ainda precisam
-ser confirmadas. A IA utilizada na revisão de 05/09/2026 foi o Codex, da OpenAI; o documento anterior
-registra também Claude, da Anthropic.
+ser confirmadas. A estrutura inicial foi produzida com apoio do Claude (Anthropic), e revisões técnicas,
+de consistência e de apresentação foram realizadas com ferramentas da OpenAI (Codex/ChatGPT).
 
 \subsection{Log dos prompts-chave}
 \begin{longtable}{@{}p{.7cm}p{7.3cm}p{6.4cm}@{}}\toprule
@@ -470,31 +487,27 @@ registra também Claude, da Anthropic.
 2 & Pesquisa de preços atualizados de S3 e construção de estudo para 3,5 PB. & Gerou a primeira tabela de preços e a conversão PB/PiB.\\
 3 & Pedido anterior para reforçar autoria, auditoria e arquivos editáveis. & Criou matriz, declaração e lista inicial de erros.\\
 4 & ``Ajustar os trabalhos de Cloud e DAS e RAID; avaliar como professor; transformar o relatório em LaTeX e gerar o PDF; seguir NAS, SAN e AST.'' & Motivou a revisão adversarial, a reconstrução em LaTeX, os novos PDFs e o alinhamento dos slides.\\
-5 & Verificação web restrita a documentação oficial da AWS para preços, limites e semântica. & Corrigiu/confirmou preços, separou durabilidade de disponibilidade e explicitou limites e custos omitidos.\\\bottomrule
+5 & Verificação web restrita a documentação oficial da AWS para preços, limites e semântica. & Corrigiu/confirmou preços, separou durabilidade de disponibilidade e explicitou limites e custos omitidos.\\
+6 & Revisão final de consistência entre relatório, slides e Post-Mortem em 11/09/2026. & Unificou PB/PiB, sincronizou RDS/Aurora, simplificou o slide relacional e acrescentou um exemplo quantitativo de processamento com Athena.\\\bottomrule
 \end{longtable}
 
-\subsection{Autoria e decisões}
-Para a versão final, o grupo adotou a divisão abaixo por afinidade temática e responsabilidade de
-revisão. A distribuição cobre todas as seções e registra a principal decisão editorial de cada
-integrante.
+\subsection{Matriz de Responsabilidades e Declaração de Autoria}
+A tabela abaixo registra a divisão de trabalho declarada no material do grupo. Antes da entrega, cada integrante deve confirmar que a responsabilidade atribuída e a revisão crítica descrita correspondem ao que efetivamente realizou; Conclusão e Post-Mortem são apresentados como seções de revisão conjunta.
 
-\begin{longtable}{@{}p{4.2cm}p{5cm}p{5.2cm}@{}}\toprule
-\textbf{Participante/agente} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
-Bernardo Brandão Pozzato Carvalho Costa & EC2, EBS e arquitetura recomendada para os 3,5~PB. & Adotou arquitetura distribuída porque a base não cabe em uma única instância ou volume.\\
-Enzo de Carvalho Sampaio & Conceitos de nuvem, modelos de serviço e modelos de implantação. & Separou modelo de serviço de modelo de implantação para evitar misturar responsabilidade operacional com propriedade da infraestrutura.\\
-Gabriel Schmitz Corrêa Rizawinsk & Cloud Storage e critérios de disponibilidade, durabilidade, segurança e recuperação. & Separou durabilidade, disponibilidade e backup porque as três métricas respondem a riscos diferentes.\\
-Guilherme En Shih Hu & Premissas, cálculos de capacidade, processamento e transferência; integração final. & Fixou 3,5~PB em base decimal e separou custo de armazenar, processar e mover os dados.\\
-Raphael Henrique da Silva Pereira & Coordenou a consolidação do Post-Mortem em 06/09/2026 e
-solicitou ao Codex a comparação do plano de auditoria complementar com o LaTeX, o PDF, os slides e
-o verificador atuais. & Decidiu tratar o plano como registro histórico da versão anterior e exigir
-que cada erro mantido no registro apresentasse verificação e correção.\\
-Vivian Maria da Silva e Souza & RDS, Aurora, DynamoDB, Redshift e recomendação por cenário. & Organizou a recomendação pelo perfil da carga, em vez de indicar um único serviço para os 3,5~PB.\\
-Claude (Anthropic) & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
-Codex (OpenAI) & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
+\begin{longtable}{@{}p{5cm}p{5cm}p{5.4cm}@{}}\toprule
+\textbf{Integrante} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
+Vivian Maria da Silva e Souza\newline DRE 123205793 & Tipos de nuvem (pública, privada, híbrida) e Modelos de serviço (IaaS, PaaS, SaaS, DBaaS, DWaaS). & Estruturou a diferença conceitual e contratual de cada modelo para alinhar com as exigências de arquitetura.\\
+Gabriel Schmitz Corrêa Rizawinsk\newline DRE 123225573 & Computação (EC2) e Armazenamento em Bloco (EBS). & Focou na explicação de instâncias e volumes elásticos para cargas que exigem processamento e discos diretamente atrelados.\\
+Enzo de Carvalho Sampaio\newline DRE 123386206 & Armazenamento de Objetos (S3) e Bancos de Dados Relacionais (RDS e Aurora). & Definiu a arquitetura de data lakes e SGBDs gerenciados em contraste com a infraestrutura tradicional.\\
+Guilherme En Shih Hu\newline DRE 123224674 & Definição de Cloud Computing, Tipos de armazenamento (bloco, arquivo, objeto) e Consistência, durabilidade e disponibilidade. & Separou os eixos de garantias operacionais para demonstrar como mitigam diferentes categorias de risco.\\
+Raphael Henrique da Silva Pereira\newline DRE 123420783 & Critérios de avaliação de cloud e Características fundamentais (acessibilidade, disponibilidade, latência, escalabilidade, segurança). & Consolidou os parâmetros do NIST e SLAs para fundamentar a avaliação quantitativa e qualitativa da nuvem.\\
+Bernardo Brandão Pozzato Carvalho Costa\newline DRE 123289593 & Estudo de custo e arquitetura para 3,5 PB e Serviços NoSQL e DWaaS (DynamoDB e Redshift). & Conectou a precificação de altíssimo volume com as ferramentas específicas de consulta analítica e armazenamento colunar.\\
+Claude (Anthropic)\newline \textit{IA Generativa} & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
+Ferramentas da OpenAI (Codex/ChatGPT)\newline \textit{IA Generativa} & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento entre relatório e slides. & Premissas de custo explícitas; apoio técnico submetido à revisão do grupo.\\\bottomrule
 \end{longtable}
 
 \destaque{Responsáveis pelas correções}{Guilherme corrigiu os itens 1 e 6; Enzo, 2 e 3; Gabriel,
-4; Vivian, 5 e 9; Bernardo, 7 e 8; Raphael, 10. O Codex auxiliou a verificação e a edição, mas a
+4; Vivian, 5 e 9; Bernardo, 7 e 8; Raphael, 10. As ferramentas da OpenAI auxiliaram a verificação e a edição, mas a
 divisão e a aceitação das correções pertencem ao grupo.}
 
 \subsection{Erros da IA e correções aplicadas}
@@ -505,18 +518,19 @@ divisão e a aceitação das correções pertencem ao grupo.}
 3 & ``Cloud Storage'' sugeria apenas armazenamento remoto replicado. & Taxonomia AWS e literatura. & Separação explícita entre objeto, bloco, arquivo, arquivo frio e storage gerenciado.\\
 4 & Durabilidade de 11 noves podia ser lida como disponibilidade. & Documentação S3. & As métricas e seus efeitos foram separados.\\
 5 & O custo de 3,5 PB parecia total, embora só cobrisse capacidade. & Páginas oficiais de preço. & Tabela rotulada como capacidade; compute, requests, egress, recuperação, replicação e suporte separados.\\
-6 & PB e PiB foram misturados na primeira versão. & Reexecução dimensional. & Base decimal única: 3.500.000 GB; PiB aparece apenas como contraste.\\
-7 & Não havia comparação econômica com Redshift RMS e EBS nem limite prático. & Documentação oficial. & Acrescentadas linhas de contraste, limites e advertência de não equivalência.\\
+6 & Inconsistência entre PB (decimal) e PiB (binário) no cálculo de custos. & Reexecução dimensional e página de preços do S3. & PB foi mantido como unidade SI: 3,5 PB = $3,5\times10^{15}$ bytes; a capacidade foi então convertida para aproximadamente 3.259.629 GB binários de cobrança da AWS.\\
+7 & A estimativa de 3,5 PB podia sugerir que RDS/Aurora seriam recipientes alternativos equivalentes ao S3. & Documentação oficial de limites e arquitetura. & Foi explicitado que bancos OLTP armazenam apenas os subconjuntos transacionais; o acervo analítico permanece no S3 e pode ser consultado por motores analíticos.\\
 8 & ``S3 ilimitado'' escondia quotas dos consumidores e impossibilidade de um único volume/cluster. & Documentação EBS/RDS/Aurora. & Arquitetura distribuída e limites por recurso explicitados.\\
 9 & ``Gerenciado'' sugeria que backup e failover existiam em toda configuração RDS. & Documentação RDS Multi-AZ. & Responsabilidade e modalidade Multi-AZ explicitadas.\\
-10 & O Post-Mortem dizia que humanos já haviam revisado seções, sem evidência nos arquivos. & Auditoria de autoria. & Afirmações convertidas em confirmações pendentes e ações comprovadas separadas.\\\bottomrule
+10 & O Post-Mortem dizia que humanos já haviam revisado seções, sem evidência nos arquivos. & Auditoria de autoria. & Afirmações convertidas em confirmações pendentes e ações comprovadas separadas.\\
+11 & Relatório, slides e Post-Mortem chegaram a registrar versões diferentes para PB/PiB e RDS/Aurora. & Comparação cruzada dos artefatos finais. & Uma única convenção de 3,5~PB decimal foi aplicada aos cálculos; RDS/Aurora foi sincronizado e os slides foram simplificados para resumir o relatório sem criar novas afirmações.\\\bottomrule
 \end{longtable}
 
 \destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
 O plano de correções descrevia uma versão anterior, ainda sem PDF e com inconsistências de unidade,
 custos e cobertura. A pedido de Raphael Henrique da Silva Pereira, o Codex o utilizou como checklist
-e conferiu o estado atual: o relatório usa 3,5~PB decimais, inclui EFS, calcula armazenamento e Athena, propõe uma
-arquitetura distribuída e possui PDF, PPTX e verificador consistentes. A divisão final acima foi
+e conferiu o estado atual: o relatório separa PB decimal das unidades binárias de cobrança do S3, inclui EFS, estima armazenamento, quantifica um cenário de consulta no Athena e propõe uma
+arquitetura distribuída. A revisão final de 11/09/2026 reconciliou relatório, slides e Post-Mortem. A divisão final acima foi
 adotada por coerência entre as seções e as responsabilidades de revisão.}
 
 \clearpage
@@ -538,6 +552,11 @@ adotada por coerência entre as seções e as responsabilidades de revisão.}
 \bibitem{athena} AWS. \textit{Amazon Athena pricing}. \url{https://aws.amazon.com/athena/pricing/}. Acesso em 05 set. 2026.
 \bibitem{auroralimits} AWS. \textit{Quotas and constraints for Amazon Aurora}. \url{https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_Limits.html}. Acesso em 06 set. 2026.
 \bibitem{redshiftlimits} AWS. \textit{Amazon Redshift provisioned clusters: node types and managed storage limits}. \url{https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html}. Acesso em 06 set. 2026.
+\bibitem{rdsreadreplicas} AWS. \textit{Working with DB instance read replicas}. \url{https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html}. Acesso em 11 set. 2026.
+\bibitem{aurorafaq} AWS. \textit{Amazon Aurora FAQs}. \url{https://aws.amazon.com/rds/aurora/faqs/}. Acesso em 11 set. 2026.
+\bibitem{dynamodb} AWS. \textit{What is Amazon DynamoDB?}. \url{https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html}. Acesso em 11 set. 2026.
+\bibitem{ebsmultiattach} AWS. \textit{Attach an EBS volume to multiple EC2 instances using Multi-Attach}. \url{https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes-multi.html}. Acesso em 11 set. 2026.
+\bibitem{s3freeegress} AWS. \textit{Free data transfer out to internet when moving out of AWS}. \url{https://aws.amazon.com/blogs/aws/free-data-transfer-out-to-internet-when-moving-out-of-aws/}. Acesso em 11 set. 2026.
 \bibitem{wellarchitected} AWS. \textit{Security Pillar --- Shared Responsibility}. \url{https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/shared-responsibility.html}. Acesso em 06 set. 2026.
 \bibitem{rdsmultiaz} AWS. \textit{Multi-AZ DB instance deployments for Amazon RDS}. \url{https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html}. Acesso em 06 set. 2026.
 \bibitem{redshiftperf} AWS. \textit{Amazon Redshift performance: MPP and columnar storage}. \url{https://docs.aws.amazon.com/redshift/latest/dg/c_challenges_achieving_high_performance_queries.html}. Acesso em 06 set. 2026.
