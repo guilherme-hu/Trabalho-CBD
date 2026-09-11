@@ -74,7 +74,6 @@ nuvens pública, privada e híbrida. Em seguida relacionamos requisitos de banco
 serviços EC2, S3, EBS, classes S3 Glacier, RDS, Aurora, DynamoDB e Redshift. O estudo econômico
 trata 3,5~PB como um problema de arquitetura, não como simples multiplicação de preço por GB:
 separa armazenamento, processamento, requisições, recuperação, transferência, proteção e suporte.
-<<<<<<< HEAD
 Adotando a definição SI (1~PB = $10^{15}$ bytes), 3,5~PB correspondem a 3.500~TB decimais.
 Como o S3 contabiliza armazenamento em ``GB'' binários (1~GB = $2^{30}$ bytes), essa mesma
 capacidade equivale a aproximadamente 3.259.629~GB de cobrança (3.183,23~TB binários).
@@ -87,16 +86,6 @@ aproximadamente US\$~175, enquanto uma varredura lógica integral de 3,5~PB cheg
 antes de custos adicionais. Propomos, por isso, um data lake em S3 com dados colunares e particionados,
 catálogo, políticas de ciclo de vida e computação escolhida segundo o perfil da consulta. O Post-Mortem
 registra prompts-chave, divisão declarada de responsabilidades e correções aplicadas sobre saídas de IA.
-=======
-Com preços públicos da região us-east-1 consultados em setembro de 2026, 3,5~PB equivalem a 
-aproximadamente 3.584 TB binários (3.670.016 GB). Custariam cerca de US\$~75.814/mês somente 
-em S3 Standard, US\$~45.875 em Standard-IA, US\$~13.212 em Glacier Flexible Retrieval ou 
-US\$~3.633 em Deep Archive. Esses valores não são alternativas equivalentes: possuem latências, 
-cobranças de recuperação e durações mínimas distintas. Propomos, por isso, um data lake em S3 
-com dados colunares e particionados, catálogo, políticas de ciclo de vida e computação escolhida 
-segundo o perfil da consulta. O Post-Mortem registra os prompts, as intervenções humanas ainda 
-pendentes de confirmação e as correções de erros da IA.
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 
 \noindent\textbf{Palavras-chave:} computação em nuvem; AWS; armazenamento de objetos; DBaaS;
 DWaaS; data lake; custo total de propriedade; 3,5 PB.
@@ -402,35 +391,20 @@ Em síntese, RDS e Aurora atendem a cargas transacionais estruturadas (OLTP), co
 
 \clearpage
 \section{Estudo de Custo: Armazenamento e Processamento de 3,5 Petabytes na AWS}\label{sec:custo}
-<<<<<<< HEAD
 Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em setembro de 2026, e representam preços públicos de lista --- sem descontos privados ou contratuais por volume. Recomenda-se confirmar os valores no AWS Pricing Calculator antes da apresentação, pois preços e condições podem mudar.
 
 \noindent\textbf{Premissa de conversão:} o prefixo PB é decimal no SI: 1~PB = $10^{15}$ bytes. Portanto, 3,5~PB = 3.500~TB decimais = 3.500.000~GB decimais. O S3, entretanto, define sua unidade de cobrança ``GB'' como $2^{30}$ bytes e ``TB'' como $2^{40}$ bytes \cite{s3pricing}. Assim, 3,5~PB correspondem a aproximadamente \textbf{3.259.629 GB de cobrança} (GiB) ou \textbf{3.183,23 TB de cobrança} (TiB). A versão anterior do trabalho usava 3.584~TB e 3.670.016~GB; esses números correspondem a \textbf{3,5~PiB}, não a 3,5~PB.
-=======
-Nesta seção, estima-se o custo de armazenar e processar uma base de dados de 3,5 Petabytes (PB) na AWS, discutindo-se também vantagens e desvantagens dessa escolha. Os valores de referência foram obtidos na região us-east-1 (N. Virgínia), consultados em setembro de 2026, e representam preços de lista (list price) --- sem descontos por volume negociados, Savings Plans ou Reserved Capacity, que na prática reduziriam esses valores. Recomenda-se fortemente que o grupo confirme os valores atualizados no AWS Pricing Calculator antes da apresentação, pois os preços de nuvem mudam com frequência.
-
-\noindent\textbf{Premissa de conversão:} adotando o padrão binário usual em sistemas de faturamento de armazenamento (1 PB = 1.024 TB = 1.048.576 GB), 3,5 PB equivalem a aproximadamente 3.584 TB, ou 3.670.016 GB.
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 
 \subsection{Custo de armazenamento por classe do Amazon S3}
 O Amazon S3 Standard utiliza preço escalonado: US\$~0,023/GB nos primeiros 50~TB de cobrança, US\$~0,022/GB nos 450~TB seguintes e US\$~0,021/GB acima de 500~TB por mês. Como a própria AWS define 1~TB de cobrança como 1.024~GB, os limites das duas primeiras faixas correspondem a 51.200 e 460.800~GB, respectivamente. Aplicando essas faixas aos 3.259.629~GB de cobrança do estudo, obtém-se a estimativa abaixo.
 
 \begin{table}[H]\centering\caption{Estimativa de custo mensal de armazenamento de 3,5 PB no Amazon S3 Standard (preços de lista, us-east-1, set/2026).}\label{tab:s3standard}
-<<<<<<< HEAD
 \small\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{3.1cm}p{2.7cm}Y@{}}\toprule
 \textbf{Faixa} & \textbf{Volume (GB de cobrança)} & \textbf{Preço/GB (US\$)} & \textbf{Custo mensal (US\$)}\\\midrule
 Primeiros 50 TB AWS & 51.200 & 0,023 & 1.178\\
 50 TB -- 500 TB AWS & 460.800 & 0,022 & 10.138\\
 Acima de 500 TB AWS & 2.747.629 & 0,021 & 57.700\\\midrule
 \textbf{Total (S3 Standard)} & \textbf{$\approx$ 3.259.629} & \textbf{---} & \textbf{$\approx$ 69.015 / mês ($\approx$ US\$ 828.185 / ano)}\\\bottomrule
-=======
-\small\begin{tabularx}{\textwidth}{@{}Yrrr@{}}\toprule
-\textbf{Faixa} & \textbf{Volume (TB)} & \textbf{Preço/GB (US\$)} & \textbf{Custo mensal (US\$)}\\\midrule
-Primeiros 50 TB & 50 & 0,023 & 1.150\\
-50 TB -- 500 TB & 450 & 0,022 & 9.900\\
-Acima de 500 TB & 3.084 & 0,021 & 64.764\\\midrule
-\textbf{Total (S3 Standard)} & \textbf{3.584} & \textbf{---} & \textbf{$\approx$ 75.814 / mês ($\approx$ US\$ 909.800 / ano)}\\\bottomrule
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 \end{tabularx}\end{table}
 
 Como esse é um valor recorrente e elevado, é comum, na prática, aplicar políticas de ciclo de vida (lifecycle policies) que movem automaticamente dados frios para classes mais baratas. A Tabela~\ref{tab:s3classes_comp} compara o custo estimado da mesma base de 3,5 PB em diferentes classes de armazenamento do S3.
@@ -518,11 +492,7 @@ de consistência e de apresentação foram realizadas com ferramentas da OpenAI 
 \end{longtable}
 
 \subsection{Matriz de Responsabilidades e Declaração de Autoria}
-<<<<<<< HEAD
 A tabela abaixo registra a divisão de trabalho declarada no material do grupo. Antes da entrega, cada integrante deve confirmar que a responsabilidade atribuída e a revisão crítica descrita correspondem ao que efetivamente realizou; Conclusão e Post-Mortem são apresentados como seções de revisão conjunta.
-=======
-A tabela abaixo evidencia a divisão do trabalho. Cada integrante confirma ter revisado criticamente o conteúdo sob sua responsabilidade (as seções de Conclusão e Post-Mortem foram revisadas em conjunto por todo o grupo).
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 
 \begin{longtable}{@{}p{5cm}p{5cm}p{5.4cm}@{}}\toprule
 \textbf{Integrante} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
@@ -533,11 +503,7 @@ Guilherme En Shih Hu\newline DRE 123224674 & Definição de Cloud Computing, Tip
 Raphael Henrique da Silva Pereira\newline DRE 123420783 & Critérios de avaliação de cloud e Características fundamentais (acessibilidade, disponibilidade, latência, escalabilidade, segurança). & Consolidou os parâmetros do NIST e SLAs para fundamentar a avaliação quantitativa e qualitativa da nuvem.\\
 Bernardo Brandão Pozzato Carvalho Costa\newline DRE 123289593 & Estudo de custo e arquitetura para 3,5 PB e Serviços NoSQL e DWaaS (DynamoDB e Redshift). & Conectou a precificação de altíssimo volume com as ferramentas específicas de consulta analítica e armazenamento colunar.\\
 Claude (Anthropic)\newline \textit{IA Generativa} & Geração inicial declarada no DOCX anterior. & Saída submetida à revisão; não é autor acadêmico.\\
-<<<<<<< HEAD
 Ferramentas da OpenAI (Codex/ChatGPT)\newline \textit{IA Generativa} & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento entre relatório e slides. & Premissas de custo explícitas; apoio técnico submetido à revisão do grupo.\\\bottomrule
-=======
-Codex (OpenAI)\newline \textit{IA Generativa} & Auditoria, pesquisa oficial, reestruturação, LaTeX, PDF e alinhamento dos slides em 05/09/2026. & Premissas de custo explícitas; nenhuma contribuição humana foi inventada.\\\bottomrule
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 \end{longtable}
 
 \destaque{Responsáveis pelas correções}{Guilherme corrigiu os itens 1 e 6; Enzo, 2 e 3; Gabriel,
@@ -552,13 +518,8 @@ divisão e a aceitação das correções pertencem ao grupo.}
 3 & ``Cloud Storage'' sugeria apenas armazenamento remoto replicado. & Taxonomia AWS e literatura. & Separação explícita entre objeto, bloco, arquivo, arquivo frio e storage gerenciado.\\
 4 & Durabilidade de 11 noves podia ser lida como disponibilidade. & Documentação S3. & As métricas e seus efeitos foram separados.\\
 5 & O custo de 3,5 PB parecia total, embora só cobrisse capacidade. & Páginas oficiais de preço. & Tabela rotulada como capacidade; compute, requests, egress, recuperação, replicação e suporte separados.\\
-<<<<<<< HEAD
 6 & Inconsistência entre PB (decimal) e PiB (binário) no cálculo de custos. & Reexecução dimensional e página de preços do S3. & PB foi mantido como unidade SI: 3,5 PB = $3,5\times10^{15}$ bytes; a capacidade foi então convertida para aproximadamente 3.259.629 GB binários de cobrança da AWS.\\
 7 & A estimativa de 3,5 PB podia sugerir que RDS/Aurora seriam recipientes alternativos equivalentes ao S3. & Documentação oficial de limites e arquitetura. & Foi explicitado que bancos OLTP armazenam apenas os subconjuntos transacionais; o acervo analítico permanece no S3 e pode ser consultado por motores analíticos.\\
-=======
-6 & Inconsistência entre PB (decimal) e PiB (binário) no cálculo de custos. & Reexecução dimensional. & Adoção do padrão binário (3,5 PB = 3.584 TB = 3.670.016 GB) para alinhar a estimativa com as regras reais de faturamento da AWS.\\
-7 & Não havia comparação econômica com Redshift RMS e EBS nem limite prático. & Documentação oficial. & Acrescentadas linhas de contraste, limites e advertência de não equivalência.\\
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 8 & ``S3 ilimitado'' escondia quotas dos consumidores e impossibilidade de um único volume/cluster. & Documentação EBS/RDS/Aurora. & Arquitetura distribuída e limites por recurso explicitados.\\
 9 & ``Gerenciado'' sugeria que backup e failover existiam em toda configuração RDS. & Documentação RDS Multi-AZ. & Responsabilidade e modalidade Multi-AZ explicitadas.\\
 10 & O Post-Mortem dizia que humanos já haviam revisado seções, sem evidência nos arquivos. & Auditoria de autoria. & Afirmações convertidas em confirmações pendentes e ações comprovadas separadas.\\
@@ -568,13 +529,8 @@ divisão e a aceitação das correções pertencem ao grupo.}
 \destaque{Consolidação do Post-Mortem coordenada por Raphael --- 06/09/2026}{%
 O plano de correções descrevia uma versão anterior, ainda sem PDF e com inconsistências de unidade,
 custos e cobertura. A pedido de Raphael Henrique da Silva Pereira, o Codex o utilizou como checklist
-<<<<<<< HEAD
 e conferiu o estado atual: o relatório separa PB decimal das unidades binárias de cobrança do S3, inclui EFS, estima armazenamento, quantifica um cenário de consulta no Athena e propõe uma
 arquitetura distribuída. A revisão final de 11/09/2026 reconciliou relatório, slides e Post-Mortem. A divisão final acima foi
-=======
-e conferiu o estado atual: o relatório usa o padrão binário para alinhar com o faturamento da AWS, inclui EFS, calcula armazenamento e Athena, propõe uma
-arquitetura distribuída e possui PDF, PPTX e verificador consistentes. A divisão final acima foi
->>>>>>> 94c1c2eec1470a1c992bc45ebba23236b630dbc8
 adotada por coerência entre as seções e as responsabilidades de revisão.}
 
 \clearpage
