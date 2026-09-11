@@ -33,7 +33,7 @@
 \newcommand{\numerogrupo}{[substituir]}
 
 \pagestyle{fancy}\fancyhf{}
-\fancyhead[L]{\small\color{tinta2}Banco de Dados --- DAS e Arquiteturas RAID}
+\fancyhead[L]{\small\color{tinta2}Construção de Banco de Dados --- DAS e Arquiteturas RAID}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{.4pt}
 \hypersetup{pdftitle={Arquiteturas de Armazenamento Fisico para SBD: DAS e RAID},
@@ -51,7 +51,7 @@
 {\Large Direct attached storage (DAS) e arquiteturas RAID}\\[4mm]
 {\large Interfaces DAS e Níveis de RAID Padrão e Não Padrão}\\[6mm]
 {\color{azul}\rule{\textwidth}{1.2pt}}\\[8mm]
-{\large\bfseries Grupo \numerogrupo}\\[6mm]
+{\large\bfseries Grupo 3}\\[6mm]
 \begin{tabular}{@{}ll@{}}\toprule
 \textbf{Nome completo} & \textbf{DRE}\\\midrule
 Bernardo Brandão Pozzato Carvalho Costa & 123289593\\
@@ -72,11 +72,11 @@ Vivian Maria da Silva e Souza & 123205793\\\bottomrule
 Este trabalho apresenta um estudo sobre arquiteturas de armazenamento físico (storage) para Sistemas de Banco de Dados (SBD), com foco em Direct Attached Storage (DAS) e em arranjos RAID (Redundant Array of Independent Disks). São discutidas as principais interfaces de conexão para DAS --- SATA, eSATA, SAS, FireWire, USB (3 e 4) e HBA (Host Bus Adapter) ---, comparando velocidade, topologia e adequação a cargas de trabalho de banco de dados. Em seguida, aprofunda-se o estudo de RAID: os conceitos de paralelismo (desempenho) e redundância (disponibilidade e confiabilidade); as técnicas de data striping em nível de bit e de bloco; mirroring e shadowing; as métricas de confiabilidade MTTF, MTBF, MTTR e MTTDL; os níveis padrão de RAID (0 a 6, além dos arranjos aninhados 0+1 e 10); e níveis não padrão (RAID 1.5, RAID 7, RAID-DP, RAID-S, Matrix RAID, entre outros). Por fim, apresentam-se recomendações comparativas de uso e aplicação de cada nível conforme o perfil de carga típico de um SBD. O trabalho foi produzido com apoio de um assistente de Inteligência Artificial generativa (Claude, da Anthropic), conforme autorizado pelo enunciado da tarefa, e inclui um relatório Post-Mortem detalhando o uso dessa ferramenta.
 
 \section{Introdução}
-Todo Sistema de Banco de Dados depende, em última instância, de um subsistema de armazenamento físico capaz de gravar e recuperar dados de forma confiável, mesmo diante de falhas de hardware. Diferentemente da memória principal (volátil e de acesso rapidíssimo), os discos --- magnéticos (HDD) ou de estado sólido (SSD) --- são o meio de armazenamento não volátil onde residem as tabelas, índices e logs de um SGBD, e sua organização física tem impacto direto sobre desempenho, disponibilidade e durabilidade dos dados.
+Todo Sistema de Banco de Dados depende, em última instância, de um subsistema de armazenamento físico capaz de gravar e recuperar dados de forma confiável, mesmo diante de falhas de hardware. Diferentemente da memória principal (volátil e de acesso rapidíssimo), os discos, tanto os magnéticos (HDD) quanto os de de estado sólido (SSD), são o meio de armazenamento não volátil onde residem as tabelas, índices e logs de um SGBD, e sua organização física tem impacto direto sobre desempenho, disponibilidade e durabilidade dos dados.
 
-Neste trabalho, o grupo optou por estudar as arquiteturas de armazenamento do tipo DAS (Direct Attached Storage), em que os discos estão conectados diretamente ao servidor (ou a um host adapter dedicado), sem passar por uma rede de armazenamento compartilhada. Sobre essa base física, aprofunda-se o estudo das técnicas RAID, criadas justamente para combinar múltiplos discos físicos independentes em um único volume lógico, obtendo ganhos de desempenho (paralelismo), de confiabilidade (redundância) ou de ambos, a depender do nível escolhido.
+Neste trabalho, o grupo estudou as arquiteturas de armazenamento do tipo DAS (Direct Attached Storage), em que os discos estão conectados diretamente ao servidor (ou a um host adapter dedicado), sem passar por uma rede de armazenamento compartilhada. Sobre essa base física, aprofunda-se o estudo das técnicas RAID, criadas justamente para combinar múltiplos discos físicos independentes em um único volume lógico, obtendo ganhos de desempenho (paralelismo), de confiabilidade (redundância) ou de ambos, a depender do nível escolhido.
 
-O texto está organizado da seguinte forma: a Seção 3 situa o conceito de DAS frente a NAS e SAN; a Seção 4 descreve as interfaces de conexão SATA, eSATA, SAS, FireWire, USB e HBA; a Seção 5 introduz RAID e os conceitos de paralelismo e redundância; a Seção 6 detalha as técnicas de striping, mirroring e paridade; a Seção 7 apresenta as métricas de confiabilidade MTTF, MTBF, MTTR e MTTDL; a Seção 8 descreve comparativamente os níveis padrão de RAID (0 a 6, 0+1 e 10); a Seção 9 aborda níveis não padrão (RAID 1.5, 7, DP, S, Matrix, entre outros); a Seção 10 traz recomendações de uso para cenários típicos de SBD; a Seção 11 conclui o trabalho; e a Seção 12 apresenta o relatório Post-Mortem sobre o uso de IA generativa exigido pelo enunciado.
+Para abranger esses tópicos de forma estruturada, o documento organiza-se da seguinte maneira: a Seção 3 contextualiza o DAS frente às arquiteturas NAS e SAN; a Seção 4 detalha as interfaces de conexão SATA, eSATA, SAS, FireWire, USB e o adaptador HBA; a Seção 5 introduz os fundamentos de RAID, paralelismo e redundância; a Seção 6 explora as técnicas de \emph{striping}, \emph{mirroring} e paridade; a Seção 7 discute as métricas de confiabilidade MTTF, MTBF, MTTR e MTTDL; a Seção 8 analisa os níveis padrão de RAID (0 a 6, 0+1 e 10); a Seção 9 examina os arranjos não padrão e proprietários (RAID 1.5, 7, DP, S, Matrix, entre outros); a Seção 10 sintetiza recomendações de aplicação para cenários reais de SBD; a Seção 11 encerra o estudo com as considerações finais; e, por fim, a Seção 12 apresenta o relatório \emph{Post-Mortem} detalhando o processo colaborativo e o suporte de inteligência artificial generativa na execução da tarefa.
 
 \section{Armazenamento Físico em SBD: DAS, NAS e SAN}
 A infraestrutura de armazenamento é a base física sobre a qual um SGBD sustenta persistência e
@@ -108,50 +108,68 @@ simplicidade e escopo limitado que torna o DAS, e as técnicas de organização 
 sobre ele, o objeto central das seções seguintes.
 
 \section{Interfaces de Conexão para DAS}
-A conexão física entre o host e os discos de um arranjo DAS pode ser feita por diferentes interfaces, cada uma com características próprias de velocidade, topologia e adequação a cargas de trabalho de banco de dados. Esta seção descreve as interfaces: SATA, eSATA, SAS, FireWire, USB (3 e 4) e HBA.
+
+A comunicação física entre o host e os dispositivos de armazenamento em uma arquitetura DAS é mediada por diferentes interfaces. A escolha de uma tecnologia define não apenas a largura de banda disponível, mas também a topologia de conexão, o suporte a múltiplos caminhos e a integridade no tratamento de comandos de I/O. Esta seção analisa as principais interfaces empregadas: SATA, eSATA, SAS, FireWire, USB (3 e 4) e o HBA.
 
 \subsection{SATA (Serial ATA) e eSATA}
-O SATA (Serial Advanced Technology Attachment) é a interface serial que substituiu o antigo PATA/IDE paralelo, tornando-se a interface padrão para discos de baixo custo em desktops e servidores de entrada. É uma interface ponto a ponto, onde cada porta SATA conecta a controladora a um único disco. Suas velocidades de sinalização são SATA 1,5 Gb/s, SATA 3 Gb/s e SATA 6 Gb/s; os nomes ``SATA I'', ``SATA II'' e ``SATA III'' são usos informais que a SATA-IO recomenda evitar. SATA 6 Gb/s (associado às revisões 3.x) entrega cerca de 550--600 MB/s úteis e continua amplamente utilizado. O SATA suporta NCQ (Native Command Queuing), que permite reordenar até 32 comandos pendentes para otimizar o padrão de acesso ao disco, e hot-plug, quando o suporte estiver presente no host, sistema operacional e chassi/controladora \cite{sataio}.
-\revisaovivian{Nomenclatura SATA corrigida: ``SATA I/II/III'' foi substituída por SATA 1,5/3/6 Gb/s, conforme a SATA-IO.}
 
-O eSATA (external SATA) é a variante externa do SATA: usa o mesmo protocolo e as mesmas velocidades de sinalização suportadas pelo host e pelo dispositivo, porém com conector e cabo mais robustos, adequados para gabinetes externos. O eSATA convencional não transporta energia, exigindo alimentação separada para o disco externo. Isso, somado à popularização do USB 3.x e do USB4, contribuiu para seu desuso na maioria dos equipamentos modernos \cite{esata}.
-\revisaovivian{Precisão adicionada: 6 Gb/s não é atributo do eSATA original de 2004, mas depende da revisão SATA implementada.}
+O SATA (\emph{Serial Advanced Technology Attachment}) consolidou-se como a interface padrão para dispositivos de armazenamento de custo acessível, substituindo o antigo padrão paralelo PATA. Estruturado em uma topologia ponto a ponto dedicada, cada porta SATA conecta diretamente a controladora a um único dispositivo. As especificações oficiais da \emph{SATA-IO} definem as taxas de sinalização como SATA 1,5 Gb/s, SATA 3 Gb/s e SATA 6 Gb/s, desaconselhando o uso das nomenclaturas informais comerciais como "SATA I", "II" ou "III". A geração SATA 6 Gb/s (vinculada às revisões 3.x) entrega uma vazão útil de aproximadamente 550 a 600 MB/s, mantendo-se amplamente aplicada. O padrão oferece suporte nativo a NCQ (\emph{Native Command Queuing}),permitindo o reordenamento de até 32 comandos na fila do dispositivo, e a \emph{hot-plug}, desde que a controladora, o sistema operacional e o gabinete possuam suporte adequado \cite{sataio}.
+
+O \emph{eSATA} (\emph{External SATA}) estende a sinalização elétrica do SATA para o ambiente externo por meio de conectores e cabos blindados. Como o padrão original não fornece alimentação elétrica pelo mesmo cabo, exige-se uma fonte de energia dedicada para o gabinete externo. Esse fator, somado à consolidação do USB 3.x e do USB4, reduziu drasticamente sua adoção em projetos modernos \cite{esata}.
 
 \subsection{SAS (Serial Attached SCSI)}
-O SAS (Serial Attached SCSI) é uma interface serial de classe empresarial, evoluída do antigo SCSI paralelo e baseada no conjunto de comandos SCSI sobre uma camada física serial. É muito usado em servidores e controladoras RAID corporativas, sobretudo em gavetas de discos e cargas orientadas a capacidade e disponibilidade. Em relação ao SATA, destaca-se pelo dual-porting: um disco SAS pode ser acessado por dois caminhos/controladoras independentes, permitindo multipath I/O e maior tolerância à falha de controladora. Expansores SAS também permitem topologias escaláveis e, quando projetadas para isso, com múltiplos iniciadores. A profundidade de fila pode ser maior que a do SATA/NCQ, mas o valor efetivo depende da controladora, do driver e do dispositivo. Uma controladora SAS pode conectar discos SATA; quando o disco SATA está atrás de um expansor SAS, a comunicação usa STP (SATA Tunneling Protocol). O inverso não é possível \cite{sas4}.
-\revisaovivian{Removidos os limites apresentados como universais (65.535 dispositivos e 254 comandos); eles dependem da implementação/topologia. Também foi restringida a afirmação de predominância do SAS.}
+O SAS (\emph{Serial Attached SCSI}) representa a evolução em alta velocidade do protocolo SCSI (\emph{Small Computer System Interface}), que é um padrão histórico de barramento paralelo voltado a dispositivos de alta confiabilidade. O SAS traduz a robustez desse protocolo para uma camada física serial, sendo projetado especificamente para ambientes corporativos e de alta disponibilidade. Entre seus diferenciais arquiteturais frente ao SATA, destaca-se o suporte a \emph{dual-porting}, permitindo que um único disco seja conectado simultaneamente a duas controladoras ou caminhos distintos para habilitar redundância e tolerância a falhas via \emph{multipath I/O}. O uso de expansores SAS possibilita a construção de topologias escaláveis com múltiplos iniciadores (controladores que originam requisições de I/O) e filas de comandos significativamente mais profundas. Além disso, controladoras SAS possuem retrocompatibilidade para endereçar discos SATA diretamente por meio do protocolo STP (\emph{SATA Tunneling Protocol}, que encapsula comandos SATA para transmissão na rede SAS), embora a recíproca não seja verdadeira \cite{sas4}.
 
-As gerações do SAS evoluíram de SAS-1 (3 Gb/s, 2004) para SAS-2 (6 Gb/s, 2009), SAS-3 (12 Gb/s, 2013) e SAS-4, comercialmente chamada de 24G SAS. A camada física SAS-4 opera a 22,5 Gbaud por via, com cerca de 2,4 GB/s de largura de banda efetiva; a norma publicada é a INCITS 534-2019 \cite{sas4}. Sua redundância de caminho e sua integração a expansores fazem do SAS uma opção apropriada para arranjos RAID corporativos. A adequação à operação 24/7, porém, é uma característica especificada pelo fabricante do disco, não uma certificação do protocolo SAS.
-\revisaovivian{Corrigidos: enquadramento temporal do SAS-4, unidade de sinalização e afirmação indevida de ``certificação 24/7'' do protocolo.}
+As gerações do SAS evoluíram de forma incremental: o SAS-1 (3 Gb/s, 2004), o SAS-2 (6 Gb/s, 2009), o SAS-3 (12 Gb/s, 2013) e, mais recentemente, o SAS-4 (comercializado como 24G SAS), normatizado pela INCITS 534-2019, que opera a 22,5 Gbaud por canal e atinge cerca de 2,4 GB/s de largura de banda efetiva \cite{sas4}. Essa robustez de protocolo torna o SAS a interface predominante em arranjos RAID de servidores corporativos de banco de dados.
 
 \subsection{FireWire (IEEE 1394)}
-O FireWire (padronizado como IEEE 1394 e também comercializado como i.LINK pela Sony) foi uma interface serial desenvolvida pela Apple nos anos 1990, historicamente usada para armazenamento externo e equipamentos de áudio e vídeo. Diferentemente do USB da época, o FireWire permitia comunicação peer-to-peer entre dispositivos (sem exigir que um computador atuasse como controlador central) e suportava encadeamento (daisy-chaining) de até 63 dispositivos. Suas duas revisões mais difundidas foram o FireWire 400 (400 Mbps) e o FireWire 800 (800 Mbps). Com a popularização do USB 3.x --- mais rápido, mais barato e universalmente suportado --- e, posteriormente, do Thunderbolt e do USB4, o FireWire caiu em desuso: hoje é considerado uma interface legada, raramente encontrada em equipamentos novos, e é mencionada aqui principalmente por seu valor histórico e por eventualmente ainda aparecer em DAS herdado de estações de trabalho e sistemas de captura de áudio/vídeo mais antigos.
+O FireWire, padronizado pelo IEEE 1394 (e comercializado pela Sony sob o nome \emph{i.LINK}), constitui uma interface serial de arquitetura \emph{peer-to-peer} desenvolvida pela Apple na década de 1990. Concebido originalmente para conectar periféricos de alta largura de banda, como câmeras de vídeo digital, placas de áudio e storages externos, o FireWire diferenciava-se das arquiteturas host-cêntricas da época por permitir a comunicação direta entre dispositivos sem a mediação obrigatória de um computador central, além de suportar o encadeamento (\emph{daisy-chain}) de até 63 nós em um mesmo barramento. 
 
-\subsection{USB (USB 3 e USB4)}
-O USB (Universal Serial Bus) é a interface mais universal para armazenamento externo, por sua ubiquidade, baixo custo e capacidade de fornecer energia ao dispositivo pelo próprio cabo. É, no entanto, uma interface host-cêntrica (hierárquica): diferentemente do SAS/SCSI, sempre exige um controlador host mediando a comunicação, o que a torna adequada principalmente para DAS de host único (backup, discos externos portáteis), e não para topologias multi-iniciador.
+Suas duas principais variações comerciais foram o FireWire 400 (operando a 400 Mb/s) e o FireWire 800 (a 800 Mb/s), que ofereciam bom determinismo de transferência graças ao seu suporte a tráfego isócrono (ideal para fluxos contínuos de mídia). Contudo, com a evolução vertiginosa de barramentos universais e de baixo custo como o USB 3.x, o Thunderbolt e o USB4, o padrão se tornou obsoleto para novas implantações de infraestrutura. Sua relevância restringe-se hoje a contextos históricos, migração de dados e manutenção de estações de trabalho legadas de áudio, vídeo e armazenamento.
 
-A especificação USB 3.0 foi publicada em 2008 e introduziu o modo ``SuperSpeed'' de 5 Gb/s; posteriormente, essa modalidade passou a ser denominada USB 3.2 Gen 1. Revisões seguintes elevaram a velocidade para 10 Gb/s (USB 3.2 Gen 2) e 20 Gb/s (USB 3.2 Gen 2x2, usando dois canais). O USB4 foi publicado em 2019 e se baseia na especificação de protocolo Thunderbolt 3 contribuída pela Intel; ele permite o tunelamento de protocolos de dados e vídeo, incluindo PCI Express quando suportado pela implementação, com até 40 Gb/s. A USB4 Versão 2.0, publicada pelo USB-IF em outubro de 2022, elevou a largura de banda agregada para até 80 Gb/s em modo simétrico. Há ainda modo assimétrico opcional de até 120 Gb/s em um sentido e 40 Gb/s no oposto, voltado especialmente a displays, usando sinalização PAM3 \cite{usbif}. Essas velocidades tornam viável um DAS externo de alto desempenho por USB-C, desde que host, cabo e gabinete suportem a modalidade anunciada.
-\revisaovivian{Corrigidos: cronologia USB 3, interpretação de 80 Gb/s como banda agregada e caráter dependente de implementação do túnel PCIe.}
+\subsection{USB (USB 3 e USB 4)}
+
+O USB (\emph{Universal Serial Bus}) consolidou-se como a interface universal mais difundida para periféricos e armazenamento externo, destacando-se pela facilidade de conexão e fornecimento integrado de energia. Arquiteturalmente, opera sob um modelo estritamente host-cêntrico, exigindo um controlador mestre no host para gerenciar o tráfego, o que inviabiliza topologias multi-iniciador nativas e restringe seu uso em SBD a cenários de host único, como réplicas locais, ambientes de desenvolvimento e rotinas de backup.
+
+A evolução do padrão seguiu nas seguintes gerações:
+\begin{itemize}[leftmargin=*]
+\item \textbf{USB 3.x:} Iniciado em 2008 com o modo \emph{SuperSpeed} de 5 Gb/s (posteriormente reorganizado sob a nomenclatura USB 3.2 Gen 1), o padrão alcançou 10 Gb/s no USB 3.2 Gen 2 e atingiu 20 Gb/s na especificação USB 3.2 Gen 2x2 por meio de operação dual-channel.
+\item \textbf{USB4 e Versão 2.0:} Lançado em 2019 com base nas especificações do protocolo Thunderbolt 3, o USB4 introduziu o tunelamento dinâmico de pacotes de dados e vídeo a 40 Gb/s. Em outubro de 2022, a especificação USB4 Versão 2.0 elevou a largura de banda agregada para até 80 Gb/s em modo simétrico através da modulação PAM3, contemplando opcionalmente um modo assimétrico de 120 Gb/s voltado a aplicações gráficas de alta densidade \cite{usbif}.
+\end{itemize}
+
+Apesar de o desempenho das revisões recentes aproximar o USB das taxas de transferência de SSDs internos, a viabilidade de uso em ambientes de produção exige validação rigorosa de toda a cadeia de hardware (cabos certificados, controladores e suporte a comandos de bloco avançados como o UASP).
 
 \subsection{HBA (Host Bus Adapter)}
-Diferentemente das interfaces anteriores, o HBA (Host Bus Adapter) não é, em si, um padrão físico de cabo, mas a controladora que faz a ponte entre o barramento interno do host e a interface de armazenamento (SAS, SATA ou, em outros contextos, Fibre Channel). Pode ser um cartão PCI Express ou estar integrada à placa-mãe; fornece as portas físicas de conexão aos discos e implementa o protocolo de comunicação com eles. É por meio do HBA que as interfaces discutidas nesta seção chegam ao processador e à memória do servidor.
+Diferentemente das interfaces puramente baseadas em cabos abordadas anteriormente, o \textbf{HBA} (\emph{Host Bus Adapter}) traduz o adaptador de barramento, que é tipicamente implementado como uma placa de expansão conectada via slot PCI Express (\emph{PCIe}) à placa-mãe do servidor, responsável por interligar o processador e a memória do host aos dispositivos de armazenamento. O HBA atua provendo as portas físicas de conexão e executando o processamento de I/O e a camada de transporte para protocolos como SAS, SATA ou Fibre Channel, descarregando o processador principal de tarefas complexas de gerenciamento de dados e traduzindo os comandos do sistema operacional em sinais compreensíveis pela mídia.
 
-Para fins de RAID, a distinção mais importante é entre um HBA em modo passthrough, que expõe cada disco individualmente ao sistema operacional, e uma controladora RAID de hardware. ``JBOD'' descreve a forma de apresentação dos discos, e não é sinônimo de HBA. Uma controladora RAID pode agregar processador dedicado, engine de XOR, memória cache (frequentemente protegida por bateria ou capacitor com flash de backup --- BBU/FBWC) e firmware capaz de calcular paridade e reconstruir arranjos de forma autônoma, reduzindo o uso da CPU do host. Sem controladora RAID de hardware, o RAID pode ser implementado em software pelo sistema operacional ou pelo sistema de arquivos (como Linux mdadm, Windows Storage Spaces ou ZFS), usando a CPU do host. Essa alternativa pode ter excelente desempenho; a latência e o consumo de CPU dependem da carga, do cache e da implementação.
-\revisaovivian{Corrigidos: ``fisikcas'', equivalência indevida entre HBA e JBOD, e generalizações sobre RAID por software.}
+No escopo de uma arquitetura DAS, o HBA constitui a base física sobre a qual diferentes estratégias de gerenciamento de discos podem ser construídas. Funcionalmente, ele pode operar em duas filosofias distintas:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Modo \emph{Passthrough} (ou \emph{Initiator Target}):} O HBA atua de forma transparente, gerencia o barramento e expõe cada disco rígido ou SSD de maneira individual e direta ao sistema operacional. É nesse modo que termos como \emph{JBOD} (\emph{Just a Bunch of Disks}) se aplicam, descrevendo apenas a apresentação lógica dos discos independentes (sem implicar que o HBA em si seja um JBOD). Essa abordagem transfere a inteligência de gerenciamento e redundância para o software.
+    \item \textbf{Controladora RAID Dedicada:} Quando o adaptador assume funções avançadas de gerenciamento de discos, ele passa a ser tratado como uma controladora RAID de hardware. Nesses dispositivos, a arquitetura básica do HBA é enriquecida com microprocessadores próprios, motores dedicados para o cálculo de paridade (XOR) em hardware e módulos de cache volátil protegidos por fontes de energia redundantes e memória flash, como o BBU (\emph{Battery Backup Unit}) ou o FBWC (\emph{Flash-Backed Write Cache}). Essa estrutura permite que a controladora configure múltiplos discos para trabalharem conjuntamente como uma única unidade lógica tolerante a falhas, gerindo reconstruções de forma autônoma e isolando a CPU do host.
+\end{itemize}
+
+Vale notar que, na ausência de uma controladora RAID de hardware, a camada de redundância pode ser suprida por software, seja pelo próprio sistema operacional ou por sistemas de arquivos avançados (como o utilitário \emph{mdadm} no Linux, os \emph{Storage Spaces} no Windows ou o \emph{ZFS}), utilizando os recursos de processamento da máquina. Assim, enquanto o HBA garante o transporte físico, o processamento de I/O de baixo nível e a conectividade entre o host e as mídias, a escolha entre usá-lo como um adaptador puro (\emph{passthrough}) ou integrá-lo a uma controladora com recursos de RAID definirá onde residirá a inteligência de tolerância a falhas do sistema.
 
 \subsection{Quadro Comparativo das Interfaces DAS}
-\begin{table}[H]\centering\caption{Comparativo das interfaces de conexão para DAS discutidas no enunciado.}\label{tab:interfaces}
-\small\begin{tabularx}{\textwidth}{@{}p{2cm}p{1.5cm}p{2cm}p{2cm}p{2cm}Y@{}}\toprule
-\textbf{Interface} & \textbf{Geração/Ano} & \textbf{Velocidade típica} & \textbf{Topologia} & \textbf{Multi-iniciador / Dual-path} & \textbf{Uso típico em SBD}\\\midrule
-SATA 6 Gb/s & Revisão 3.x & 6 Gb/s ($\approx$ 600 MB/s) & Ponto a ponto & Não & Armazenamento de baixo custo, servidores de entrada\\
-eSATA & 2004 & Até 6 Gb/s (conforme a revisão SATA) & Ponto a ponto (externo) & Não & Discos externos legados (em declínio face ao USB)\\
-SAS-4 (24G) & 2019 & 22,5 Gbps ($\approx$ 2.400 MB/s) & Ponto a ponto com expansores & Sim (dual-port) & Servidores de banco de dados e arrays RAID corporativos\\
-FireWire 800 & 2002 & 0,8 Gbps (800 Mbps) & Barramento peer-to-peer, encadeável & N/A (peer-to-peer) & Legado --- praticamente descontinuado\\
-USB 3.2 Gen2x2 & 2017 & 20 Gbps & Ponto a ponto (host-cêntrico) & Não & Discos externos, backup, DAS portátil\\
-USB4 v2.0 & 2022 & Até 80 Gb/s agregados (120/40 Gb/s assimétrico) & Ponto a ponto (host-cêntrico), túnel de protocolos & Não & DAS externo de alto desempenho\\
-HBA & --- & Depende da interface física agregada & Adaptador PCIe host $\leftrightarrow$ storage & Depende do modo (JBOD/RAID) & Ponte entre o barramento do servidor e discos SAS/SATA\\\bottomrule
+\begin{table}[H]\centering\caption{Comparativo resumido das interfaces de conexão para DAS.}\label{tab:interfaces}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}p{3cm}p{3.5cm}p{4.2cm}Y@{}}\toprule
+\textbf{Interface e Ano} & \centering\textbf{Velocidade Típica} & \centering\textbf{Topologia e Recursos}\arraybackslash & \textbf{Uso Típico em SBD}\\\midrule
+\textbf{SATA 6G} \newline Rev. 3.x (2009) & $\approx$ 600 MB/s úteis & Ponto a ponto dedicada; suporte a NCQ e \mbox{hot-plug}. & Servidores de entrada e armazenamento secundário. \\
+\addlinespace
+\textbf{eSATA} \newline (2004) & Até 6 Gb/s (conforme revisão) & Ponto a ponto externa; conector blindado sem energia integrada. & Discos externos legados e gabinetes antigos. \\
+\addlinespace
+\textbf{SAS-4 (24G)} \newline (2019) & $\approx$ 2,4 GB/s efetivos & Ponto a ponto com expansores; suporte a \mbox{dual-port} e \mbox{multipath}. & Servidores corporativos, storages e arrays RAID. \\
+\addlinespace
+\textbf{FireWire 800} \newline (2002) & 800 Mb/s & Barramento \emph{peer-to-peer} (\emph{daisy-chain}); tráfego isócrono. & Sistemas legados de áudio, vídeo e arquivos. \\
+\addlinespace
+\textbf{USB 3.2 Gen2x2} \newline (2017) & 20 Gb/s agregados & Host-cêntrica dual-channel; exige suporte a UASP. & Discos externos portáteis, backups e testes. \\
+\addlinespace
+\textbf{USB4 v2.0} \newline (2022) & Até 80 Gb/s (120/40 assimétrico) & Host-cêntrica com tunelamento dinâmico de protocolos. & Gabinetes externos de altíssimo desempenho. \\
+\addlinespace
+\textbf{HBA} \newline (Adaptador) & Variável (conforme o meio físico) & Conexão PCIe host $\leftrightarrow$ storage; operação em modo \emph{passthrough} ou RAID. & Ponte de integração entre o barramento e as mídias SAS/SATA. \\\bottomrule
 \end{tabularx}\end{table}
-\revisaovivian{Tabela atualizada para eliminar ``SATA III'', qualificar a velocidade do eSATA e explicitar a banda agregada do USB4 v2.0.}
 
 \section{RAID: Conceito, Paralelismo e Redundância}
 RAID (Redundant Array of Independent Disks) é a técnica de combinar dois ou mais discos físicos independentes em um único volume lógico, gerenciado de forma transparente para o sistema operacional e para o SGBD. O objetivo principal é utilizar um conjunto de discos para superar o desempenho de um único disco, mitigando, ao mesmo tempo, a maior probabilidade de falha que surge ao usar múltiplos componentes.
@@ -159,14 +177,21 @@ RAID (Redundant Array of Independent Disks) é a técnica de combinar dois ou ma
 Cada nível de RAID representa um ponto de equilíbrio diferente entre dois objetivos que, em geral, competem entre si pelo mesmo recurso (o número de discos físicos disponíveis): paralelismo, voltado ao desempenho, e redundância, voltada à disponibilidade e confiabilidade.
 
 \subsection{Paralelismo (Desempenho)}
-Paralelismo, no contexto de RAID, significa distribuir as operações de leitura e escrita entre vários discos, de modo que eles trabalhem simultaneamente sobre uma mesma requisição lógica (ou sobre requisições distintas concorrentes), em vez de um único disco atender a tudo sequencialmente. Isso é obtido por meio da técnica de striping (detalhada na Seção 6.1), que fragmenta os dados entre os discos do arranjo. O ganho de desempenho é, no caso ideal, proporcional ao número de discos: um arranjo com N discos pode, em tese, entregar até N vezes a taxa de transferência sequencial de um único disco, além de permitir que múltiplas operações de I/O pequenas e independentes --- típicas de cargas OLTP em um SBD --- sejam atendidas em paralelo por discos diferentes, reduzindo o tempo médio de resposta.
+Paralelismo, no contexto de RAID, significa distribuir as operações de leitura e escrita entre vários discos, de modo que eles trabalhem simultaneamente sobre uma mesma requisição lógica (ou sobre requisições distintas concorrentes), em vez de um único disco atender a tudo sequencialmente. Isso é obtido por meio da técnica de striping (detalhada na Seção 6.1), que fragmenta os dados entre os discos do arranjo. O ganho de desempenho é, no caso ideal, proporcional ao número de discos: um arranjo com N discos pode, em tese, entregar até N vezes a taxa de transferência sequencial de um único disco, além de permitir que múltiplas operações de I/O pequenas e independentes sejam atendidas em paralelo por discos diferentes, reduzindo o tempo médio de resposta.
 
 \subsection{Redundância (Disponibilidade e Confiabilidade)}
-Redundância consiste em armazenar informação extra --- uma cópia completa dos dados (mirroring) ou informação de paridade calculada a partir deles --- de modo que a falha de um disco (ou, em alguns níveis, de até dois discos simultaneamente) não cause perda de dados nem interrupção do serviço. Disponibilidade refere-se à capacidade do arranjo de continuar respondendo a requisições mesmo em estado degradado (com um disco falho, antes da substituição); confiabilidade refere-se à probabilidade de que os dados permaneçam corretos e recuperáveis ao longo do tempo, mesmo diante de falhas de hardware.
+Em sistemas de armazenamento de alto desempenho, a redundância consiste em introduzir informações suplementares de modo que a falha de um disco físico (ou até de múltiplos discos simultaneamente) não resulte em perda de dados nem na interrupção do serviço. Nesse contexto, é importante distinguir dois conceitos fundamentais que frequentemente aparecem associados, mas possuem significados distintos:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Disponibilidade:} Refere-se à capacidade operacional do arranjo de continuar respondendo a requisições de leitura e escrita de forma ininterrupta, mesmo quando o sistema opera em um estado degradado (após a falha de um disco e antes de sua substituição e reconstrução).
+    \item \textbf{Confiabilidade:} Representa a probabilidade estatística de que os dados armazenados permaneçam íntegros, corretos e integralmente recuperáveis ao longo do tempo, mesmo diante de falhas imprevistas de hardware.
+\end{itemize}
 
-Paralelismo puro (striping sem nenhuma redundância) reduz a confiabilidade do arranjo em relação a um único disco: como qualquer falha em qualquer um dos N discos torna o volume lógico inteiro inacessível, o MTTF (tempo médio até a falha) do arranjo é, em uma aproximação simples, o MTTF de um disco individual dividido por N --- ou seja, quanto mais discos participam do striping, maior a chance de que algum deles falhe em um dado intervalo de tempo. Os níveis de RAID que envolvem redundância existem precisamente para compensar esse efeito, reintroduzindo tolerância a falhas ao custo de capacidade útil (no caso do mirroring) ou de operações adicionais de escrita para manter a paridade atualizada (no caso dos níveis baseados em paridade). A escolha de um nível de RAID é, portanto, sempre uma decisão de engenharia que pondera paralelismo (desempenho) contra redundância (disponibilidade/confiabilidade) e contra o custo em capacidade de disco disponível.
+A introdução exclusiva do paralelismo puro (\emph{striping} sem redundância) afeta diretamente essa dinâmica. Embora maximize o desempenho ao fracionar os dados entre múltiplos discos, ele reduz a confiabilidade global do conjunto em comparação a um único disco isolado. 
+
+Os níveis de RAID que incorporam redundância surgem justamente para mitigar essa vulnerabilidade inerente ao paralelismo puro. Eles reintroduzem a tolerância a falhas aceitando compensações arquiteturais claras: o custo em capacidade útil de armazenamento (no caso do espelhamento) ou o encarecimento das operações de escrita decorrente da manutenção da paridade atualizada. Desse modo, a seleção de um nível de RAID consolida-se como uma decisão clássica de engenharia, exigindo o equacionamento rigoroso entre desempenho (paralelismo), disponibilidade/confiabilidade (redundância) e o custo financeiro associado à capacidade de disco disponível.
 
 \section{Organização de Dados em RAID: Striping, Mirroring e Paridade}
+
 \subsection{Data Striping: Bit-Level, Byte-Level e Block-Level}
 Striping é a técnica de fragmentar um fluxo lógico de dados em pequenas unidades (chamadas de stripe units ou chunks) e distribuí-las ciclicamente (round-robin) entre os discos do arranjo, de modo que discos diferentes armazenem partes diferentes de um mesmo conjunto de dados e possam ser acessados em paralelo. O tamanho da unidade de striping determina as seguintes variantes:
 
@@ -177,15 +202,15 @@ Striping é a técnica de fragmentar um fluxo lógico de dados em pequenas unida
 
 A escolha do tamanho do bloco (chunk size) no block-level é, na prática, um importante parâmetro de ajuste (tuning) físico. O tamanho ideal determinará se o subsistema favorecerá o paralelismo de múltiplas operações pequenas e concorrentes ou a agilidade na transferência sequencial de grandes volumes de dados.
 
-\subsection{Mirroring e Shadowing}
+\subsection{Mirroring / Shadowing}
 Mirroring (espelhamento), também conhecido como Shadowing (espelhamento em sombra), consiste em manter uma cópia idêntica, síncrona e contínua dos dados em dois (ou mais) discos. Nessa técnica, toda escrita é replicada em ambos os discos, e toda leitura pode ser atendida por qualquer um deles, o que permite balancear a carga para ganhar desempenho.
 
 Essa é a base do RAID 1, garantindo tolerância à falha de um dos discos do par, ao custo de 50\% da capacidade física total de armazenamento.
 
 \subsection{Paridade e o Bloco de Paridade}
-Paridade é uma forma de redundância mais eficiente em espaço do que o mirroring completo: em vez de duplicar integralmente os dados, calcula-se, a partir de N blocos de dados correspondentes em N-1 discos, um bloco de paridade adicional --- tipicamente por meio da operação lógica XOR (ou exclusive-or) bit a bit entre os blocos --- e armazena-se esse bloco de paridade em um disco separado (RAID 3/RAID 4) ou distribuído entre todos os discos do arranjo (RAID 5/RAID 6). Como a operação XOR é reversível (o valor de qualquer um dos blocos originais pode ser recalculado a partir dos demais blocos de dados e do bloco de paridade), a perda de um único disco pode ser totalmente reconstruída.
+Paridade é uma forma de redundância mais eficiente em espaço do que o mirroring completo: em vez de duplicar integralmente os dados, calcula-se, a partir de N blocos de dados correspondentes em N-1 discos, um bloco de paridade adicional, tipicamente por meio da operação lógica XOR (ou exclusive-or) bit a bit entre os blocos, e armazena-se esse bloco de paridade em um disco separado (RAID 3/RAID 4) ou distribuído entre todos os discos do arranjo (RAID 5/RAID 6). Como a operação XOR é reversível (o valor de qualquer um dos blocos originais pode ser recalculado a partir dos demais blocos de dados e do bloco de paridade), a perda de um único disco pode ser totalmente reconstruída.
 
-O custo dessa eficiência de espaço aparece nos escritas: sempre que um bloco de dados é alterado, o bloco de paridade correspondente também precisa ser recalculado e regravado, o que --- para escritas pequenas que não cobrem uma faixa (stripe) inteira --- exige um padrão de leitura e escrita adicional conhecido como read-modify-write (ler o bloco de dados antigo, ler o bloco de paridade antigo, calcular a nova paridade, gravar o novo bloco de dados e gravar a nova paridade). Esse é o chamado "write penalty" dos níveis baseados em paridade, discutido em detalhe na Seção 8 para cada nível específico.
+O custo dessa eficiência de espaço aparece nos escritas: sempre que um bloco de dados é alterado, o bloco de paridade correspondente também precisa ser recalculado e regravado, o que, para escritas pequenas que não cobrem uma faixa (stripe) inteira, exige um padrão de leitura e escrita adicional conhecido como read-modify-write (ler o bloco de dados antigo, ler o bloco de paridade antigo, calcular a nova paridade, gravar o novo bloco de dados e gravar a nova paridade). Esse é o chamado "write penalty" dos níveis baseados em paridade, discutido em detalhe na Seção 8 para cada nível específico.
 
 \section{Métricas de Confiabilidade: MTTF, MTTR, MTBF e MTTDL}
 Para comparar e dimensionar arranjos RAID de forma quantitativa, e não apenas qualitativa, a literatura de sistemas de armazenamento define um conjunto de métricas de confiabilidade. Estas são as quatro métricas exigidas pelo enunciado da tarefa.
@@ -288,54 +313,58 @@ Independentemente do nível escolhido, RAID não é backup: ele aumenta disponib
 Quanto à interface e à controladora, discos SAS com uma controladora RAID de hardware dotada de cache protegida por bateria (BBU) ou flash (FBWC) são uma escolha comum em servidores de produção, por combinar dual-porting, integração a expansores e recursos de disponibilidade. A profundidade de fila e a classificação para operação contínua devem ser verificadas no dispositivo e na controladora específicos. SATA permanece adequado para cenários de custo mais sensível ou de menor criticidade; e USB4 (sobretudo a partir da Versão 2.0, com até 80 Gb/s de banda agregada) vem se tornando uma opção cada vez mais viável para DAS externo de alto desempenho, como estações de backup ou ambientes de desenvolvimento/teste. eSATA e FireWire, por sua vez, são hoje interfaces predominantemente legadas, raramente escolhidas para novos projetos de SBD.
 
 \section{Conclusão}
-O estudo das arquiteturas de armazenamento físico para SBD evidenciou que a escolha de uma interface de conexão (SATA, eSATA, SAS, FireWire, USB ou o HBA que as agrega ao host) e de um nível de RAID não são decisões puramente técnicas de baixo nível, mas escolhas de arquitetura com impacto direto sobre desempenho, disponibilidade e confiabilidade de um banco de dados --- e, em última instância, sobre a experiência dos usuários e a integridade dos dados sob a responsabilidade do SGBD.
+O estudo das arquiteturas de armazenamento físico para SBD evidenciou que a escolha de uma interface de conexão (SATA, eSATA, SAS, FireWire, USB ou o HBA que as agrega ao host) e de um nível de RAID não são decisões puramente técnicas de baixo nível. Trata-se de escolhas arquiteturais com impacto direto sobre desempenho, disponibilidade e confiabilidade de um banco de dados e, em última instância, sobre a experiência dos usuários e a integridade dos dados sob a responsabilidade do SGBD.
 
-Os conceitos de paralelismo e redundância mostraram-se, ao longo do trabalho, dois lados de uma mesma moeda: técnicas como o striping em nível de bloco maximizam desempenho, enquanto mirroring e paridade sacrificam capacidade ou desempenho de escrita em troca de tolerância a falhas --- e métricas como MTTF, MTBF, MTTR e, sobretudo, MTTDL permitem quantificar esse equilíbrio de forma objetiva, orientando decisões como a preferência crescente por RAID 6 (em vez de RAID 5) em arranjos grandes de discos de alta capacidade, ou por RAID 10 (em vez de RAID 0+1) sempre que o orçamento de capacidade permite. Os níveis não padrão --- RAID 1.5, RAID 7, RAID-DP, RAID-S e Matrix RAID --- reforçam que, na prática comercial, fabricantes frequentemente adaptam ou estendem os conceitos acadêmicos de RAID às particularidades de suas próprias arquiteturas de hardware e software, o que exige cautela ao comparar especificações entre fornecedores diferentes.
+Os conceitos de paralelismo e redundância mostraram-se, ao longo do trabalho, dois lados de uma mesma moeda. Técnicas como o striping em nível de bloco maximizam o desempenho, enquanto mirroring e paridade sacrificam capacidade ou desempenho de escrita em troca de tolerância a falhas. Além disso, métricas como MTTF, MTBF, MTTR e, sobretudo, MTTDL permitem quantificar esse equilíbrio de forma objetiva, orientando decisões como a preferência crescente por RAID 6 em vez de RAID 5 em arranjos grandes de discos de alta capacidade, ou por RAID 10 em vez de RAID 0+1 sempre que o orçamento de capacidade permite. Os níveis não padrão (como RAID 1.5, RAID 7, RAID-DP, RAID-S e Matrix RAID) reforçam que, na prática comercial, fabricantes frequentemente adaptam ou estendem os conceitos acadêmicos de RAID às particularidades de suas próprias arquiteturas de hardware e software, o que exige cautela ao comparar especificações entre fornecedores diferentes.
 
-Para um profissional de Banco de Dados, compreender essas arquiteturas --- desde o cabo físico até a métrica estatística de confiabilidade --- é essencial para dimensionar corretamente a infraestrutura de armazenamento de um sistema, equilibrando custo, desempenho e, acima de tudo, a segurança dos dados armazenados.
+Para um profissional de Banco de Dados, compreender essas arquiteturas, desde o cabo físico até a métrica estatística de confiabilidade, é essencial para dimensionar corretamente a infraestrutura de armazenamento de um sistema, equilibrando custo, desempenho e, acima de tudo, a segurança dos dados armazenados.
 
-\section{Post-Mortem --- Uso de Assistente de IA Generativa}
-Conforme exigido pelo enunciado da tarefa, esta seção documenta o uso de IA generativa (Claude, Anthropic) pelo grupo. Adotamos um fluxo "humano no comando", onde a IA gerou a estrutura base e pesquisou dados atualizados, enquanto os integrantes revisaram criticamente suas respectivas seções e aplicaram correções textuais e estruturais.
+\clearpage
+\section{Post-Mortem}\label{sec:postmortem}
+Esta seção atende aos três elementos exigidos: log dos prompts, autoria/decisões e erros da IA com correções, distinguindo fatos verificáveis nesta revisão e contribuições do grupo. A IA utilizada como ferramenta de suporte na estruturação inicial foi o Claude (Anthropic), e o Codex (OpenAI) auxiliou na auditoria e refinamento técnico desta versão.
 
-\subsection{Log Cronológico dos Prompts-Chave}
-O quadro abaixo relaciona os prompts principais utilizados.
+\subsection{Log dos Prompts-Chave}
+O quadro abaixo relaciona os prompts principais utilizados durante a execução e o refinamento iterativo da tarefa.
 
 \begin{longtable}{@{}p{.7cm}p{7.3cm}p{6.4cm}@{}}\toprule
 \textbf{Nº} & \textbf{Prompt (resumo)} & \textbf{Objetivo}\\\midrule\endhead
-1 & Envio do enunciado da tarefa sobre armazenamento físico DAS e RAID. & Estabelecer o escopo técnico completo exigido.\\
-2 & Pedido para gerar a estrutura base do relatório sobre DAS/RAID. & Produzir o artefato mantendo a formatação padrão.\\
-3 & Pesquisa na web sobre a velocidade atual do SAS-4 e USB4 v2.0. & Fundamentar a Seção 4 com dados técnicos atuais.\\
-4 & Discussão iterativa para reestruturação das métricas de confiabilidade e revisão das diferenças de workload no RAID 4. & Adequar o fluxo didático e corrigir a falta de nuances técnicas de performance geradas inicialmente.\\\bottomrule
+1 & Envio do enunciado da tarefa sobre armazenamento físico DAS e RAID. & Estabelecer o escopo técnico completo exigido pelo professor.\\
+2 & Pedido para gerar a estrutura base do relatório sobre DAS/RAID. & Produzir o rascunho inicial mantendo a formatação acadêmica padrão.\\
+3 & Pesquisa na web sobre a velocidade atual do SAS-4 e USB4 v2.0. & Fundamentar a Seção 4 com dados normativos e técnicos atuais (INCITS e USB-IF).\\
+4 & Discussão iterativa para reestruturação das métricas de confiabilidade e revisão das diferenças de workload no RAID 4. & Adequar o fluxo didático e corrigir imprecisões de performance geradas na primeira versão da IA.\\
+5 & Correção de imprecisões em interfaces: substituição de nomenclaturas comerciais informais (SATA I/II/III) pelas diretrizes oficiais da SATA-IO e refinamento técnico do HBA versus controladoras RAID. & Garantir rigor normativo e precisão conceitual nas subseções de hardware.\\
+6 & Solicitação de redimensionamento e reestruturação do quadro comparativo das interfaces DAS (Tabela 2). & Resolver problemas de quebra de layout, poluição visual e espremimento de texto nas colunas do LaTeX.\\
+7 & Pedido de aprofundamento e coesão conceitual na seção de Redundância, Disponibilidade e Confiabilidade. & Eliminar frases desconexas e detalhar rigorosamente o impacto do paralelismo puro (\textit{striping}) sobre o MTTF global.\\\bottomrule
 \end{longtable}
 Tabela 3 --- Log de prompts-chave.
 
 \subsection{Matriz de Responsabilidades e Declaração de Autoria}
 A tabela abaixo evidencia a divisão do trabalho. Cada integrante confirma ter revisado criticamente o conteúdo sob sua responsabilidade (as seções de Conclusão e Post-Mortem foram revisadas em conjunto por todo o grupo).
 
-\begin{longtable}{@{}p{6cm}p{9.5cm}@{}}\toprule
-\textbf{Integrante} & \textbf{Seções sob sua responsabilidade}\\\midrule\endhead
-Vivian Maria da Silva e Souza\newline DRE 123205793 & Seções 1 a 4 (Introdução, Interfaces DAS e HBA)\\
-Bernardo Brandão Pozzato C. Costa\newline DRE 123289593 & Seções 5 e 6.2 (Performance, Redundância e Mirroring)\\
-Guilherme En Shih Hu\newline DRE 123224674 & Seções 6.1 e 7 (Striping e Métricas de Confiabilidade)\\
-Gabriel Schmitz Corrêa Rizawinsk\newline DRE 123225573 & Seções 6.3 e 8.1 a 8.5 (Paridade e Níveis Padrão de RAID 0 a 4)\\
-Enzo de Carvalho Sampaio\newline DRE 123386206 & Seções 8.6 a 8.9 e 10 (RAID Avançado, Aninhados e Recomendações)\\
-Raphael Henrique da Silva Pereira\newline DRE 123420783 & Seção 9 (Arquiteturas Não Padrão)\\\bottomrule
+\begin{longtable}{@{}p{5cm}p{5cm}p{5.4cm}@{}}\toprule
+\textbf{Integrante} & \textbf{Responsabilidade na versão final} & \textbf{Decisão e justificativa}\\\midrule\endhead
+Vivian Maria da Silva e Souza\newline DRE 123205793 & Seções 1 a 4.3 (Introdução, Interfaces DAS (SATA, eSATA, SAS e FireWire) & Padronizou as nomenclaturas oficiais da SATA-IO e estruturou a introdução técnica.\\
+Bernardo Brandão Pozzato C. Costa\newline DRE 123289593 & Seções 4.4 a 5 (Performance, Redundância e Mirroring) & Detalhou a distinção técnica entre as camadas físicas do SAS e os limites reais de controladoras.\\
+Guilherme En Shih Hu\newline DRE 123224674 & Seções 6 e 7 (Striping e Métricas de Confiabilidade) & Organizou a progressão lógica das métricas de confiabilidade e o escopo do block-level striping.\\
+Gabriel Schmitz Corrêa Rizawinsk\newline DRE 123225573 & Seções 8 a 8.5 (Paridade e Níveis Padrão de RAID 0 a 4) & Aprofundou a análise do ciclo \textit{read-modify-write} e o gargalo de paridade do RAID 4.\\
+Enzo de Carvalho Sampaio\newline DRE 123386206 & Seções 8.6 a 8.9 (RAID Avançado, Aninhados e Recomendações) & Mapeou os cenários práticos de aplicação de SBD para RAID 6 e RAID 10.\\
+Raphael Henrique da Silva Pereira\newline DRE 123420783 & Seções 9 e 10 (Arquiteturas Não Padrão) & Mapeou as implementações proprietárias (RAID-DP, RAID-S, RAID 1.5, RAID 7 e Matrix RAID).\\\bottomrule
 \end{longtable}
 Tabela 4 --- Matriz de responsabilidades e autoria.
 
-\subsection{Erros Identificados e Correções Aplicadas}
-A IA apresentou falhas estruturais, como redundância e má progressão didática, otimizadas pelo grupo a seguir.
-
-\begin{longtable}{@{}p{.7cm}p{4.5cm}p{4.5cm}p{4.8cm}@{}}\toprule
-\textbf{Nº} & \textbf{Risco / erro estrutural identificado} & \textbf{Como foi identificado} & \textbf{Correção aplicada}\\\midrule\endhead
-1 & Progressão ilógica de métricas e cálculo precoce de MTTDL para RAID 5. & Análise da fluidez e coerência acadêmica da Seção 7 por Enzo de Carvalho Sampaio. & Tópicos reordenados (MTTF $\rightarrow$ MTTR $\rightarrow$ MTBF $\rightarrow$ MTTDL) e substituição por exemplo com \textit{mirroring}.\\
-2 & Explicações redundantes sobre operações de I/O e \textit{lockstep}. & Revisão cruzada entre as seções 6 e 8 por Guilherme En Shih Hu. & Conceitos enxugados na Seção 6.1 para evitar repetição textual antecipada.\\
-3 & Falta de nuances técnicas sobre cargas de trabalho e performance. & Revisão da literatura sobre o gargalo do RAID 4 por Gabriel Schmitz Corrêa Rizawinsk. & Adicionada distinção explícita entre escritas sequenciais e o ciclo \textit{read-modify-write} (Seção 8.5).\\
-4 & A IA usou as nomenclaturas informais ``SATA I/II/III'' como se fossem denominações oficiais. & Conferência de Vivian Maria da Silva e Souza nas diretrizes oficiais da SATA-IO. & Substituição por SATA 1,5/3/6 Gb/s, atualização da tabela e inclusão de referência à SATA-IO. Correção resolvida e validada.\\
-5 & A IA generalizou características de SAS, USB4 e HBA: limites universais de fila/topologia, ``certificação 24/7'' do SAS, 80 Gb/s por sentido no USB4 e equivalência entre HBA e JBOD. & Revisão técnica e consulta às fontes SATA-IO, T10/INCITS, SNIA e USB-IF, conduzidas por Bernardo Brandão Pozzato Carvalho Costa. & Texto qualificado: limites passaram a depender da implementação; 24/7 foi atribuído ao disco; USB4 passou a indicar banda agregada e PCIe condicional; HBA/JBOD foram distinguidos. Correção resolvida e validada.\\
-6 & Ausência dos níveis não padrão RAID-DP e RAID-S, exigidos pelo escopo do trabalho. & Revisão do texto gerado frente ao escopo exigido no enunciado, conduzida por Raphael Henrique da Silva Pereira. & Inclusão e detalhamento das subseções referentes ao RAID-DP (NetApp) e RAID-S (EMC), destacando suas mecânicas proprietárias. Correção resolvida e validada.\\\bottomrule
+\subsection{Erros da IA e Correções Aplicadas}
+\begin{longtable}{@{}p{.7cm}p{5cm}p{4.4cm}p{4.6cm}@{}}\toprule
+\textbf{Nº} & \textbf{Erro/risco encontrado} & \textbf{Verificação} & \textbf{Correção}\\\midrule\endhead
+1 & Progressão ilógica de métricas e cálculo precoce de MTTDL para RAID 5. & Enzo de Carvalho Sampaio & Tópicos reordenados (MTTF $\rightarrow$ MTTR $\rightarrow$ MTBF $\rightarrow$ MTTDL) com exemplo baseado em \textit{mirroring}.\\
+2 & Explicações redundantes sobre operações de I/O e \textit{lockstep}. & Guilherme En Shih Hu & Seção 6.1 enxugada para eliminar repetições textuais.\\
+3 & Omissão de nuances técnicas sobre cargas de trabalho e gargalos no RAID 4. & Gabriel Schmitz Corrêa Rizawinsk & Inclusão da distinção explícita entre escritas sequenciais e o ciclo \textit{read-modify-write} (Seção 8.5).\\
+4 & Uso das nomenclaturas informais ``SATA I/II/III'' como denominações oficiais. & Vivian Maria da Silva e Souza & Substituição por SATA 1,5/3/6 Gb/s com base nas diretrizes da SATA-IO.\\
+5 & Generalizações sobre SAS, USB4 e HBA (limites de fila, ``certificação 24/7'', USB4 por sentido e equivalência com JBOD). & Bernardo Brandão Pozzato Carvalho Costa & Restrição ao escopo técnico real das normas T10/INCITS e USB-IF; HBA e JBOD distinguidos.\\
+6 & Ausência dos níveis não padrão RAID-DP e RAID-S exigidos pelo enunciado. & Raphael Henrique da Silva Pereira & Inclusão de subseções detalhando as mecânicas proprietárias da NetApp e da EMC.\\
+7 & Tratamento equivocado do HBA como mero cabo, omitindo o barramento PCIe, a tradução de I/O e os modos operacionais. & Bernardo Brandão Pozzato Carvalho Costa & Seção 4.5 reescrita para diferenciar o HBA \textit{passthrough} das controladoras RAID com cache/XOR.\\
+8 & Seção de redundância com frases desconexas entre disponibilidade e confiabilidade. & Vivian Maria da Silva e Souza & Seção reescrita para separar clareza operacional e confiabilidade estatística, detalhando o impacto do \textit{striping} no MTTF.\\\bottomrule
 \end{longtable}
-Tabela 5 --- Correções aplicadas sobre o conteúdo da IA.
+Tabela 5 --- Correções aplicadas sobre o conteúdo gerado pela IA.
 
 \section{Referências Bibliográficas}
 \begin{thebibliography}{99}
