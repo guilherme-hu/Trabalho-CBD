@@ -65,7 +65,8 @@ Vivian Maria da Silva e Souza & 123205793\\\bottomrule
 {\normalsize Rio de Janeiro --- Setembro de 2026}
 \end{center}
 \clearpage
-
+\tableofcontents
+\clearpage
 \section*{Resumo}
 \addcontentsline{toc}{section}{Resumo}
 Este trabalho explica computação e armazenamento em nuvem e analisa a AWS como provedor. Partimos
@@ -90,8 +91,7 @@ registra prompts-chave, divisão declarada de responsabilidades e correções ap
 \noindent\textbf{Palavras-chave:} computação em nuvem; AWS; armazenamento de objetos; DBaaS;
 DWaaS; data lake; custo total de propriedade; 3,5 PB.
 \clearpage
-\tableofcontents
-\clearpage
+
 
 \section*{Introdução}
 \addcontentsline{toc}{section}{Introdução}
@@ -112,30 +112,6 @@ acervo analítico; engines diferentes processam subconjuntos conforme latência 
 operacionais preservam apenas o estado que realmente exige transações. Essa separação evita usar
 EBS, RDS ou Aurora como se fossem recipientes indiferenciados de petabytes.
 
-\begin{table}[H]\centering\caption{Checklist do enunciado.}\label{tab:checklist}
-\small\begin{tabularx}{\textwidth}{@{}Yl@{}}\toprule
-\textbf{Exigência} & \textbf{Localização}\\\midrule
-Foundations and deployment: NIST, características e implantação & Seção~\ref{sec:foundations}\\
-Service Models and Evaluation: IaaS, PaaS, SaaS e critérios & Seção~\ref{sec:service-evaluation}\\
-EC2; S3, EBS e Glacier; RDS, Aurora, DynamoDB e Redshift & Seção~\ref{sec:aws}\\
-Custo, vantagens e desvantagens para 3,5 PB & Seção~\ref{sec:custo}\\
-Post-Mortem, prompts, autoria e correções da IA & Seção~\ref{sec:postmortem}\\
-Folha de rosto com nomes e DRE & página 1\\\bottomrule
-\end{tabularx}\end{table}
-
-\subsection*{Método e hierarquia das fontes}
-\addcontentsline{toc}{subsection}{Método e hierarquia das fontes}
-O estudo combina os livros indicados no enunciado com normas e documentação operacional. Usamos o
-NIST para a definição de nuvem; livros-texto para modelos e implicações de SBD; documentação AWS
-para semântica, limites e preços. Afirmações mutáveis registram região e data. Preço publicado é
-tratado como estimativa, não proposta comercial. A documentação de preços do S3 chama de ``GB'' uma unidade binária de $2^{30}$ bytes e de ``TB''
-uma unidade de $2^{40}$ bytes. Por isso, partimos de PB no SI e convertemos explicitamente para a
-unidade de cobrança da AWS, evitando tratar PB e PiB como sinônimos \cite{s3pricing}.
-
-As comparações seguem quatro perguntas: (1) qual abstração o consumidor recebe; (2) quem mantém cada
-camada; (3) qual SLO pode ser construído; e (4) quais variáveis compõem o custo total. Isso aproxima
-o relatório do problema de banco de dados: capacidade sem semântica de escrita, durabilidade sem
-recuperação e preço sem workload não permitem uma decisão.
 
 \section{Bases Conceituais}\label{sec:foundations}
 Esta seção estabelece a base conceitual para as decisões posteriores. Primeiro, apresenta a definição
